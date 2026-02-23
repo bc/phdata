@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>phData Interview - Correspondence Tracker</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --border: #e1e4ea;
+    --accent: #1e3a5f;
+    --accent-light: #e8eef5;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --amber: #d97706;
+    --amber-bg: #fef3c7;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --blue: #2563eb;
+    --blue-bg: #dbeafe;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header h1 { font-size: 22px; font-weight: 600; }
+  .header-sub { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    padding: 16px 32px;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .container { max-width: 1100px; margin: 24px auto; padding: 0 24px; }
+
+  .timeline { position: relative; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .entry {
+    position: relative;
+    margin-bottom: 20px;
+    padding-left: 52px;
+  }
+
+  .entry-dot {
+    position: absolute;
+    left: 12px;
+    top: 20px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    background: white;
+    z-index: 1;
+  }
+
+  .entry-dot.received { border-color: var(--blue); }
+  .entry-dot.action { border-color: var(--amber); }
+  .entry-dot.info { border-color: var(--text-muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-header-left { flex: 1; }
+
+  .card-subject {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .badge-received { background: var(--blue-bg); color: var(--blue); }
+  .badge-action { background: var(--amber-bg); color: var(--amber); }
+  .badge-info { background: #f3f4f6; color: var(--text-muted); }
+  .badge-complete { background: var(--green-bg); color: var(--green); }
+  .badge-pending { background: var(--red-bg); color: var(--red); }
+
+  .card-body { padding: 16px 20px; font-size: 14px; color: #374151; }
+  .card-body p { margin-bottom: 8px; }
+  .card-body p:last-child { margin-bottom: 0; }
+
+  .card-body ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  .card-body li { margin-bottom: 4px; }
+
+  .attachments {
+    padding: 12px 20px;
+    background: #fafbfc;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .attachment {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .attachment-icon { font-size: 14px; }
+
+  .contact-card {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: var(--accent-light);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .contact-card strong { display: block; margin-bottom: 4px; }
+  .contact-row { display: flex; gap: 20px; flex-wrap: wrap; color: var(--text-muted); }
+
+  .checklist { margin-top: 12px; }
+
+  .checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 13px;
+  }
+
+  .checklist-item:last-child { border-bottom: none; }
+
+  .check {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transition: all 0.15s;
+  }
+
+  .check.checked {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  .check-label { flex: 1; }
+  .check-label.done { text-decoration: line-through; color: var(--text-muted); }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin: 28px 0 12px 52px;
+  }
+
+  .key-contacts {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 24px 0;
+  }
+
+  .key-contacts h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .contacts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .contact-tile {
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+
+  .contact-tile .name { font-weight: 600; margin-bottom: 2px; }
+  .contact-tile .role { color: var(--text-muted); font-size: 12px; margin-bottom: 6px; }
+  .contact-tile .detail { color: var(--text-muted); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>phData - ML PSA Interview Tracker</h1>
+    <div class="header-sub">Machine Learning Principal Solutions Architect</div>
+  </div>
+  <div style="text-align:right;font-size:13px;opacity:0.8;">
+    Last updated: Feb 21, 2026
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="stat"><div class="stat-dot" style="background:var(--green)"></div> Recruiter contact established</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--green)"></div> Project challenge received</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--amber)"></div> Challenge review call - to schedule</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--red)"></div> Presentation - not yet scheduled</div>
+</div>
+
+<div class="container">
+
+  <!-- Key Contacts -->
+  <div class="key-contacts">
+    <h3>Key Contacts</h3>
+    <div class="contacts-grid">
+      <div class="contact-tile">
+        <div class="name">Andy Bunn</div>
+        <div class="role">Technical Recruiter, phData</div>
+        <div class="detail">abunn@phdata.io</div>
+      </div>
+      <div class="contact-tile">
+        <div class="name">Brian Goehrig</div>
+        <div class="role">Principal Delivery Consultant, Tenth Revolution</div>
+        <div class="detail">b.goehrig@tenthrevolution.com &middot; +1 267-297-4293</div>
+        <div class="detail" style="color:var(--amber);margin-top:4px;">On PTO until Monday (Feb 23)</div>
+      </div>
+      <div class="contact-tile">
+        <div class="name">Haddon Corbett</div>
+        <div class="role">Manager (Brian's backup), Tenth Revolution</div>
+        <div class="detail">H.Corbett@tenthrevolution.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="section-label">Correspondence Timeline</div>
+
+  <div class="timeline">
+
+    <!-- Email 1: Andy's email -->
+    <div class="entry">
+      <div class="entry-dot received"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="card-subject">Project Challenge Invitation - ML PSA Role</div>
+            <div class="card-meta">
+              <span>From: Andy Bunn (abunn@phdata.io)</span>
+              <span>Fri, Feb 20, 2026 &middot; 4:01 PM</span>
+            </div>
+          </div>
+          <span class="badge badge-action">Action Required</span>
+        </div>
+        <div class="card-body">
+          <p>Andy confirmed interest in moving forward and introduced the <strong>Project Challenge Presentation</strong> as the next step. Key details:</p>
+          <ul>
+            <li>Review the ML PSA Project Challenge scenario</li>
+            <li>Schedule a call with Andy to review the challenge together and set expectations</li>
+            <li>Prepare a presentation of the working solution</li>
+            <li>Remote presentation via Zoom with 2-3 architects (1 hour total: 45 min presentation + Q&A)</li>
+          </ul>
+          <p>Also provided an example proposal PDF for reference.</p>
+        </div>
+        <div class="attachments">
+          <div class="attachment">
+            <span class="attachment-icon">&#128196;</span>
+            ML_PSA_Project_Challenge_Scenario.pdf
+          </div>
+          <div class="attachment">
+            <span class="attachment-icon">&#128196;</span>
+            Project Challenge Example Proposal - PSA.pdf
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email 2: Brian's OOO -->
+    <div class="entry">
+      <div class="entry-dot info"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="card-subject">Out of Office - Brian Goehrig</div>
+            <div class="card-meta">
+              <span>From: Brian Goehrig (b.goehrig@tenthrevolution.com)</span>
+              <span>Fri, Feb 20, 2026</span>
+            </div>
+          </div>
+          <span class="badge badge-info">FYI</span>
+        </div>
+        <div class="card-body">
+          <p>Brian is on PTO and will return <strong>Monday, Feb 23</strong>. Contact his manager <strong>Haddon Corbett</strong> (H.Corbett@tenthrevolution.com) for anything urgent during his absence.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Challenge Summary -->
+  <div class="section-label">Challenge Overview</div>
+
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div class="card-header-left">
+        <div class="card-subject">ML PSA Project Challenge - AwesomeStuff.com</div>
+        <div class="card-meta"><span>E-commerce &middot; ML Model Deployment</span></div>
+      </div>
+      <span class="badge badge-pending">In Progress</span>
+    </div>
+    <div class="card-body">
+      <p><strong>Scenario:</strong> AwesomeStuff.com needs to deploy 5 ML models to production. You propose a solution as phData, a leader in data engineering and MLOps.</p>
+      <p><strong>Models:</strong> Recommendation Engine, Fraud Detection, Inventory Management, Customer Segmentation, Dynamic Pricing</p>
+      <p><strong>Key Challenges:</strong> Scalability, Real-time Processing, Integration, Monitoring &amp; Maintenance, Security &amp; Compliance (GDPR)</p>
+      <p style="margin-top:8px;"><strong>Presentation Audience (role-play):</strong></p>
+      <ul>
+        <li><strong>Business Unit VP</strong> - owns the problem and budget (non-technical)</li>
+        <li><strong>Director of Technology</strong> - ensures vendor delivery</li>
+        <li><strong>Architect</strong> - technical resource, influences vendor selection</li>
+        <li><strong>Sales Business Unit Leader</strong> - Marketing exec, stakes in Segmentation, Pricing, Inventory</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Action items -->
+  <div class="section-label">Action Items</div>
+
+  <div class="card" style="margin-bottom:40px;">
+    <div class="card-body">
+      <div class="checklist" id="checklist">
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Review ML PSA Project Challenge scenario PDF</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Review Example Proposal PDF for format/structure guidance</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Reply to Andy Bunn to schedule challenge review call — <a href="https://app.greenhouse.io/availability/28a6dab7078e66b9bdc48defea1de830?utm_medium=email&utm_source=AvailabilityRequest" target="_blank" style="color:var(--blue);text-decoration:none;font-weight:500;">Submit Availability</a></span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Complete challenge review call with Andy</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Build proposal presentation (Agenda, Overview, Approach, Business Value)</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Schedule 1-hour Zoom presentation with architect panel</span>
+        </div>
+        <div class="checklist-item">
+          <div class="check" onclick="toggle(this)"></div>
+          <span class="check-label">Deliver presentation (45 min solution + 15 min Q&A)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggle(el) {
+    el.classList.toggle('checked');
+    const label = el.nextElementSibling;
+    if (el.classList.contains('checked')) {
+      el.textContent = '\u2713';
+      label.classList.add('done');
+    } else {
+      el.textContent = '';
+      label.classList.remove('done');
+    }
+    save();
+  }
+
+  function save() {
+    const checks = document.querySelectorAll('.check');
+    const state = Array.from(checks).map(c => c.classList.contains('checked'));
+    localStorage.setItem('phdata-tracker', JSON.stringify(state));
+  }
+
+  function load() {
+    const raw = localStorage.getItem('phdata-tracker');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    const checks = document.querySelectorAll('.check');
+    state.forEach((checked, i) => {
+      if (checked && checks[i]) {
+        checks[i].classList.add('checked');
+        checks[i].textContent = '\u2713';
+        checks[i].nextElementSibling.classList.add('done');
+      }
+    });
+  }
+
+  load();
+</script>
+</body>
+</html>
