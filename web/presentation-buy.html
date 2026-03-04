@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML-Powered E-Commerce Platform for AwesomeStuff.com | phData</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.min.css">
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2AADAD;
+    --teal-light: #e6f7f7;
+    --gray-light: #f4f6f8;
+    --gray-mid: #6b7a8d;
+    --white: #ffffff;
+    --text: #2c3e50;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --orange: #f39c12;
+  }
+
+  .reveal {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    font-size: 28px;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3 {
+    color: var(--navy);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+
+  .reveal h1 { font-size: 2.0em; }
+  .reveal h2 { font-size: 1.5em; margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.15em; color: var(--teal); margin-bottom: 0.4em; }
+
+  .reveal section { text-align: left; }
+
+  .reveal .center-slide { text-align: center; }
+
+  .reveal ul, .reveal ol {
+    display: block;
+    margin-left: 0.8em;
+    font-size: 0.88em;
+    line-height: 1.7;
+  }
+
+  .reveal li { margin-bottom: 0.3em; }
+
+  .reveal .slide-number {
+    background: var(--navy);
+    color: var(--white);
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* phData top bar */
+  .reveal .slides section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--navy), var(--teal));
+  }
+
+  /* Title slide */
+  .title-slide {
+    text-align: center !important;
+  }
+  .title-slide h1 {
+    font-size: 1.8em;
+    margin-bottom: 0.15em;
+  }
+  .title-slide .subtitle {
+    color: var(--teal);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 1.2em;
+  }
+  .title-slide .meta {
+    color: var(--gray-mid);
+    font-size: 0.65em;
+    margin-top: 1.5em;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 0.5em;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 18px;
+    border-top: 3px solid var(--teal);
+  }
+  .card h4 {
+    color: var(--navy);
+    font-size: 0.78em;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+  .card p, .card ul {
+    font-size: 0.68em;
+    margin: 0;
+    color: var(--gray-mid);
+    line-height: 1.5;
+  }
+  .card ul { margin-left: 1em; }
+
+  .card-accent { border-top-color: var(--navy); }
+  .card-success { border-top-color: var(--success); }
+  .card-warn { border-top-color: var(--orange); }
+
+  /* Stat callouts */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 0.6em 0;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 18px 28px;
+    background: var(--gray-light);
+    border-radius: 8px;
+    min-width: 140px;
+  }
+  .stat-box .number {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--teal);
+    display: block;
+  }
+  .stat-box .label {
+    font-size: 0.6em;
+    color: var(--gray-mid);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.55em;
+    padding: 3px 12px;
+    border-radius: 12px;
+    margin-bottom: 0.4em;
+    font-weight: 600;
+  }
+
+  /* Tables */
+  .reveal table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72em;
+    margin-top: 0.4em;
+  }
+  .reveal table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .reveal table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e0e5eb;
+  }
+  .reveal table tr:nth-child(even) td {
+    background: var(--gray-light);
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 0.55em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-rt { background: #fdecea; color: var(--danger); }
+  .tag-batch { background: #eaf4fe; color: #2980b9; }
+  .tag-nrt { background: #fef9e7; color: #d4a017; }
+  .tag-buy { background: #e6f7f7; color: var(--teal); }
+  .tag-build { background: #fef9e7; color: var(--orange); }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+
+  /* Section divider */
+  .section-divider {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .section-divider h2 {
+    font-size: 1.8em;
+    margin-bottom: 0.2em;
+  }
+  .section-divider p {
+    color: var(--gray-mid);
+    font-size: 0.85em;
+  }
+
+  /* SVG diagrams */
+  .diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 0.3em 0;
+  }
+  .diagram-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Appendix label */
+  .appendix-label {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.45em;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  /* Audience tag */
+  .audience-tag {
+    font-size: 0.45em;
+    color: var(--gray-mid);
+    font-weight: 400;
+    margin-left: 8px;
+  }
+
+  /* Smaller text helper */
+  .small { font-size: 0.75em; }
+  .muted { color: var(--gray-mid); }
+
+  /* Pipeline boxes */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    margin: 0.5em 0;
+    flex-wrap: wrap;
+  }
+  .pipeline .step {
+    background: var(--gray-light);
+    border: 1px solid #d0d8e0;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 0.62em;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: center;
+    min-width: 100px;
+  }
+  .pipeline .step.highlight {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+  .pipeline .arrow {
+    font-size: 1.2em;
+    color: var(--teal);
+    padding: 0 4px;
+  }
+
+  /* Gantt chart - 10 weeks */
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 150px repeat(10, 1fr);
+    gap: 2px;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.58em;
+  }
+  .gantt-label {
+    font-weight: 600;
+    color: var(--navy);
+    text-align: right;
+    padding-right: 10px;
+  }
+  .gantt-bar {
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+  .gantt-header {
+    font-size: 0.5em;
+    text-align: center;
+    color: var(--gray-mid);
+    font-weight: 600;
+  }
+
+  /* Notes for speaker */
+  .reveal .speaker-notes {
+    font-size: 16px;
+  }
+
+  /* Print overrides */
+  @media print {
+    .reveal .slides section {
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ============================================================ -->
+<section class="title-slide center-slide">
+  <div style="margin-bottom:0.3em;">
+    <svg width="180" height="48" viewBox="0 0 180 48">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h1>ML-Powered E-Commerce Platform<br>for AwesomeStuff.com</h1>
+  <div class="subtitle">Best-in-Class Products, Fastest Time to Value</div>
+  <p style="font-size:0.7em; color:var(--gray-mid); margin-top:1em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    <span style="font-size:0.85em;">February 2026</span>
+  </p>
+  <aside class="notes">
+    Welcome everyone. Today I'll walk you through how phData will deploy best-in-class managed ML products to power your five key use cases — getting you to production in 10 weeks, not months. We're buying proven technology and integrating it into your stack.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: AGENDA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Agenda</h2>
+  <ol style="font-size:0.85em; line-height:2;">
+    <li>About phData</li>
+    <li>Understanding Your Challenge</li>
+    <li>Our Approach &mdash; Buy &amp; Integrate</li>
+    <li>Product Selection</li>
+    <li>Architecture Overview</li>
+    <li>Business Value &amp; ROI</li>
+    <li>Phase Details &amp; Timeline</li>
+    <li>Resource Plan &amp; Pricing</li>
+    <li>Why phData &amp; Next Steps</li>
+  </ol>
+  <aside class="notes">
+    Here's our roadmap for today. We'll start with who we are, then align on your challenge. The key difference in our approach today: we're recommending best-in-class managed products for each use case rather than building custom ML from scratch. This gets you to production faster and at lower risk. Deep technical details are in the appendix.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: ABOUT PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>About phData</h2>
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="number">450+</span>
+      <span class="label">Data &amp; ML Engineers</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">300+</span>
+      <span class="label">Enterprise Clients</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">#1</span>
+      <span class="label">Snowflake Partner</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">AWS</span>
+      <span class="label">Advanced Partner</span>
+    </div>
+  </div>
+  <div class="card-grid cols-3" style="margin-top:0.6em;">
+    <div class="card">
+      <h4>Vendor Partnerships</h4>
+      <p>#1 Snowflake partner globally, AWS Advanced consulting partner, Hightouch certified. We know these products inside and out.</p>
+    </div>
+    <div class="card">
+      <h4>Integration Expertise</h4>
+      <p>200+ managed service deployments across AWS Personalize, Fraud Detector, Forecast, and Snowflake Cortex.</p>
+    </div>
+    <div class="card">
+      <h4>Data Engineering</h4>
+      <p>Snowflake-native pipelines, Fivetran, Hightouch reverse ETL, and modern data stack expertise.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    phData is one of the largest pure-play data and ML consultancies. We're the number one Snowflake partner globally, an AWS Advanced partner, and Hightouch certified. What makes us uniquely suited for this engagement is our integration expertise — we've deployed managed ML products like Personalize, Fraud Detector, and Forecast hundreds of times. We know how to wire these products together into a cohesive platform.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: UNDERSTANDING YOUR CHALLENGE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Understanding Your Challenge</h2>
+  <div class="two-col">
+    <div>
+      <h3>5 ML Use Cases to Solve</h3>
+      <table style="font-size:0.85em;">
+        <tr><td><strong>Fraud Detection</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Recommendation Engine</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Inventory / Demand Forecasting</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Customer Segmentation</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Dynamic Pricing</strong></td><td><span class="tag tag-nrt">Near-Real-Time</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>You Don't Need to Build ML from Scratch</h3>
+      <ul>
+        <li><strong>Scalability</strong> &mdash; Managed services scale automatically for Black Friday</li>
+        <li><strong>Time to value</strong> &mdash; Pre-trained models, not months of R&amp;D</li>
+        <li><strong>Maintenance burden</strong> &mdash; Vendors handle retraining, infra, uptime</li>
+        <li><strong>Integration</strong> &mdash; Connect to your CRM, payments, Snowflake</li>
+        <li><strong>Compliance</strong> &mdash; AWS &amp; Snowflake handle SOC2, GDPR infrastructure</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Let me reframe the challenge. You have five ML use cases to solve. The good news: for four out of five, best-in-class managed products already exist. You don't need to build custom ML from scratch, hire a team of ML engineers, or maintain complex training infrastructure. Managed services handle the ML — you focus on your business. The one exception is dynamic pricing, where we'll build a lightweight custom model since no great SaaS option exists yet.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: OUR APPROACH -->
+<!-- ============================================================ -->
+<section>
+  <h2>Our Approach: Buy &amp; Integrate</h2>
+  <p class="muted small" style="margin-bottom:0.5em;">Best-in-class products, integrated fast &mdash; Production value in 10 weeks</p>
+  <div class="card-grid cols-3">
+    <div class="card card-accent">
+      <h4>Phase 1</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Platform &amp; Data</p>
+      <p>Weeks 1-2</p>
+      <p>Snowflake optimization, Fivetran connectors, Hightouch setup, Terraform IaC</p>
+    </div>
+    <div class="card">
+      <h4>Phase 2</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Deploy Products</p>
+      <p>Weeks 3-7</p>
+      <p>Deploy all 5 solutions: Personalize, Fraud Detector, Forecast, Cortex ML, SageMaker pricing</p>
+    </div>
+    <div class="card card-success">
+      <h4>Phase 3</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Optimize &amp; Handoff</p>
+      <p>Weeks 8-10</p>
+      <p>A/B testing, performance tuning, documentation, team training</p>
+    </div>
+  </div>
+  <div style="margin-top:0.7em; text-align:center;">
+    <div class="pipeline">
+      <div class="step">Platform &amp; Data</div>
+      <div class="arrow">→</div>
+      <div class="step highlight">Deploy Products</div>
+      <div class="arrow">→</div>
+      <div class="step">Optimize &amp; Handoff</div>
+    </div>
+  </div>
+  <div style="margin-top:0.5em; text-align:center; font-size:0.72em; color:var(--navy); font-weight:600;">
+    3 phases &bull; 10 weeks &bull; 3 FTEs &bull; Let the vendors handle the ML
+  </div>
+  <aside class="notes">
+    Our approach is fundamentally different from a custom build. We buy the best product for each use case and integrate them into your Snowflake-centric stack. Three phases, 10 weeks total. Phase 1: get your data platform ready — Snowflake optimization, Fivetran connectors, Hightouch reverse ETL. Phase 2: deploy all five solutions in parallel. Phase 3: optimize, A/B test, document, and hand off. This is 4 weeks shorter than a custom build because we're configuring proven products, not building ML from scratch.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: PRODUCT SELECTION -->
+<!-- ============================================================ -->
+<section>
+  <h2>Product Selection <span class="audience-tag">Key Decision Slide</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Use Case</th>
+        <th>Product</th>
+        <th>Why This Product</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Fraud Detection</strong></td>
+        <td>AWS Fraud Detector</td>
+        <td>Pre-trained ML, custom rules, real-time scoring at $0.07/event</td>
+        <td><span class="tag tag-buy">BUY</span></td>
+      </tr>
+      <tr>
+        <td><strong>Recommendations</strong></td>
+        <td>Amazon Personalize</td>
+        <td>Managed reco service, handles training + serving, real-time &amp; batch</td>
+        <td><span class="tag tag-buy">BUY</span></td>
+      </tr>
+      <tr>
+        <td><strong>Demand Forecasting</strong></td>
+        <td>Amazon Forecast</td>
+        <td>Managed time-series forecasting, AutoML picks best algorithm</td>
+        <td><span class="tag tag-buy">BUY</span></td>
+      </tr>
+      <tr>
+        <td><strong>Customer Segmentation</strong></td>
+        <td>Snowflake Cortex ML + Hightouch</td>
+        <td>Snowflake-native ML, Hightouch syncs segments to CRM &amp; marketing</td>
+        <td><span class="tag tag-buy">BUY</span></td>
+      </tr>
+      <tr>
+        <td><strong>Dynamic Pricing</strong></td>
+        <td>SageMaker Endpoint (custom)</td>
+        <td>No pure SaaS exists; lightweight custom model with guardrails</td>
+        <td><span class="tag tag-build">BUILD</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.5em; font-size:0.68em; color:var(--gray-mid);">
+    <strong>Selection criteria:</strong> Proven at scale &bull; Pre-trained / AutoML &bull; Fully managed &bull; Pay-per-use pricing &bull; AWS/Snowflake ecosystem fit
+  </div>
+  <aside class="notes">
+    This is the key decision slide. For each use case, we've selected the best managed product. Fraud detection: AWS Fraud Detector — pre-trained on Amazon's own fraud data, plus custom rules. Recommendations: Amazon Personalize — the same tech that powers Amazon.com. Demand forecasting: Amazon Forecast — AutoML selects the best algorithm. Customer segmentation: Snowflake Cortex ML functions right in your warehouse, with Hightouch syncing segments to your marketing tools. The one exception is dynamic pricing — no great SaaS exists here, so we build a lightweight custom model on SageMaker. Four buys, one build.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: ARCHITECTURE OVERVIEW -->
+<!-- ============================================================ -->
+<section>
+  <h2>Architecture Overview <span class="audience-tag">Dir. Technology &bull; Architect</span></h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 440" width="840" height="400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- Background -->
+      <rect x="10" y="10" width="900" height="420" rx="12" fill="#f8fafc" stroke="#d0d8e0"/>
+
+      <!-- Data Sources (left) -->
+      <rect x="25" y="45" width="130" height="270" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="90" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">DATA SOURCES</text>
+      <rect x="35" y="60" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="81" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Web / Mobile</text>
+      <rect x="35" y="100" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="121" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Payments API</text>
+      <rect x="35" y="140" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="161" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">CRM / ERP</text>
+      <rect x="35" y="180" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="201" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Inventory System</text>
+      <rect x="35" y="220" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="241" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Marketing Tools</text>
+      <rect x="35" y="260" width="110" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="90" y="281" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Competitor Feeds</text>
+
+      <!-- Fivetran ingestion -->
+      <rect x="175" y="80" width="80" height="80" rx="6" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="215" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">Fivetran</text>
+      <text x="215" y="128" text-anchor="middle" font-size="9" fill="#6b7a8d">Ingestion</text>
+
+      <!-- Snowflake Hub (center) -->
+      <rect x="175" y="180" width="180" height="145" rx="8" fill="#1B3A5C"/>
+      <text x="265" y="205" text-anchor="middle" font-size="14" font-weight="700" fill="#2AADAD">SNOWFLAKE</text>
+      <text x="265" y="225" text-anchor="middle" font-size="10" fill="white">Central Data Warehouse</text>
+      <rect x="190" y="238" width="150" height="28" rx="4" fill="#2AADAD"/>
+      <text x="265" y="257" text-anchor="middle" font-size="10" fill="white" font-weight="600">Cortex ML (Segmentation)</text>
+      <rect x="190" y="274" width="150" height="28" rx="4" fill="#3bb8b8"/>
+      <text x="265" y="293" text-anchor="middle" font-size="10" fill="white" font-weight="600">Feature Tables</text>
+
+      <!-- Hightouch -->
+      <rect x="175" y="345" width="180" height="55" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="265" y="368" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">Hightouch</text>
+      <text x="265" y="385" text-anchor="middle" font-size="9" fill="#6b7a8d">Reverse ETL &rarr; CRM, Marketing, Ads</text>
+
+      <!-- AWS Managed Services (right side) -->
+      <rect x="400" y="45" width="280" height="365" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="540" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">AWS MANAGED ML SERVICES</text>
+
+      <!-- Amazon Personalize -->
+      <rect x="415" y="60" width="250" height="55" rx="6" fill="#fff" stroke="#e74c3c"/>
+      <text x="540" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">Amazon Personalize</text>
+      <text x="540" y="100" text-anchor="middle" font-size="9" fill="#6b7a8d">Recommendations &bull; Real-time + Batch &bull; A/B testing</text>
+
+      <!-- AWS Fraud Detector -->
+      <rect x="415" y="125" width="250" height="55" rx="6" fill="#fff" stroke="#e74c3c"/>
+      <text x="540" y="147" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">AWS Fraud Detector</text>
+      <text x="540" y="165" text-anchor="middle" font-size="9" fill="#6b7a8d">Fraud scoring &bull; Custom rules &bull; Real-time &lt;100ms</text>
+
+      <!-- Amazon Forecast -->
+      <rect x="415" y="190" width="250" height="55" rx="6" fill="#fff" stroke="#2980b9"/>
+      <text x="540" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">Amazon Forecast</text>
+      <text x="540" y="230" text-anchor="middle" font-size="9" fill="#6b7a8d">Demand forecasting &bull; AutoML &bull; What-if analysis</text>
+
+      <!-- SageMaker (custom pricing) -->
+      <rect x="415" y="255" width="250" height="55" rx="6" fill="#fff" stroke="#f39c12"/>
+      <text x="540" y="277" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">SageMaker Endpoint</text>
+      <text x="540" y="295" text-anchor="middle" font-size="9" fill="#6b7a8d">Dynamic Pricing (custom build) &bull; Guardrails</text>
+
+      <!-- CloudWatch -->
+      <rect x="415" y="320" width="120" height="42" rx="6" fill="#fff" stroke="#2AADAD"/>
+      <text x="475" y="340" text-anchor="middle" font-size="10" font-weight="600" fill="#1B3A5C">CloudWatch</text>
+      <text x="475" y="354" text-anchor="middle" font-size="8" fill="#6b7a8d">Monitoring</text>
+
+      <!-- Terraform -->
+      <rect x="545" y="320" width="120" height="42" rx="6" fill="#fff" stroke="#b8c5d4"/>
+      <text x="605" y="340" text-anchor="middle" font-size="10" font-weight="600" fill="#1B3A5C">Terraform</text>
+      <text x="605" y="354" text-anchor="middle" font-size="8" fill="#6b7a8d">IaC</text>
+
+      <!-- Downstream (far right) -->
+      <rect x="720" y="45" width="170" height="270" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="805" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">CONSUMERS</text>
+      <rect x="735" y="60" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="81" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">E-Commerce Site</text>
+      <rect x="735" y="100" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="121" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Mobile App</text>
+      <rect x="735" y="140" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="161" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Payments Gateway</text>
+      <rect x="735" y="180" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="201" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">CRM (Salesforce)</text>
+      <rect x="735" y="220" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="241" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Inventory System</text>
+      <rect x="735" y="260" width="140" height="32" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="805" y="281" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Marketing Platforms</text>
+
+      <!-- Arrows -->
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#2AADAD"/>
+        </marker>
+      </defs>
+      <!-- Sources → Fivetran -->
+      <line x1="145" y1="120" x2="170" y2="120" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Fivetran → Snowflake -->
+      <line x1="215" y1="160" x2="215" y2="175" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Sources → Snowflake (direct) -->
+      <line x1="145" y1="220" x2="170" y2="240" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah)"/>
+      <!-- Snowflake → AWS services -->
+      <line x1="355" y1="220" x2="410" y2="90" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="355" y1="240" x2="410" y2="150" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="355" y1="250" x2="410" y2="215" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="355" y1="260" x2="410" y2="280" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- AWS → Consumers -->
+      <line x1="665" y1="90" x2="730" y2="75" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="665" y1="150" x2="730" y2="155" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="665" y1="215" x2="730" y2="235" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="665" y1="280" x2="730" y2="75" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah)"/>
+      <!-- Snowflake → Hightouch -->
+      <line x1="265" y1="325" x2="265" y2="340" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Hightouch → Consumers -->
+      <path d="M355,372 L730,210" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah)" stroke-dasharray="4"/>
+      <path d="M355,372 L730,275" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah)" stroke-dasharray="4"/>
+    </svg>
+  </div>
+  <aside class="notes">
+    Here's the high-level architecture. Snowflake is the hub. Data flows in through Fivetran connectors on the left. Snowflake feeds all four AWS managed services on the right: Personalize for recommendations, Fraud Detector for fraud scoring, Forecast for demand forecasting, and a lightweight SageMaker endpoint for dynamic pricing. Snowflake Cortex ML handles customer segmentation natively inside the warehouse. Hightouch reverse ETL syncs segments and predictions back to your CRM and marketing tools. Everything is managed as code with Terraform and monitored via CloudWatch.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: BUSINESS VALUE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Business Value &amp; ROI <span class="audience-tag">VP &bull; Sales</span></h2>
+  <div class="card-grid cols-2">
+    <div class="card card-success">
+      <h4>Fraud Detection (AWS Fraud Detector)</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">$2-4M annual savings</p>
+      <p>Pre-trained on billions of transactions. Real-time fraud blocking reduces chargebacks by 60-80%.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Recommendations (Amazon Personalize)</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">8-15% revenue uplift</p>
+      <p>Same technology powering Amazon.com. Personalized product recommendations increase AOV and conversion.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Demand Forecasting (Amazon Forecast)</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">20-30% stockout reduction</p>
+      <p>AutoML-driven demand forecasting minimizes both overstock costs and lost sales from stockouts.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Segmentation + Pricing (Cortex + SageMaker)</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">15-25% marketing efficiency</p>
+      <p>Targeted campaigns via Snowflake segments synced to CRM. Dynamic pricing optimizes margins in real-time.</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:0.5em;">
+    <div class="stat-row">
+      <div class="stat-box">
+        <span class="number">$5-10M+</span>
+        <span class="label">Annual Impact</span>
+      </div>
+      <div class="stat-box">
+        <span class="number">10 Weeks</span>
+        <span class="label">Time to Production</span>
+      </div>
+      <div class="stat-box">
+        <span class="number">&lt; 4 Months</span>
+        <span class="label">Investment Payback</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    The business value is the same as a custom build — 5 to 10 million in annual impact — but we get there faster. 10 weeks to production instead of 14 to 16. Lower total cost. And faster payback because the managed services are already pre-trained and battle-tested at scale. Amazon Personalize is literally the same technology that powers product recommendations on Amazon.com. AWS Fraud Detector is trained on billions of transactions. You're buying years of R&D for a per-transaction fee.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: PHASE 1 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 1: Platform &amp; Data <span class="audience-tag">Weeks 1-2</span></h2>
+  <span class="phase-badge">FOUNDATION</span>
+  <div class="two-col">
+    <div>
+      <h3>What We Build</h3>
+      <ul>
+        <li>Snowflake warehouse optimization &amp; role setup</li>
+        <li>Fivetran connectors (CRM, payments, inventory, web events)</li>
+        <li>Hightouch workspace + initial sync destinations</li>
+        <li>AWS service provisioning via Terraform</li>
+        <li>S3 buckets for training data &amp; model artifacts</li>
+        <li>IAM roles, KMS encryption, CloudWatch dashboards</li>
+        <li>Data pipeline validation (source → Snowflake → AWS)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Deliverables</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Data Platform Ready</h4>
+        <p>All data sources flowing into Snowflake via Fivetran with monitoring</p>
+      </div>
+      <div class="card">
+        <h4>AWS Infrastructure</h4>
+        <p>All managed services provisioned, IAM configured, Terraform modules committed</p>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h4>Integration Scaffold</h4>
+        <p>Hightouch connected, reverse ETL tested with sample data</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 1 is about getting the data platform ready. We optimize your Snowflake setup, deploy Fivetran connectors to pull in all your data sources, set up Hightouch for reverse ETL, and provision all AWS services via Terraform. By end of week 2, data is flowing and all services are ready for configuration. This is shorter than a custom build because we're configuring managed services, not building infrastructure from scratch.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: PHASE 2 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 2: Deploy Products <span class="audience-tag">Weeks 3-7</span></h2>
+  <span class="phase-badge">DEPLOY</span>
+  <div class="card-grid cols-3" style="font-size:0.95em;">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Wk 3-4: Fraud Detector + Personalize</h4>
+      <ul>
+        <li>Train Fraud Detector on historical transactions</li>
+        <li>Configure detection rules &amp; outcomes</li>
+        <li>Create Personalize dataset groups</li>
+        <li>Train recommendation campaigns</li>
+        <li>Integrate with payments &amp; web/mobile</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#2980b9;">
+      <h4>Wk 4-5: Forecast + Cortex ML</h4>
+      <ul>
+        <li>Import demand data to Amazon Forecast</li>
+        <li>AutoML predictor training</li>
+        <li>Build Cortex ML segmentation queries</li>
+        <li>Configure Hightouch audience syncs</li>
+        <li>Validate forecasts against actuals</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#f39c12;">
+      <h4>Wk 5-7: Pricing + Integration</h4>
+      <ul>
+        <li>Build lightweight SageMaker pricing model</li>
+        <li>Deploy endpoint with price guardrails</li>
+        <li>End-to-end integration testing</li>
+        <li>Shadow mode for fraud &amp; pricing</li>
+        <li>Connect all outputs to Snowflake</li>
+      </ul>
+    </div>
+  </div>
+  <div style="margin-top:0.5em;">
+    <div class="pipeline">
+      <div class="step">Snowflake</div>
+      <div class="arrow">→</div>
+      <div class="step">Training Data</div>
+      <div class="arrow">→</div>
+      <div class="step highlight">Managed Services</div>
+      <div class="arrow">→</div>
+      <div class="step">Predictions</div>
+      <div class="arrow">→</div>
+      <div class="step">Snowflake + Consumers</div>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 2 is the main deployment phase. Weeks 3-4 we train Fraud Detector on your historical transactions and create Personalize recommendation campaigns — these are the highest-value real-time services. Weeks 4-5 we set up Amazon Forecast for demand planning and Snowflake Cortex ML for segmentation. Weeks 5-7 we build the one custom model — dynamic pricing on SageMaker — and do end-to-end integration testing. By week 7, all five solutions are deployed and producing predictions.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: PHASE 3 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 3: Optimize &amp; Handoff <span class="audience-tag">Weeks 8-10</span></h2>
+  <span class="phase-badge">OPTIMIZE</span>
+  <div class="card-grid cols-2">
+    <div class="card">
+      <h4>Performance Optimization</h4>
+      <ul>
+        <li>A/B testing for Personalize campaigns (recipe tuning)</li>
+        <li>Fraud Detector threshold tuning (precision vs recall)</li>
+        <li>Forecast accuracy validation vs actuals</li>
+        <li>Pricing guardrail adjustments based on real data</li>
+        <li>Hightouch sync frequency optimization</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Compliance &amp; Security Audit</h4>
+      <ul>
+        <li>PII data flow mapping across all services</li>
+        <li>Shared responsibility model documentation</li>
+        <li>Encryption audit (at rest + in transit)</li>
+        <li>Access control review</li>
+        <li>GDPR data residency verification</li>
+      </ul>
+    </div>
+    <div class="card card-accent">
+      <h4>Documentation</h4>
+      <ul>
+        <li>Architecture decision records (ADRs)</li>
+        <li>Service configuration runbooks</li>
+        <li>Incident response playbooks per service</li>
+        <li>Cost monitoring &amp; alerting setup</li>
+      </ul>
+    </div>
+    <div class="card card-success">
+      <h4>Knowledge Transfer</h4>
+      <ul>
+        <li>3 hands-on training sessions</li>
+        <li>Pair programming with your data team</li>
+        <li>Vendor console walkthroughs</li>
+        <li>30-day post-handoff support included</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 3 is about optimizing and handing off. We tune each service — A/B test Personalize recipe selection, adjust Fraud Detector thresholds to balance precision versus recall, validate forecast accuracy. We do a full security and compliance audit across all managed services. We write runbooks for each service and do hands-on knowledge transfer — not just a documentation dump, but pair programming and vendor console walkthroughs so your team can manage these services going forward. Plus 30 days of post-handoff support.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: RESOURCE PLAN -->
+<!-- ============================================================ -->
+<section>
+  <h2>Resource Plan</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Phase 1 (Wk 1-2)</th>
+        <th>Phase 2 (Wk 3-7)</th>
+        <th>Phase 3 (Wk 8-10)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Solutions Architect</strong> (Lead)</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+      </tr>
+      <tr>
+        <td><strong>Data Engineer</strong></td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>Integration Engineer</strong></td>
+        <td>Part-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.6em; font-size:0.72em;">
+    <p><strong>Blended rate:</strong> ~$275/hour &nbsp;|&nbsp; <strong>Peak team size:</strong> 3 FTEs &nbsp;|&nbsp; <strong>Your team involvement:</strong> 1 technical lead + stakeholders for sprint reviews</p>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Why a Smaller Team?</h4>
+    <p>No ML engineers needed for model training &mdash; managed services handle that. No MLOps engineer needed for serving infrastructure &mdash; vendors handle uptime and scaling. We focus on integration, data pipelines, and Terraform.</p>
+  </div>
+  <aside class="notes">
+    Notice the team is smaller than a custom build — 3 roles instead of 4 or 5. We don't need ML engineers because the managed services handle model training. We don't need an MLOps engineer because the vendors handle serving infrastructure, uptime, and scaling. Our team is a Solutions Architect leading the engagement, a Data Engineer for Snowflake pipelines and Fivetran/Hightouch configuration, and an Integration Engineer to wire everything together. This means lower cost and less coordination overhead.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: TIMELINE (GANTT) -->
+<!-- ============================================================ -->
+<section>
+  <h2>Timeline &mdash; 10 Weeks</h2>
+  <div style="margin-top:0.3em;">
+    <!-- Week headers -->
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div class="gantt-header">W1</div><div class="gantt-header">W2</div><div class="gantt-header">W3</div>
+      <div class="gantt-header">W4</div><div class="gantt-header">W5</div><div class="gantt-header">W6</div>
+      <div class="gantt-header">W7</div><div class="gantt-header">W8</div><div class="gantt-header">W9</div>
+      <div class="gantt-header">W10</div>
+    </div>
+    <!-- Phase 1 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Platform &amp; Data</div>
+      <div style="grid-column: 2/4;"><div class="gantt-bar" style="background:var(--navy);">Phase 1</div></div>
+    </div>
+    <!-- Phase 2 items -->
+    <div class="gantt-row">
+      <div class="gantt-label">Fraud Detector</div>
+      <div style="grid-column: 4/6;"><div class="gantt-bar" style="background:#e74c3c;">Train + Deploy</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Personalize</div>
+      <div style="grid-column: 4/7;"><div class="gantt-bar" style="background:#e74c3c;">Train + Integrate</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Forecast</div>
+      <div style="grid-column: 5/7;"><div class="gantt-bar" style="background:#2980b9;">Train + Validate</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Cortex + Hightouch</div>
+      <div style="grid-column: 5/7;"><div class="gantt-bar" style="background:#2980b9;">Segment + Sync</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Dynamic Pricing</div>
+      <div style="grid-column: 6/8;"><div class="gantt-bar" style="background:var(--orange);">Build + Deploy</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Integration Testing</div>
+      <div style="grid-column: 7/9;"><div class="gantt-bar" style="background:var(--teal);">E2E Testing</div></div>
+    </div>
+    <!-- Phase 3 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Optimize &amp; Tune</div>
+      <div style="grid-column: 9/11;"><div class="gantt-bar" style="background:var(--success);">A/B + Tune</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Knowledge Transfer</div>
+      <div style="grid-column: 9/12;"><div class="gantt-bar" style="background:var(--teal);">Training + Handoff</div></div>
+    </div>
+    <!-- Milestones -->
+    <div class="gantt-row" style="margin-top:8px;">
+      <div class="gantt-label" style="font-size:0.85em; color:var(--teal);">Milestones</div>
+      <div style="grid-column:3/4; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:6/7; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:8/9; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:11/12; text-align:center; font-size:0.85em;">&#9670;</div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div style="grid-column:2/4; text-align:center; font-size:0.75em; color:var(--gray-mid);">Data Flowing</div>
+      <div style="grid-column:5/7; text-align:center; font-size:0.75em; color:var(--gray-mid);">4 Products Live</div>
+      <div style="grid-column:7/9; text-align:center; font-size:0.75em; color:var(--gray-mid);">All 5 Live</div>
+      <div style="grid-column:9/12; text-align:center; font-size:0.75em; color:var(--gray-mid);">Go-Live &#x2713;</div>
+    </div>
+  </div>
+  <aside class="notes">
+    Here's the 10-week timeline. Phase 1 gets data flowing by week 2. Phase 2 deploys all five solutions in parallel — the managed services allow us to overlap work because training is mostly automated. By week 5 or 6, four products are live. By week 7, all five are deployed. Phase 3 optimizes and hands off by week 10. Compare this to a 14-16 week custom build — we're 4 to 6 weeks faster because we're configuring proven products, not writing ML code from scratch.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 14: PRICING -->
+<!-- ============================================================ -->
+<section>
+  <h2>Investment: Consulting Fees <span class="audience-tag">VP</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Avg. Team</th>
+        <th>Estimated Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Phase 1:</strong> Platform &amp; Data</td>
+        <td>2 weeks</td>
+        <td>2.5 FTEs</td>
+        <td>$55,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 2:</strong> Deploy Products</td>
+        <td>5 weeks</td>
+        <td>3 FTEs</td>
+        <td>$132,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 3:</strong> Optimize &amp; Handoff</td>
+        <td>3 weeks</td>
+        <td>2 FTEs</td>
+        <td>$66,000</td>
+      </tr>
+      <tr style="font-weight:700;">
+        <td colspan="3" style="text-align:right; background:var(--navy); color:white;">Total Consulting Investment</td>
+        <td style="background:var(--navy); color:var(--teal); font-size:1.15em;">$253,000</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.5em; font-size:0.65em; color:var(--gray-mid);">
+    <p>Based on blended rate of $275/hr. Actuals billed time &amp; materials with weekly reporting. Vendor/AWS product costs billed separately (see next slide).</p>
+  </div>
+  <div class="card card-success" style="margin-top:0.4em;">
+    <h4>Total Cost of Ownership</h4>
+    <p style="font-size:0.85em; color:var(--text);">
+      <strong>Year 1:</strong> $253K consulting + ~$120K vendor costs = <strong style="color:var(--teal);">~$373K total</strong><br>
+      <strong>Year 2+:</strong> ~$120K/year vendor costs only (no consulting needed)<br>
+      <strong>vs. Custom Build:</strong> $440K+ consulting + $100K+/yr infra + ongoing ML engineering headcount
+    </p>
+  </div>
+  <aside class="notes">
+    Here's the investment breakdown. Consulting fees total 253 thousand dollars — significantly less than the 440K for a custom build because we have a smaller team and shorter timeline. But you also need to account for ongoing vendor costs, which I'll detail on the next slide. Year 1 total cost of ownership is about 373K. Year 2 and beyond, it's just the vendor costs — about 120K per year — with no ongoing consulting needed. Compare that to a custom build where you'd need to hire ML engineers to maintain custom models.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15: VENDOR COST BREAKDOWN -->
+<!-- ============================================================ -->
+<section>
+  <h2>Vendor Cost Breakdown <span class="audience-tag">Monthly Recurring</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Pricing Model</th>
+        <th>Est. Monthly Cost</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Amazon Personalize</strong></td>
+        <td>Per TPS + training hours</td>
+        <td>$3,000 - $5,000</td>
+        <td>1-2 campaigns, real-time + batch</td>
+      </tr>
+      <tr>
+        <td><strong>AWS Fraud Detector</strong></td>
+        <td>$0.07 per prediction</td>
+        <td>$2,000 - $4,000</td>
+        <td>Volume-dependent; scales with transactions</td>
+      </tr>
+      <tr>
+        <td><strong>Amazon Forecast</strong></td>
+        <td>Per forecast generated</td>
+        <td>$1,000 - $2,000</td>
+        <td>Daily forecasts across SKU catalog</td>
+      </tr>
+      <tr>
+        <td><strong>Hightouch</strong></td>
+        <td>Platform license</td>
+        <td>~$1,500</td>
+        <td>Business tier, multiple destinations</td>
+      </tr>
+      <tr>
+        <td><strong>Snowflake Cortex ML</strong></td>
+        <td>Snowflake credits</td>
+        <td>Included</td>
+        <td>Part of existing Snowflake contract</td>
+      </tr>
+      <tr>
+        <td><strong>SageMaker (Pricing)</strong></td>
+        <td>Instance hours</td>
+        <td>$500 - $1,000</td>
+        <td>Single ml.m5.xlarge endpoint</td>
+      </tr>
+      <tr>
+        <td><strong>Fivetran</strong></td>
+        <td>MAR-based</td>
+        <td>~$1,000</td>
+        <td>Standard connectors</td>
+      </tr>
+      <tr style="font-weight:700;">
+        <td colspan="2" style="text-align:right; background:var(--navy); color:white;">Estimated Monthly Total</td>
+        <td style="background:var(--navy); color:var(--teal); font-size:1.1em;">$9,000 - $14,500</td>
+        <td style="background:var(--navy); color:white; font-size:0.85em;">~$120K/year</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.4em; font-size:0.62em; color:var(--gray-mid);">
+    Estimates based on mid-market e-commerce traffic volumes. Actual costs scale with usage. CloudWatch, S3, and IAM costs are negligible (&lt;$200/mo). Snowflake usage billed per your existing contract.
+  </div>
+  <aside class="notes">
+    Here's the detailed vendor cost breakdown. The big items are Amazon Personalize at 3 to 5K per month, Fraud Detector at 2 to 4K depending on transaction volume, and Amazon Forecast at 1 to 2K. Hightouch is about 1,500 per month. Snowflake Cortex ML is included in your existing Snowflake credits — no extra cost. The total is roughly 9 to 14K per month, or about 120K per year. These are all pay-per-use, so they scale with your business. And critically — these replace the need for ML engineering headcount, which would cost 200K+ per year per person.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16: WHY PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Why phData</h2>
+  <div class="card-grid cols-2">
+    <div class="card card-accent">
+      <h4>Vendor Relationships</h4>
+      <p>#1 Snowflake partner globally. AWS Advanced consulting partner. Hightouch certified. We have direct access to vendor engineering teams for escalations.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Integration Expertise</h4>
+      <p>200+ managed service deployments. We know the gotchas, the configuration best practices, and how to wire these products into real enterprise architectures.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Snowflake-Centric Approach</h4>
+      <p>Your data is already in Snowflake. We keep it there. Cortex ML, Hightouch reverse ETL, and Fivetran all orbit around your warehouse.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Lower Risk, Faster Value</h4>
+      <p>10 weeks, not 14+. $253K consulting, not $440K+. Proven products, not custom code. Your team can manage it without hiring ML engineers.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Why phData for a buy-and-integrate approach? First, vendor relationships — we're the number one Snowflake partner and AWS Advanced partner. We have direct lines to vendor engineering teams when issues arise. Second, integration expertise — we've done this 200 plus times. We know the configuration gotchas and how to wire these products into real enterprise architectures. Third, we keep your Snowflake investment central. Fourth, lower risk and faster value — 10 weeks, 253K, proven products that Amazon and Snowflake stand behind.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17: THANK YOU -->
+<!-- ============================================================ -->
+<section class="section-divider center-slide">
+  <div>
+    <svg width="180" height="48" viewBox="0 0 180 48" style="margin-bottom:0.5em;">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h2>Thank You</h2>
+  <p style="font-size:1em; margin-top:0.5em;">Questions &amp; Discussion</p>
+  <p style="font-size:0.65em; color:var(--gray-mid); margin-top:1.5em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    phData | Data &amp; ML Consulting
+  </p>
+  <aside class="notes">
+    Thank you for your time today. I'm happy to dive into any area — product selection rationale, architecture details, pricing models, or the build-vs-buy comparison in the appendix. What questions do you have?
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- APPENDIX SLIDES -->
+<!-- ============================================================ -->
+
+<!-- A1: DETAILED ARCHITECTURE -->
+<section>
+  <div class="appendix-label">APPENDIX A1</div>
+  <h2>Detailed Architecture &mdash; Snowflake-Centric</h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 480" width="840" height="440" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- Background -->
+      <rect x="10" y="10" width="900" height="460" rx="12" fill="#f8fafc" stroke="#d0d8e0"/>
+
+      <!-- Ingestion Layer -->
+      <rect x="25" y="30" width="200" height="200" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="125" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">INGESTION</text>
+      <rect x="40" y="48" width="170" height="38" rx="4" fill="#f39c12"/>
+      <text x="125" y="72" text-anchor="middle" font-size="10" fill="white" font-weight="600">Fivetran (ELT)</text>
+      <rect x="40" y="95" width="80" height="28" rx="3" fill="#fff" stroke="#f39c12"/>
+      <text x="80" y="113" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Stripe</text>
+      <rect x="130" y="95" width="80" height="28" rx="3" fill="#fff" stroke="#f39c12"/>
+      <text x="170" y="113" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Salesforce</text>
+      <rect x="40" y="130" width="80" height="28" rx="3" fill="#fff" stroke="#f39c12"/>
+      <text x="80" y="148" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Shopify</text>
+      <rect x="130" y="130" width="80" height="28" rx="3" fill="#fff" stroke="#f39c12"/>
+      <text x="170" y="148" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">GA4</text>
+      <rect x="40" y="165" width="170" height="28" rx="3" fill="#fff" stroke="#f39c12"/>
+      <text x="125" y="183" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Inventory &amp; ERP Systems</text>
+      <text x="125" y="220" text-anchor="middle" font-size="8" fill="#6b7a8d">Automated syncs, schema migration</text>
+
+      <!-- Snowflake Core -->
+      <rect x="260" y="30" width="260" height="280" rx="8" fill="#1B3A5C"/>
+      <text x="390" y="55" text-anchor="middle" font-size="14" font-weight="700" fill="#2AADAD">SNOWFLAKE (Hub)</text>
+
+      <rect x="275" y="70" width="230" height="45" rx="5" fill="rgba(255,255,255,0.15)"/>
+      <text x="390" y="90" text-anchor="middle" font-size="10" fill="white" font-weight="600">Raw Layer (ELT landing)</text>
+      <text x="390" y="105" text-anchor="middle" font-size="8" fill="#8ab4d4">Fivetran-managed schemas</text>
+
+      <rect x="275" y="125" width="230" height="45" rx="5" fill="rgba(255,255,255,0.15)"/>
+      <text x="390" y="145" text-anchor="middle" font-size="10" fill="white" font-weight="600">Curated Layer (dbt models)</text>
+      <text x="390" y="160" text-anchor="middle" font-size="8" fill="#8ab4d4">Feature tables, training datasets</text>
+
+      <rect x="275" y="180" width="230" height="45" rx="5" fill="#2AADAD"/>
+      <text x="390" y="200" text-anchor="middle" font-size="10" fill="white" font-weight="600">Cortex ML Functions</text>
+      <text x="390" y="215" text-anchor="middle" font-size="8" fill="#d4f0f0">K-means clustering, classification</text>
+
+      <rect x="275" y="235" width="110" height="35" rx="4" fill="rgba(255,255,255,0.15)"/>
+      <text x="330" y="257" text-anchor="middle" font-size="9" fill="white" font-weight="600">Predictions</text>
+
+      <rect x="395" y="235" width="110" height="35" rx="4" fill="rgba(255,255,255,0.15)"/>
+      <text x="450" y="257" text-anchor="middle" font-size="9" fill="white" font-weight="600">Segments</text>
+
+      <text x="390" y="295" text-anchor="middle" font-size="8" fill="#8ab4d4">Tasks &amp; Streams for orchestration</text>
+
+      <!-- Reverse ETL -->
+      <rect x="260" y="330" width="260" height="60" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="390" y="355" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">Hightouch (Reverse ETL)</text>
+      <text x="390" y="375" text-anchor="middle" font-size="9" fill="#6b7a8d">Audiences &rarr; Salesforce, HubSpot, Google Ads, Braze</text>
+
+      <!-- AWS Services -->
+      <rect x="560" y="30" width="160" height="280" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="640" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">AWS MANAGED</text>
+
+      <rect x="575" y="48" width="130" height="48" rx="5" fill="#fff" stroke="#e74c3c"/>
+      <text x="640" y="68" text-anchor="middle" font-size="9" font-weight="700" fill="#1B3A5C">Personalize</text>
+      <text x="640" y="84" text-anchor="middle" font-size="8" fill="#6b7a8d">Recommendations</text>
+
+      <rect x="575" y="105" width="130" height="48" rx="5" fill="#fff" stroke="#e74c3c"/>
+      <text x="640" y="125" text-anchor="middle" font-size="9" font-weight="700" fill="#1B3A5C">Fraud Detector</text>
+      <text x="640" y="141" text-anchor="middle" font-size="8" fill="#6b7a8d">Fraud Scoring</text>
+
+      <rect x="575" y="162" width="130" height="48" rx="5" fill="#fff" stroke="#2980b9"/>
+      <text x="640" y="182" text-anchor="middle" font-size="9" font-weight="700" fill="#1B3A5C">Forecast</text>
+      <text x="640" y="198" text-anchor="middle" font-size="8" fill="#6b7a8d">Demand Planning</text>
+
+      <rect x="575" y="219" width="130" height="48" rx="5" fill="#fff" stroke="#f39c12"/>
+      <text x="640" y="239" text-anchor="middle" font-size="9" font-weight="700" fill="#1B3A5C">SageMaker</text>
+      <text x="640" y="255" text-anchor="middle" font-size="8" fill="#6b7a8d">Dynamic Pricing</text>
+
+      <rect x="575" y="276" width="60" height="28" rx="3" fill="#2AADAD"/>
+      <text x="605" y="294" text-anchor="middle" font-size="7" fill="white" font-weight="600">CW</text>
+      <rect x="645" y="276" width="60" height="28" rx="3" fill="#1B3A5C"/>
+      <text x="675" y="294" text-anchor="middle" font-size="7" fill="white" font-weight="600">TF</text>
+
+      <!-- Consumers -->
+      <rect x="760" y="30" width="130" height="280" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="825" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">CONSUMERS</text>
+      <rect x="772" y="50" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="70" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">E-Commerce</text>
+      <rect x="772" y="88" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="108" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Mobile App</text>
+      <rect x="772" y="126" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="146" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Payments</text>
+      <rect x="772" y="164" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="184" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">CRM</text>
+      <rect x="772" y="202" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="222" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Supply Chain</text>
+      <rect x="772" y="240" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="260" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Marketing</text>
+      <rect x="772" y="278" width="106" height="30" rx="3" fill="#fff" stroke="#b8c5d4"/>
+      <text x="825" y="298" text-anchor="middle" font-size="8" fill="#1B3A5C" font-weight="600">Analytics / BI</text>
+
+      <!-- Security footer -->
+      <rect x="25" y="410" width="865" height="50" rx="6" fill="#fdecea" stroke="#e74c3c"/>
+      <text x="45" y="432" font-size="10" font-weight="600" fill="#e74c3c">SECURITY &amp; COMPLIANCE</text>
+      <text x="45" y="450" font-size="8" fill="#6b7a8d">IAM least-privilege &bull; KMS encryption (rest + transit) &bull; Snowflake PrivateLink &bull; CloudTrail audit &bull; GDPR data residency &bull; SOC2 compliant services</text>
+
+      <!-- Arrows -->
+      <defs>
+        <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#2AADAD"/>
+        </marker>
+      </defs>
+      <line x1="225" y1="120" x2="255" y2="120" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="520" y1="120" x2="570" y2="75" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="520" y1="140" x2="570" y2="130" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="520" y1="180" x2="570" y2="185" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="520" y1="240" x2="570" y2="240" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <line x1="705" y1="75" x2="767" y2="65" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah2)"/>
+      <line x1="705" y1="130" x2="767" y2="140" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah2)"/>
+      <line x1="705" y1="185" x2="767" y2="215" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah2)"/>
+      <line x1="705" y1="240" x2="767" y2="65" stroke="#2AADAD" stroke-width="1.5" marker-end="url(#ah2)"/>
+      <line x1="390" y1="310" x2="390" y2="325" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah2)"/>
+      <path d="M520,360 Q650,380 767,190" stroke="#2AADAD" stroke-width="1.5" fill="none" marker-end="url(#ah2)" stroke-dasharray="4"/>
+      <path d="M520,370 Q660,400 767,255" stroke="#2AADAD" stroke-width="1.5" fill="none" marker-end="url(#ah2)" stroke-dasharray="4"/>
+    </svg>
+  </div>
+  <aside class="notes">
+    This detailed view shows data flowing from sources through Fivetran into Snowflake's raw layer, getting transformed in the curated layer via dbt models, then feeding out to AWS managed services. Snowflake is the single source of truth. Cortex ML runs segmentation natively inside the warehouse. Hightouch handles reverse ETL to push segments and predictions to downstream systems. Every AWS service reads from and writes back to Snowflake. Security is handled at every layer — IAM, KMS, PrivateLink, CloudTrail.
+  </aside>
+</section>
+
+<!-- A2: AMAZON PERSONALIZE DEEP-DIVE -->
+<section>
+  <div class="appendix-label">APPENDIX A2</div>
+  <h2>Amazon Personalize Deep-Dive</h2>
+  <div class="two-col">
+    <div>
+      <h3>Campaign Configuration</h3>
+      <ul>
+        <li><strong>Dataset group:</strong> Users, Items, Interactions</li>
+        <li><strong>Recipe:</strong> USER_PERSONALIZATION (primary)</li>
+        <li><strong>Fallback:</strong> POPULAR_ITEMS for cold-start users</li>
+        <li><strong>Real-time events:</strong> PutEvents API for live behavior</li>
+        <li><strong>Batch inference:</strong> Daily email recommendations</li>
+        <li><strong>Filters:</strong> Exclude already-purchased, out-of-stock</li>
+      </ul>
+      <h3 style="margin-top:0.5em;">Integration Pattern</h3>
+      <div class="pipeline" style="flex-direction:column; gap:4px; align-items:stretch;">
+        <div class="step" style="font-size:0.6em;">Snowflake (interactions) → S3 → Personalize Dataset Import</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Personalize Solution Training (AutoML)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.6em;">Campaign Deployment (min 1 TPS)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">GetRecommendations API → Web/Mobile</div>
+      </div>
+    </div>
+    <div>
+      <h3>A/B Testing Strategy</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Test Plan</h4>
+        <ul>
+          <li>Control: Current recommendation logic</li>
+          <li>Variant A: USER_PERSONALIZATION recipe</li>
+          <li>Variant B: SIMILAR_ITEMS recipe</li>
+          <li>Split: 33% / 33% / 34%</li>
+          <li>KPIs: CTR, conversion rate, AOV, revenue/session</li>
+          <li>Duration: 2-4 weeks for statistical significance</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Expected Metrics</h4>
+        <ul>
+          <li>Click-through rate: +15-30% vs baseline</li>
+          <li>Conversion rate: +5-12%</li>
+          <li>Average order value: +8-15%</li>
+          <li>Overall revenue uplift: 8-15%</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Amazon Personalize uses three dataset types: users, items, and interactions. We recommend the USER_PERSONALIZATION recipe for the primary campaign with a POPULAR_ITEMS fallback for cold-start users. Real-time events are captured via the PutEvents API so recommendations improve as users browse. We apply filters to exclude already-purchased and out-of-stock items. For A/B testing, we run three variants — your current logic as control, USER_PERSONALIZATION, and SIMILAR_ITEMS — measuring click-through rate, conversion, and average order value over 2-4 weeks.
+  </aside>
+</section>
+
+<!-- A3: AWS FRAUD DETECTOR DEEP-DIVE -->
+<section>
+  <div class="appendix-label">APPENDIX A3</div>
+  <h2>AWS Fraud Detector Deep-Dive</h2>
+  <div class="two-col">
+    <div>
+      <h3>Detector Configuration</h3>
+      <ul>
+        <li><strong>Detector type:</strong> Online Fraud Insights (OFI)</li>
+        <li><strong>Training data:</strong> 6+ months historical transactions</li>
+        <li><strong>Variables:</strong> IP, email, device, amount, velocity</li>
+        <li><strong>Model type:</strong> Pre-trained + custom fine-tuned</li>
+        <li><strong>Scoring:</strong> 0-1000 risk score per transaction</li>
+      </ul>
+      <h3 style="margin-top:0.5em;">Rules Engine</h3>
+      <div class="card">
+        <h4>Custom Business Rules</h4>
+        <ul>
+          <li><strong>Auto-approve:</strong> Score &lt; 200, known customer, same device</li>
+          <li><strong>Review queue:</strong> Score 200-700, flag for manual review</li>
+          <li><strong>Auto-block:</strong> Score &gt; 700, or velocity &gt; 5 txns/min</li>
+          <li><strong>Amount guardrail:</strong> Block all &gt; $5,000 without 2FA</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Real-Time Flow</h3>
+      <div class="pipeline" style="flex-direction:column; gap:5px; align-items:stretch;">
+        <div class="step" style="font-size:0.6em;">Transaction → API Gateway</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">GetEventPrediction API</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.6em;">Fraud Detector Score + Rules</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Outcome: APPROVE | REVIEW | BLOCK</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Response → Payments API (&lt;100ms)</div>
+      </div>
+      <div class="card" style="margin-top:0.4em;">
+        <h4>Performance Targets</h4>
+        <ul>
+          <li>Precision: &gt;95% (minimize false positives)</li>
+          <li>Recall: &gt;85% (catch most real fraud)</li>
+          <li>Latency: &lt;100ms p99</li>
+          <li>Cost: ~$0.07 per event evaluation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    AWS Fraud Detector uses the Online Fraud Insights model type, which is pre-trained on Amazon's own fraud data and then fine-tuned on your historical transactions. It produces a 0-1000 risk score per transaction. We layer custom business rules on top: auto-approve low-risk transactions, queue medium-risk for manual review, and auto-block high-risk. The entire flow — from transaction event to approve/block decision — runs in under 100 milliseconds. At 7 cents per event evaluation, this is dramatically cheaper than building and maintaining a custom fraud model.
+  </aside>
+</section>
+
+<!-- A4: AMAZON FORECAST DEEP-DIVE -->
+<section>
+  <div class="appendix-label">APPENDIX A4</div>
+  <h2>Amazon Forecast Deep-Dive</h2>
+  <div class="two-col">
+    <div>
+      <h3>Predictor Configuration</h3>
+      <ul>
+        <li><strong>AutoML:</strong> Automatically selects best algorithm (DeepAR+, Prophet, NPTS, ARIMA, ETS)</li>
+        <li><strong>Forecast horizon:</strong> 14 days</li>
+        <li><strong>Forecast frequency:</strong> Daily</li>
+        <li><strong>Quantiles:</strong> P10, P50, P90 (safety stock planning)</li>
+        <li><strong>Related time series:</strong> Promotions, holidays, weather</li>
+        <li><strong>Item metadata:</strong> Category, brand, price tier, seasonality</li>
+      </ul>
+      <div class="card" style="margin-top:0.5em;">
+        <h4>Accuracy Metrics</h4>
+        <table style="font-size:0.85em;">
+          <tr><td>WAPE</td><td>&lt;15%</td><td>Weighted absolute percentage error</td></tr>
+          <tr><td>RMSE</td><td>Target varies by SKU</td><td>Root mean squared error</td></tr>
+          <tr><td>MAPE</td><td>&lt;20%</td><td>Mean absolute percentage error</td></tr>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h3>What-If Analysis</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Scenario Planning</h4>
+        <ul>
+          <li>What if we run a 20% off promotion next week?</li>
+          <li>What if supplier lead time increases by 3 days?</li>
+          <li>What if we enter a new market region?</li>
+          <li>Generate forecast variants for each scenario</li>
+          <li>Compare P50 and P90 across scenarios</li>
+        </ul>
+      </div>
+      <h3>Data Flow</h3>
+      <div class="pipeline" style="flex-direction:column; gap:4px; align-items:stretch;">
+        <div class="step" style="font-size:0.6em;">Snowflake (sales history) → S3</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Forecast Dataset Import (daily)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.6em;">AutoML Predictor (retrain weekly)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Generate Forecasts → S3 → Snowflake</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Amazon Forecast uses AutoML to automatically select the best algorithm for your data — it evaluates DeepAR+, Prophet, NPTS, ARIMA, and ETS, then picks the winner. We forecast 14 days out at daily granularity with P10, P50, and P90 quantiles so your supply chain team can plan safety stock at different confidence levels. Related time series like promotions and holidays improve accuracy. The what-if analysis feature lets you model scenarios — what happens to demand if you run a 20% promotion or if supplier lead times increase? Data flows from Snowflake to S3, through Forecast, and back to Snowflake daily.
+  </aside>
+</section>
+
+<!-- A5: SNOWFLAKE CORTEX + HIGHTOUCH -->
+<section>
+  <div class="appendix-label">APPENDIX A5</div>
+  <h2>Snowflake Cortex ML + Hightouch</h2>
+  <div class="two-col">
+    <div>
+      <h3>Cortex ML Segmentation</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>ML Functions</h4>
+        <ul>
+          <li><strong>SNOWFLAKE.ML.KMEANS:</strong> Cluster customers into segments</li>
+          <li><strong>Features:</strong> RFM (recency, frequency, monetary), lifetime value, product affinity, channel preference</li>
+          <li><strong>Output:</strong> Segment labels + propensity scores in Snowflake table</li>
+          <li><strong>Schedule:</strong> Weekly via Snowflake Tasks</li>
+          <li><strong>Advantage:</strong> No data movement — runs natively in warehouse</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Typical Segments</h4>
+        <ul>
+          <li>High-value loyalists (VIP treatment)</li>
+          <li>At-risk churners (retention campaigns)</li>
+          <li>Bargain hunters (promotion targets)</li>
+          <li>New high-potential (onboarding nurture)</li>
+          <li>Dormant re-activation (win-back offers)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Hightouch Reverse ETL</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Audience Builder</h4>
+        <ul>
+          <li>Visual audience builder on top of Snowflake segments</li>
+          <li>Combine ML segments with business rules</li>
+          <li>Preview audience sizes before sync</li>
+          <li>Track audience overlap across destinations</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Sync Destinations</h4>
+        <ul>
+          <li><strong>Salesforce:</strong> Contact segments, lead scoring</li>
+          <li><strong>HubSpot:</strong> Lifecycle stages, workflow triggers</li>
+          <li><strong>Google Ads:</strong> Custom audiences for retargeting</li>
+          <li><strong>Braze:</strong> Push notification segments</li>
+          <li><strong>Iterable:</strong> Email campaign targeting</li>
+        </ul>
+      </div>
+      <div class="pipeline" style="flex-direction:column; gap:4px; align-items:stretch; margin-top:0.4em;">
+        <div class="step" style="font-size:0.6em;">Cortex ML → Segment Table (Snowflake)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.6em;">Hightouch Audience Builder</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">CRM, Ads, Email, Push (auto-sync)</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    This is a powerful combination that stays entirely within the Snowflake ecosystem. Cortex ML runs K-means clustering directly in Snowflake — no data leaves the warehouse. We segment customers on RFM metrics, lifetime value, and product affinity. The segment table feeds into Hightouch's visual audience builder, where marketing can combine ML segments with business rules and sync to any destination: Salesforce, HubSpot, Google Ads, Braze. The big advantage: zero data movement for the ML part, and Hightouch handles the last mile to every marketing tool.
+  </aside>
+</section>
+
+<!-- A6: INTEGRATION PATTERNS -->
+<section>
+  <div class="appendix-label">APPENDIX A6</div>
+  <h2>Integration Patterns</h2>
+  <div class="card-grid cols-2">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Real-Time API Contracts</h4>
+      <ul>
+        <li><strong>Fraud:</strong> POST /evaluate → {score, outcome, ruleResults}</li>
+        <li><strong>Reco:</strong> GET /recommendations/{userId} → {items[], campaign}</li>
+        <li><strong>Pricing:</strong> POST /price → {suggestedPrice, confidence, guardrailApplied}</li>
+        <li><strong>Auth:</strong> API Gateway + IAM SigV4 signing</li>
+        <li><strong>Rate limits:</strong> Per-service, with CloudWatch alarms</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#2980b9;">
+      <h4>Batch / Scheduled Flows</h4>
+      <ul>
+        <li><strong>Forecast:</strong> Snowflake → S3 → Forecast → S3 → Snowflake (daily)</li>
+        <li><strong>Segmentation:</strong> Cortex ML → Snowflake table (weekly)</li>
+        <li><strong>Sync:</strong> Hightouch syncs segments every 4 hours</li>
+        <li><strong>Orchestration:</strong> Snowflake Tasks + AWS Step Functions</li>
+        <li><strong>Error handling:</strong> DLQ + SNS alerts + retry policies</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Snowflake as Integration Hub</h4>
+      <ul>
+        <li>All prediction results land in Snowflake tables</li>
+        <li>External functions call AWS APIs from SQL</li>
+        <li>Streams detect new predictions for downstream triggers</li>
+        <li>Data sharing for cross-team access</li>
+        <li>Single audit trail across all services</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Event Flow Architecture</h4>
+      <ul>
+        <li><strong>Web events:</strong> Client SDK → Kinesis → Personalize PutEvents</li>
+        <li><strong>Transactions:</strong> Payments → API GW → Fraud Detector</li>
+        <li><strong>Feedback loop:</strong> Outcomes → Snowflake → retrain signals</li>
+        <li><strong>Monitoring:</strong> CloudWatch metrics → SNS → PagerDuty</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Integration is where the rubber meets the road. Real-time services expose simple API contracts: fraud evaluation returns a score and outcome, recommendations return ranked items, pricing returns a suggested price with confidence and guardrail flags. Batch flows go through Snowflake as the hub — data exports to S3, services process it, and results land back in Snowflake. Hightouch syncs segments to CRM and marketing tools every 4 hours. All prediction results centralize in Snowflake for a single audit trail and cross-team access.
+  </aside>
+</section>
+
+<!-- A7: SECURITY & GDPR -->
+<section>
+  <div class="appendix-label">APPENDIX A7</div>
+  <h2>Security &amp; GDPR &mdash; Managed Service Model</h2>
+  <div class="card-grid cols-2">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Shared Responsibility</h4>
+      <ul>
+        <li><strong>AWS manages:</strong> Service infrastructure, patching, uptime, DDoS protection, SOC2 certification</li>
+        <li><strong>You manage:</strong> Data classification, access policies, encryption keys, audit reviews</li>
+        <li><strong>phData configures:</strong> IAM roles, KMS keys, VPC endpoints, CloudTrail, security groups</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Data Residency &amp; GDPR</h4>
+      <ul>
+        <li><strong>Region:</strong> All services in eu-west-1 (Ireland) for GDPR</li>
+        <li><strong>PII handling:</strong> Tokenized in Snowflake before export to AWS</li>
+        <li><strong>Right to erasure:</strong> Automated deletion across all services</li>
+        <li><strong>Data retention:</strong> Configurable per service, auto-purge policies</li>
+        <li><strong>Consent:</strong> Integrated with consent management platform</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Encryption &amp; Access</h4>
+      <ul>
+        <li><strong>At rest:</strong> KMS-managed keys across all services</li>
+        <li><strong>In transit:</strong> TLS 1.3 everywhere, VPC endpoints</li>
+        <li><strong>Snowflake:</strong> PrivateLink, no public internet exposure</li>
+        <li><strong>IAM:</strong> Least-privilege per service, no shared credentials</li>
+        <li><strong>MFA:</strong> Required for all human console access</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Audit &amp; Compliance</h4>
+      <ul>
+        <li><strong>CloudTrail:</strong> All API calls logged across services</li>
+        <li><strong>Snowflake:</strong> Query history, access history, data lineage</li>
+        <li><strong>Service certifications:</strong> SOC2, ISO 27001, HIPAA eligible</li>
+        <li><strong>Quarterly reviews:</strong> IAM audit, access review, cost audit</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    A key advantage of managed services: AWS handles infrastructure security, patching, DDoS protection, and SOC2 compliance for the service layer. Your responsibility is data classification and access policies. phData configures all the security controls: IAM roles, KMS keys, VPC endpoints, CloudTrail. For GDPR, we deploy in the EU Ireland region, tokenize PII in Snowflake before exporting to AWS, and implement automated right-to-erasure across all services. Every service is SOC2 and ISO 27001 certified.
+  </aside>
+</section>
+
+<!-- A8: BUILD VS BUY COMPARISON -->
+<section>
+  <div class="appendix-label">APPENDIX A8</div>
+  <h2>Build vs Buy Comparison</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th style="background:#2AADAD;">Buy (This Proposal)</th>
+        <th>Build (Custom ML)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Timeline</strong></td>
+        <td style="color:var(--success); font-weight:600;">10 weeks</td>
+        <td>14-16+ weeks</td>
+      </tr>
+      <tr>
+        <td><strong>Consulting Cost</strong></td>
+        <td style="color:var(--success); font-weight:600;">$253K</td>
+        <td>$440K+</td>
+      </tr>
+      <tr>
+        <td><strong>Year 1 Total Cost</strong></td>
+        <td style="color:var(--success); font-weight:600;">~$373K</td>
+        <td>~$540K+ (incl. infra)</td>
+      </tr>
+      <tr>
+        <td><strong>Year 2+ Ongoing</strong></td>
+        <td style="color:var(--success); font-weight:600;">~$120K/yr (vendor costs)</td>
+        <td>~$100K infra + ML eng headcount ($200K+)</td>
+      </tr>
+      <tr>
+        <td><strong>Team Required</strong></td>
+        <td>3 FTEs (no ML engineers)</td>
+        <td>4-5 FTEs (ML + MLOps engineers)</td>
+      </tr>
+      <tr>
+        <td><strong>Ongoing Maintenance</strong></td>
+        <td style="color:var(--success); font-weight:600;">Vendor-managed retraining, uptime, scaling</td>
+        <td>You manage: retraining, drift, scaling, patching</td>
+      </tr>
+      <tr>
+        <td><strong>Scalability</strong></td>
+        <td>Auto-scaling included (vendor SLAs)</td>
+        <td>Must design, test, and maintain auto-scaling</td>
+      </tr>
+      <tr>
+        <td><strong>Model Quality</strong></td>
+        <td>Pre-trained on billions of examples (Amazon-scale data)</td>
+        <td>Trained on your data only (may be limited)</td>
+      </tr>
+      <tr>
+        <td><strong>Flexibility</strong></td>
+        <td style="color:var(--orange);">Limited to product capabilities</td>
+        <td style="color:var(--success);">Full customization</td>
+      </tr>
+      <tr>
+        <td><strong>Risk</strong></td>
+        <td style="color:var(--success); font-weight:600;">Low — proven at scale</td>
+        <td>Higher — custom code, integration complexity</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.4em; font-size:0.68em; color:var(--navy); font-weight:600; text-align:center;">
+    Recommendation: Start with Buy. Migrate to custom Build only for use cases where managed products hit proven limitations.
+  </div>
+  <aside class="notes">
+    This is the definitive comparison. Buy wins on timeline (10 vs 14+ weeks), cost (253K vs 440K+ consulting), ongoing maintenance (vendor-managed vs you manage), scalability (built-in vs you build), and risk (proven products vs custom code). The one area where custom build wins is flexibility — if you need a highly specialized model architecture, managed services may not support it. Our recommendation: start with buy. If a specific use case outgrows the managed product — say Personalize can't handle a complex recommendation scenario — then build a custom replacement for just that one use case. Don't over-engineer from day one.
+  </aside>
+</section>
+
+</div><!-- end slides -->
+</div><!-- end reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  width: 1100,
+  height: 700,
+  margin: 0.08,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  controlsTutorial: false,
+  progress: true,
+  center: false,
+  navigationMode: 'linear'
+});
+</script>
+</body>
+</html>
