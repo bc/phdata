@@ -37,6 +37,56 @@ For each model, evaluate:
 
 **Key insight:** 80% of the engineering work is the feature store (velocity features in Redis), not the model itself.
 
+#### Velocity Features in Redis — The Core Engineering Challenge
+
+The fraud model is only as good as the features it sees at inference time. The hardest features to compute are **velocity features** — sliding-window aggregations over recent user/device/card activity that must be available in <10 ms. These are the features that separate a toy model from a production fraud system.
+
+**Redis data model:** Each entity (user, device, card) gets a set of sorted sets (ZSET) and counters in Redis, keyed by entity ID. Events are written on every transaction; features are read at scoring time.
+
+```
+# Key schema
+user:{user_id}:txn_timestamps       → ZSET (score=timestamp, member=txn_id)
+user:{user_id}:txn_amounts           → ZSET (score=timestamp, member=amount)
+device:{device_hash}:txn_timestamps  → ZSET (score=timestamp, member=txn_id)
+card:{card_bin}:txn_timestamps       → ZSET (score=timestamp, member=txn_id)
+user:{user_id}:failed_auths          → ZSET (score=timestamp, member=attempt_id)
+```
+
+**Example velocity features computed from Redis at scoring time:**
+
+| Feature | Redis Command | Window | Why It Matters |
+|---------|--------------|--------|----------------|
+| `txn_count_1h` | `ZCOUNT user:{id}:txn_timestamps (now-3600) +inf` | 1 hour | Rapid-fire transactions = stolen card being drained |
+| `txn_count_24h` | `ZCOUNT ...` | 24 hours | Unusual daily activity spike |
+| `txn_amount_sum_1h` | Sum of `ZRANGEBYSCORE` amounts | 1 hour | Dollar velocity — large spend in short window |
+| `txn_amount_avg_7d` | Computed from ZSET | 7 days | Baseline spending pattern for anomaly detection |
+| `txn_amount_max_24h` | Max of recent amounts | 24 hours | Single unusually large transaction |
+| `distinct_shipping_addr_7d` | `SCARD` of address hashes | 7 days | Multiple shipping addresses = reshipping fraud |
+| `distinct_devices_24h` | `SCARD` of device hashes | 24 hours | Account accessed from many devices |
+| `failed_auth_count_1h` | `ZCOUNT` on failed auth ZSET | 1 hour | Brute-force account takeover attempts |
+| `device_txn_count_1h` | `ZCOUNT device:{hash}:txn_timestamps` | 1 hour | Same device hitting multiple accounts |
+| `card_bin_txn_count_24h` | `ZCOUNT card:{bin}:txn_timestamps` | 24 hours | Card BIN being tested across accounts |
+| `time_since_last_txn` | `ZREVRANGE ... LIMIT 0 1` → compute delta | N/A | Abnormally fast repeat purchase |
+| `is_new_device` | `EXISTS device:{hash}:first_seen` | N/A | Never-before-seen device for this user |
+| `account_age_hours` | `GET user:{id}:created_at` → compute delta | N/A | Brand new account + high-value order |
+| `avg_txn_interval_7d` | Computed from timestamp diffs | 7 days | Regular cadence vs burst pattern |
+
+**TTL strategy:** ZSETs are trimmed with `ZREMRANGEBYSCORE` to keep only 30 days of history. This bounds Redis memory per user to ~5-10 KB. For 1M active users: ~5-10 GB total — fits in a single ElastiCache r6g.xlarge node.
+
+**Write path:** Every transaction event writes to Kinesis → Lambda consumer → Redis ZADD. Latency: ~50-100 ms from transaction to feature availability.
+
+**Read path:** At scoring time, a single Redis pipeline (MULTI/EXEC) fetches all 14+ features in one round trip. Latency: 1-3 ms.
+
+#### Brian's Notes — Fraud Detection
+
+- **Cart abandonment as a latency canary.** Monitor cart abandonment rate against fraud scoring response time (and all other checkout elements) in real-time. If the fraud check adds enough latency to measurably increase abandonment, we need to know immediately. Build a dashboard that correlates checkout step latency → abandonment rate → revenue impact so we can make data-driven decisions about the tradeoff.
+
+- **A/B testing with a kill switch.** Deploy inference behind a feature flag with A/B testing from day one. Route X% of traffic through the model, remainder through existing rules. If the model degrades or latency spikes, turn it off instantly without a deployment. This also gives us the clean causal measurement of the model's business impact.
+
+- **False positive cost vs. fraud cost — optimize for NOI.** There is a direct, computable relationship between the classification threshold, false positive rate, and lost revenue. Every false positive (legitimate transaction blocked) is a lost sale + customer friction. Every false negative (fraud let through) is a chargeback + fees. Compute the **Net Operating Income (NOI) curve** as a function of the decision threshold: `NOI(t) = Revenue_saved_from_fraud(t) - Revenue_lost_from_false_positives(t) - Chargeback_fees(t)`. The optimal threshold is NOT at the model's accuracy peak — it's at the NOI peak. Run a post-deployment tuning pass to find this optimal operating point on production data.
+
+- **Continuous threshold recalibration.** The optimal decision boundary shifts as fraud patterns evolve and as the business's cost structure changes (e.g., chargeback fees increase, average order value changes seasonally). Schedule quarterly re-evaluation of the threshold using recent production scoring data + actual fraud outcomes.
+
 ---
 
 ### B. Recommendation Engine (Real-Time)
@@ -53,6 +103,16 @@ For each model, evaluate:
 | **Simplest platform** | Train: PySpark or `implicit` library on r5.4xlarge, weekly. Serve: FastAPI + FAISS in-process + Redis for user vectors. ECS + ALB. Precompute nightly recs for top users into Redis. |
 
 **Key insight:** Precomputing recs for known users and caching aggressively is the #1 scaling lever. The "ML" part is simple — the caching/serving architecture is the real work.
+
+#### Brian's Notes — Recommendation Engine
+
+- **Cart evaluator via association rule mining.** Beyond individual product recommendations, build a separate **cart-level recommender** that uses association rule mining (Apriori / FP-Growth) to identify what item combinations are probable basket completions. If a customer has bread and eggs in their cart, surface milk. This is a fundamentally different signal from collaborative filtering — it's about *this session's intent*, not *this user's history*. Run the association rules as a batch job on historical cart data; serve the top-K rules from a lookup table at cart-view time. Low latency, high business impact.
+
+- **Descriptive clustering for sub-populations.** Before deploying the reco engine, run a descriptive analysis clustering customers by their purchase diversity vs. concentration. Some customers are **narrow specialists** (only buy from 2-3 categories) and some are **broad explorers**. For narrow-interest customers, the recommendation engine should lean heavily toward their known preferences. For broad explorers, diversity in recommendations matters more. This segmentation informs the re-ranking strategy.
+
+- **Per-product vectorization from descriptions and images.** Use pre-trained embeddings (e.g., CLIP for images, sentence-transformers for product descriptions) to create a **product embedding space** independent of user behavior. Then map which product embedding clusters land with which customer clusters. This gives you a content-based recommendation fallback that works for cold-start items AND reveals non-obvious affinities (e.g., customers who buy premium cookware also tend to buy specialty coffee — the visual/description embeddings might capture the "premium lifestyle" cluster).
+
+- **Re-ranking for variety.** The raw model output will often return 10 variations of the same product type (10 brands of batteries). Add a **diversity-aware re-ranker** as a post-processing step: group candidates by category/brand, pick the top candidate from each group, then fill remaining slots by score. The re-ranker should select the specific variant the user is most likely to choose (based on brand affinity, price sensitivity, past purchases) from each group. This is a simple rule-based layer on top of the model — not a separate ML model.
 
 ---
 
@@ -71,6 +131,12 @@ For each model, evaluate:
 
 **Key insight:** This is the easiest model to deploy — batch, no user PII, no latency requirements. Feature engineering is the hard part, not serving.
 
+#### Brian's Notes — Inventory / Demand Forecasting
+
+- **Per-SKU shipping statistics to time demand response.** The forecast tells you *what* demand will be — but knowing *when to act* requires per-SKU shipping/fulfillment lead times. Enrich the forecasting pipeline with **per-SKU logistics metadata**: average shipping time from supplier, warehouse processing time, last-mile delivery time. Compute for each SKU the "action deadline" — the last date you can place a replenishment order and still have stock before the forecasted demand spike. If the demand spike is 7 days out but the SKU's lead time is 10 days, it's already too late. Surface this as a **"days until action deadline"** metric in the forecast output so the buying team knows which SKUs need immediate action vs. which they have buffer on.
+
+- **Separate "too late" alerting.** Flag SKUs where the forecasted demand spike is inside the lead time window — these are SKUs where the only options are (a) expedited shipping at higher cost, (b) cross-warehouse transfer, or (c) accepting the stockout. This changes the decision from "should we order?" to "what's the cost of expediting vs. the cost of the stockout?" — a different optimization problem that the buying team needs to see clearly.
+
 ---
 
 ### D. Customer Segmentation (Batch)
@@ -88,6 +154,18 @@ For each model, evaluate:
 
 **Key insight:** The ML is trivial (K-Means is undergraduate-level). The value is in (1) choosing the right features and (2) operationalizing the segments into downstream marketing systems.
 
+#### Brian's Notes — Customer Segmentation
+
+- **T-SNE / PCA visualization for exploratory analysis.** Before committing to K clusters, run PCA for dimensionality reduction (50→15 components) and T-SNE for 2D visualization. Look for natural groupings by **economic class** (spend tiers), **product category affinity** (electronics buyers vs. grocery buyers vs. fashion buyers), and **engagement pattern** (one-time buyers vs. regulars vs. power users). Use the visual clusters to validate that K-Means is finding meaningful structure, not just carving up noise.
+
+- **LLM-generated cluster titles.** Once clusters are computed, pass each cluster's centroid feature values and a sample of 50-100 representative customers to an LLM (Claude or GPT-4) to generate human-readable segment names and descriptions. Example prompt: "Here are the average feature values for this customer cluster: avg_spend=$420, avg_frequency=2.1/month, top_categories=[Electronics 45%, Home 30%], avg_account_age=3.2 years. Name this segment and describe the persona in 2 sentences." This eliminates the manual naming bottleneck and produces consistent, data-grounded labels.
+
+- **Centroid checkpointing for longitudinal tracking.** Save each clustering run's centroids + labels as a versioned checkpoint (MLflow artifact). When you recluster next month with new data or new customers, you can **map new clusters back to old clusters** by nearest-centroid matching. This lets you track how segments evolve over time (is the "Budget Shoppers" segment growing or shrinking?) and maintain stable segment IDs for downstream systems even as the model is retrained.
+
+- **Enrichment with behavioral and referral data.** Layer on non-purchase signals: which marketing campaigns brought them in, referral source, time-of-day shopping patterns, browsing-to-purchase ratio, return rate. These enrichments can split what looks like one segment into meaningfully different sub-segments (e.g., "high-spend customers acquired via Instagram" behave differently from "high-spend customers acquired via Google Shopping").
+
+- **Retargeting channel clustering.** If we have their Instagram, Facebook, or Pixel data, cluster *within each retargeting channel* separately. The same customer may respond differently to ads on different platforms. Build per-channel segment profiles so the marketing team knows how to approach each segment on each platform — different creative, different frequency caps, different offer types. This turns the segmentation model from a one-dimensional output (segment_id) into a matrix (segment × channel → strategy).
+
 ---
 
 ### E. Dynamic Pricing (Near-Real-Time)
@@ -104,6 +182,14 @@ For each model, evaluate:
 | **Simplest platform** | Train: Batch LightGBM on Airflow, monthly retrain + daily coefficient refresh → write to Redis. Serve: Rule engine as a FastAPI container on ECS. Same infrastructure as fraud serving. |
 
 **Key insight:** Dynamic pricing is 80% business logic, 20% ML. The rule engine (price floors, competitor parity, margin constraints) is where the real complexity lives. The ML just provides the demand sensitivity signal.
+
+#### Brian's Notes — Dynamic Pricing
+
+- **Competitor-weighted demand signals.** Price elasticity should be computed as a function of both **internal demand** (our sales velocity, inventory levels) and **competitive demand** (competitor pricing, competitor availability). Weight competitor signals by how much business each competitor captures in each product category. If Competitor A takes 40% of the market in electronics and Competitor B takes 5%, a price change from A should drive a much larger response than the same change from B. Build a competitor influence matrix: `competitor_weight[competitor][category] = estimated_market_share`. Feed this into the elasticity model as weighted competitive price features.
+
+- **Competitive intelligence pipeline.** This requires a price scraping/monitoring pipeline (or a vendor like Prisync, Competera, or Intelligence Node). Scrape competitor prices daily at minimum, hourly for high-competition SKUs. Store historical competitor prices in Snowflake for training the elasticity model. The scraping pipeline is a non-trivial data engineering effort — budget for it.
+
+- **Dynamic pricing as a margin optimizer, not a race to the bottom.** The goal isn't to always match the lowest price — it's to find the price point that maximizes margin × volume. For SKUs where we have a differentiation advantage (exclusive products, better shipping, loyalty benefits), the model should learn that our elasticity is lower (customers are less price-sensitive) and price accordingly. The rule engine should enforce minimum margin floors to prevent the model from destroying profitability.
 
 ---
 
