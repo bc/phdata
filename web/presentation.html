@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps Platform Deployment for AwesomeStuff.com | phData</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.min.css">
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2AADAD;
+    --teal-light: #e6f7f7;
+    --gray-light: #f4f6f8;
+    --gray-mid: #6b7a8d;
+    --white: #ffffff;
+    --text: #2c3e50;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --orange: #f39c12;
+  }
+
+  .reveal {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    font-size: 28px;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3 {
+    color: var(--navy);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+
+  .reveal h1 { font-size: 2.0em; }
+  .reveal h2 { font-size: 1.5em; margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.15em; color: var(--teal); margin-bottom: 0.4em; }
+
+  .reveal section { text-align: left; }
+
+  .reveal .center-slide { text-align: center; }
+
+  .reveal ul, .reveal ol {
+    display: block;
+    margin-left: 0.8em;
+    font-size: 0.88em;
+    line-height: 1.7;
+  }
+
+  .reveal li { margin-bottom: 0.3em; }
+
+  .reveal .slide-number {
+    background: var(--navy);
+    color: var(--white);
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* phData top bar */
+  .reveal .slides section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--navy), var(--teal));
+  }
+
+  /* Title slide */
+  .title-slide {
+    text-align: center !important;
+  }
+  .title-slide h1 {
+    font-size: 1.8em;
+    margin-bottom: 0.15em;
+  }
+  .title-slide .subtitle {
+    color: var(--teal);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 1.2em;
+  }
+  .title-slide .meta {
+    color: var(--gray-mid);
+    font-size: 0.65em;
+    margin-top: 1.5em;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 0.5em;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 18px;
+    border-top: 3px solid var(--teal);
+  }
+  .card h4 {
+    color: var(--navy);
+    font-size: 0.78em;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+  .card p, .card ul {
+    font-size: 0.68em;
+    margin: 0;
+    color: var(--gray-mid);
+    line-height: 1.5;
+  }
+  .card ul { margin-left: 1em; }
+
+  .card-accent { border-top-color: var(--navy); }
+  .card-success { border-top-color: var(--success); }
+  .card-warn { border-top-color: var(--orange); }
+
+  /* Stat callouts */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 0.6em 0;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 18px 28px;
+    background: var(--gray-light);
+    border-radius: 8px;
+    min-width: 140px;
+  }
+  .stat-box .number {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--teal);
+    display: block;
+  }
+  .stat-box .label {
+    font-size: 0.6em;
+    color: var(--gray-mid);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.55em;
+    padding: 3px 12px;
+    border-radius: 12px;
+    margin-bottom: 0.4em;
+    font-weight: 600;
+  }
+
+  /* Tables */
+  .reveal table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72em;
+    margin-top: 0.4em;
+  }
+  .reveal table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .reveal table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e0e5eb;
+  }
+  .reveal table tr:nth-child(even) td {
+    background: var(--gray-light);
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 0.55em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-rt { background: #fdecea; color: var(--danger); }
+  .tag-batch { background: #eaf4fe; color: #2980b9; }
+  .tag-nrt { background: #fef9e7; color: #d4a017; }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+
+  /* Section divider */
+  .section-divider {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .section-divider h2 {
+    font-size: 1.8em;
+    margin-bottom: 0.2em;
+  }
+  .section-divider p {
+    color: var(--gray-mid);
+    font-size: 0.85em;
+  }
+
+  /* SVG diagrams */
+  .diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 0.3em 0;
+  }
+  .diagram-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Appendix label */
+  .appendix-label {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.45em;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  /* Audience tag */
+  .audience-tag {
+    font-size: 0.45em;
+    color: var(--gray-mid);
+    font-weight: 400;
+    margin-left: 8px;
+  }
+
+  /* Smaller text helper */
+  .small { font-size: 0.75em; }
+  .muted { color: var(--gray-mid); }
+
+  /* Pipeline boxes */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    margin: 0.5em 0;
+    flex-wrap: wrap;
+  }
+  .pipeline .step {
+    background: var(--gray-light);
+    border: 1px solid #d0d8e0;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 0.62em;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: center;
+    min-width: 100px;
+  }
+  .pipeline .step.highlight {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+  .pipeline .arrow {
+    font-size: 1.2em;
+    color: var(--teal);
+    padding: 0 4px;
+  }
+
+  /* Gantt chart */
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 140px repeat(14, 1fr);
+    gap: 2px;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.58em;
+  }
+  .gantt-label {
+    font-weight: 600;
+    color: var(--navy);
+    text-align: right;
+    padding-right: 10px;
+  }
+  .gantt-bar {
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+  .gantt-header {
+    font-size: 0.5em;
+    text-align: center;
+    color: var(--gray-mid);
+    font-weight: 600;
+  }
+
+  /* Notes for speaker */
+  .reveal .speaker-notes {
+    font-size: 16px;
+  }
+
+  /* Print overrides */
+  @media print {
+    .reveal .slides section {
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ============================================================ -->
+<section class="title-slide center-slide">
+  <div style="margin-bottom:0.3em;">
+    <svg width="180" height="48" viewBox="0 0 180 48">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h1>MLOps Platform Deployment<br>for AwesomeStuff.com</h1>
+  <div class="subtitle">From Trained Models to Production Value</div>
+  <p style="font-size:0.7em; color:var(--gray-mid); margin-top:1em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    <span style="font-size:0.85em;">February 2026</span>
+  </p>
+  <aside class="notes">
+    Welcome everyone. Today I'll walk you through how phData will take your five trained ML models from notebooks to production — generating real business value within 14 weeks.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: AGENDA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Agenda</h2>
+  <ol style="font-size:0.85em; line-height:2;">
+    <li>About phData</li>
+    <li>Understanding Your Challenge</li>
+    <li>Our Approach &mdash; Phased MLOps Deployment</li>
+    <li>Architecture Overview</li>
+    <li>Business Value &amp; ROI</li>
+    <li>Phase Details &amp; Timeline</li>
+    <li>Resource Plan &amp; Pricing</li>
+    <li>Why phData &amp; Next Steps</li>
+  </ol>
+  <aside class="notes">
+    Here's our roadmap for today. We'll start with who we are, then align on the challenge, walk through our approach, and finish with pricing and next steps. I'll keep the main flow strategic — deep technical details are in the appendix for our Q&A.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: ABOUT PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>About phData</h2>
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="number">450+</span>
+      <span class="label">Data &amp; ML Engineers</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">300+</span>
+      <span class="label">Enterprise Clients</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">#1</span>
+      <span class="label">Snowflake Partner</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">AWS</span>
+      <span class="label">Advanced Partner</span>
+    </div>
+  </div>
+  <div class="card-grid cols-3" style="margin-top:0.6em;">
+    <div class="card">
+      <h4>ML &amp; AI</h4>
+      <p>100+ ML models deployed to production across retail, fintech, and healthcare</p>
+    </div>
+    <div class="card">
+      <h4>MLOps</h4>
+      <p>End-to-end ML platforms on AWS, Azure, and GCP with full CI/CD and monitoring</p>
+    </div>
+    <div class="card">
+      <h4>Data Engineering</h4>
+      <p>Snowflake-native pipelines, real-time streaming, and modern data stack expertise</p>
+    </div>
+  </div>
+  <aside class="notes">
+    phData is one of the largest pure-play data and ML consultancies. We're the #1 Snowflake partner globally, an AWS Advanced partner, and have deployed over 100 ML models to production. This isn't theoretical for us — it's what we do every day.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: UNDERSTANDING YOUR CHALLENGE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Understanding Your Challenge</h2>
+  <div class="two-col">
+    <div>
+      <h3>5 Trained Models, Not Yet in Production</h3>
+      <table style="font-size:0.85em;">
+        <tr><td><strong>Recommendation Engine</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Fraud Detection</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Inventory Management</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Customer Segmentation</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Dynamic Pricing</strong></td><td><span class="tag tag-nrt">Near-Real-Time</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Key Pain Points</h3>
+      <ul>
+        <li><strong>Scalability</strong> &mdash; Peak shopping traffic (Black Friday, holidays)</li>
+        <li><strong>Real-time latency</strong> &mdash; Fraud &amp; reco must respond in ms</li>
+        <li><strong>System integration</strong> &mdash; CRM, inventory, payments, Snowflake</li>
+        <li><strong>Monitoring gaps</strong> &mdash; No drift detection or retraining pipeline</li>
+        <li><strong>Compliance</strong> &mdash; GDPR, PII handling, audit trails</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Let me make sure we're aligned on the challenge. You have five models that your data science team has trained and validated — they work. The gap is getting them into production reliably, at scale, with proper monitoring and compliance. That's exactly the gap phData specializes in closing.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: OUR APPROACH -->
+<!-- ============================================================ -->
+<section>
+  <h2>Our Approach: Phased MLOps Deployment</h2>
+  <p class="muted small" style="margin-bottom:0.5em;">Crawl → Walk → Run &mdash; Production value in 14 weeks</p>
+  <div class="card-grid cols-4">
+    <div class="card card-accent">
+      <h4>Phase 1</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Foundation</p>
+      <p>Weeks 1-3</p>
+      <p>AWS infra, MLOps platform, CI/CD, security baseline</p>
+    </div>
+    <div class="card">
+      <h4>Phase 2</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Batch Models</p>
+      <p>Weeks 4-6</p>
+      <p>Segmentation + Inventory → production with monitoring</p>
+    </div>
+    <div class="card">
+      <h4>Phase 3</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Real-Time Models</p>
+      <p>Weeks 7-10</p>
+      <p>Fraud + Reco + Pricing with streaming &amp; A/B testing</p>
+    </div>
+    <div class="card card-success">
+      <h4>Phase 4</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Harden &amp; Handoff</p>
+      <p>Weeks 11-14</p>
+      <p>Load testing, GDPR audit, training, knowledge transfer</p>
+    </div>
+  </div>
+  <div style="margin-top:0.7em; text-align:center;">
+    <div class="pipeline">
+      <div class="step">Foundation</div>
+      <div class="arrow">→</div>
+      <div class="step">Batch (Low Risk)</div>
+      <div class="arrow">→</div>
+      <div class="step highlight">Real-Time (High Value)</div>
+      <div class="arrow">→</div>
+      <div class="step">Harden &amp; Transfer</div>
+    </div>
+  </div>
+  <aside class="notes">
+    We take a crawl-walk-run approach. Phase 1 lays the foundation — infrastructure, security, CI/CD. Phase 2 deploys the simpler batch models first so we validate the platform with lower-risk workloads. Phase 3 tackles the high-value real-time models. Phase 4 hardens everything and transfers ownership to your team. This de-risks the project while delivering value incrementally.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: ARCHITECTURE OVERVIEW -->
+<!-- ============================================================ -->
+<section>
+  <h2>Architecture Overview <span class="audience-tag">Dir. Technology &bull; Architect</span></h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 900 460" width="820" height="420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- Background -->
+      <rect x="10" y="10" width="880" height="440" rx="12" fill="#f8fafc" stroke="#d0d8e0"/>
+
+      <!-- Arrowhead marker -->
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#2AADAD"/>
+        </marker>
+      </defs>
+
+      <!-- ===== COLUMN 1: DATA SOURCES (x=30, w=140) ===== -->
+      <rect x="30" y="30" width="140" height="410" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="100" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">DATA SOURCES</text>
+      <rect x="45" y="66" width="110" height="36" rx="5" fill="#1B3A5C"/>
+      <text x="100" y="89" text-anchor="middle" font-size="10" fill="white" font-weight="600">Snowflake</text>
+      <rect x="45" y="110" width="110" height="36" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="133" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">S3 Data Lake</text>
+      <rect x="45" y="154" width="110" height="36" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="177" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Event Streams</text>
+      <rect x="45" y="198" width="110" height="36" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="221" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">CRM / ERP</text>
+      <rect x="45" y="242" width="110" height="36" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="265" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Payments API</text>
+      <rect x="45" y="286" width="110" height="36" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="309" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Web / Mobile</text>
+
+      <!-- ===== COLUMN 2: FEATURE STORE + ML PLATFORM (x=200, w=135) ===== -->
+      <!-- Feature Store -->
+      <rect x="200" y="30" width="135" height="130" rx="8" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="267" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">FEATURE STORE</text>
+      <text x="267" y="76" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">SageMaker</text>
+      <text x="267" y="92" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Feature Store</text>
+      <line x1="220" y1="104" x2="314" y2="104" stroke="#2AADAD" stroke-width="0.5"/>
+      <text x="267" y="122" text-anchor="middle" font-size="9" fill="#6b7a8d">Online + Offline</text>
+      <text x="267" y="136" text-anchor="middle" font-size="9" fill="#6b7a8d">Feature Groups</text>
+
+      <!-- ML Platform -->
+      <rect x="200" y="178" width="135" height="120" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="267" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">ML PLATFORM</text>
+      <text x="267" y="224" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">MLflow</text>
+      <text x="267" y="246" text-anchor="middle" font-size="9" fill="#6b7a8d">Experiment Tracking</text>
+      <text x="267" y="262" text-anchor="middle" font-size="9" fill="#6b7a8d">Model Registry</text>
+      <text x="267" y="278" text-anchor="middle" font-size="9" fill="#6b7a8d">Artifact Store</text>
+
+      <!-- ===== COLUMN 3: MODEL SERVING + STREAMING (x=365, w=250) ===== -->
+      <!-- Model Serving container -->
+      <rect x="365" y="30" width="250" height="270" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="490" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">MODEL SERVING</text>
+
+      <!-- Real-time sub-box -->
+      <rect x="378" y="62" width="224" height="110" rx="6" fill="#fdecea" stroke="#e74c3c" stroke-dasharray="4"/>
+      <text x="490" y="82" text-anchor="middle" font-size="9" font-weight="700" fill="#e74c3c">REAL-TIME</text>
+      <rect x="388" y="90" width="100" height="30" rx="4" fill="#e74c3c"/>
+      <text x="438" y="110" text-anchor="middle" font-size="9" fill="white" font-weight="600">Fraud &lt;100ms</text>
+      <rect x="496" y="90" width="100" height="30" rx="4" fill="#e74c3c"/>
+      <text x="546" y="110" text-anchor="middle" font-size="9" fill="white" font-weight="600">Reco &lt;200ms</text>
+      <rect x="388" y="128" width="100" height="30" rx="4" fill="#d4a017"/>
+      <text x="438" y="148" text-anchor="middle" font-size="9" fill="white" font-weight="600">Pricing ~1s</text>
+      <text x="546" y="143" text-anchor="middle" font-size="9" fill="#6b7a8d">SageMaker</text>
+      <text x="546" y="157" text-anchor="middle" font-size="9" fill="#6b7a8d">Endpoints + EKS</text>
+
+      <!-- Batch sub-box -->
+      <rect x="378" y="184" width="224" height="68" rx="6" fill="#eaf4fe" stroke="#2980b9" stroke-dasharray="4"/>
+      <text x="490" y="204" text-anchor="middle" font-size="9" font-weight="700" fill="#2980b9">BATCH</text>
+      <rect x="388" y="212" width="100" height="28" rx="4" fill="#2980b9"/>
+      <text x="438" y="230" text-anchor="middle" font-size="9" fill="white" font-weight="600">Segmentation</text>
+      <rect x="496" y="212" width="100" height="28" rx="4" fill="#2980b9"/>
+      <text x="546" y="230" text-anchor="middle" font-size="9" fill="white" font-weight="600">Inventory</text>
+
+      <!-- Batch Transform note -->
+      <text x="490" y="278" text-anchor="middle" font-size="8" fill="#6b7a8d">SageMaker Batch Transform + Step Functions</text>
+
+      <!-- Streaming box -->
+      <rect x="365" y="320" width="250" height="75" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="490" y="342" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">STREAMING</text>
+      <text x="490" y="362" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Amazon Kinesis / MSK</text>
+      <text x="490" y="380" text-anchor="middle" font-size="9" fill="#6b7a8d">Event ingestion &amp; real-time triggers</text>
+
+      <!-- ===== COLUMN 4: MONITORING + SECURITY + INFRA (x=645, w=230) ===== -->
+      <!-- Monitoring -->
+      <rect x="645" y="30" width="230" height="145" rx="8" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="760" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">MONITORING &amp; OPS</text>
+      <text x="760" y="76" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">SageMaker Model Monitor</text>
+      <text x="760" y="92" text-anchor="middle" font-size="9" fill="#6b7a8d">Data drift &amp; model quality</text>
+      <text x="760" y="112" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">CloudWatch</text>
+      <text x="760" y="128" text-anchor="middle" font-size="9" fill="#6b7a8d">Latency, throughput, errors</text>
+      <text x="760" y="148" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Automated Retraining</text>
+      <text x="760" y="164" text-anchor="middle" font-size="9" fill="#6b7a8d">Champion / Challenger</text>
+
+      <!-- Security -->
+      <rect x="645" y="192" width="230" height="100" rx="8" fill="#fdecea" stroke="#e74c3c"/>
+      <text x="760" y="214" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">SECURITY &amp; GDPR</text>
+      <text x="760" y="238" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">IAM + KMS Encryption</text>
+      <text x="760" y="258" text-anchor="middle" font-size="9" fill="#6b7a8d">PII masking, audit logs</text>
+      <text x="760" y="278" text-anchor="middle" font-size="9" fill="#6b7a8d">Right to erasure, data retention</text>
+
+      <!-- Infrastructure -->
+      <rect x="645" y="310" width="230" height="85" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="760" y="334" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">INFRASTRUCTURE</text>
+      <text x="760" y="358" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Terraform IaC</text>
+      <text x="760" y="376" text-anchor="middle" font-size="9" fill="#6b7a8d">Reproducible, version-controlled</text>
+
+      <!-- ===== ARROWS ===== -->
+      <!-- Data Sources → Feature Store -->
+      <line x1="170" y1="95" x2="196" y2="95" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Data Sources → ML Platform -->
+      <line x1="170" y1="238" x2="196" y2="238" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Feature Store → Serving -->
+      <line x1="335" y1="95" x2="361" y2="95" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- ML Platform → Serving -->
+      <line x1="335" y1="238" x2="361" y2="238" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Data Sources → Streaming -->
+      <line x1="170" y1="310" x2="361" y2="355" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Streaming → Serving (up) -->
+      <line x1="490" y1="320" x2="490" y2="304" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <!-- Serving → Monitoring -->
+      <line x1="615" y1="100" x2="641" y2="100" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+    </svg>
+  </div>
+  <aside class="notes">
+    Here's the high-level architecture. Data flows from your sources on the left — Snowflake, S3, event streams — through our feature store into the model serving layer. Real-time models like fraud and reco run on SageMaker endpoints with sub-200ms latency. Batch models use SageMaker Batch Transform orchestrated by Step Functions. Everything is monitored with Model Monitor and CloudWatch, secured with IAM and KMS, and managed as code with Terraform. I have a much more detailed architecture diagram in the appendix if you'd like to dive deeper.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: BUSINESS VALUE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Business Value &amp; ROI <span class="audience-tag">VP &bull; Sales</span></h2>
+  <div class="card-grid cols-2">
+    <div class="card card-success">
+      <h4>Fraud Detection</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">$2-4M annual savings</p>
+      <p>Real-time fraud blocking reduces chargebacks by 60-80%. Every 10ms of latency reduction = fewer fraudulent transactions processed.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Recommendation Engine</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">8-15% revenue uplift</p>
+      <p>Personalized product recommendations increase average order value and conversion rates across web &amp; mobile.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Inventory Management</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">20-30% stockout reduction</p>
+      <p>ML-driven demand forecasting minimizes both overstock carrying costs and lost sales from stockouts.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Customer Segmentation + Pricing</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">15-25% marketing efficiency</p>
+      <p>Targeted campaigns reduce acquisition costs. Dynamic pricing optimizes margins in real-time based on demand signals.</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:0.6em; font-size:0.75em; color:var(--navy); font-weight:600;">
+    Estimated total annual impact: <span style="color:var(--teal); font-size:1.3em;">$5-10M+</span> &nbsp;|&nbsp; Investment payback: <span style="color:var(--teal); font-size:1.3em;">&lt; 6 months</span>
+  </div>
+  <aside class="notes">
+    Let's talk about why this investment matters. Fraud detection alone can save 2 to 4 million annually by blocking fraudulent transactions in real-time. The recommendation engine typically drives 8 to 15% revenue uplift — for an e-commerce company your size, that's significant. Add in inventory optimization and smarter marketing, and we're looking at 5 to 10 million in annual impact against a sub-500K investment. That's less than 6 months to payback.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: PHASE 1 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 1: Foundation <span class="audience-tag">Weeks 1-3</span></h2>
+  <span class="phase-badge">CRAWL</span>
+  <div class="two-col">
+    <div>
+      <h3>What We Build</h3>
+      <ul>
+        <li>AWS VPC, subnets, security groups</li>
+        <li>SageMaker Studio domain + IAM roles</li>
+        <li>MLflow on EKS for experiment tracking</li>
+        <li>CI/CD pipeline (CodePipeline + CodeBuild)</li>
+        <li>Snowflake ↔ S3 integration (Storage Integration)</li>
+        <li>Terraform modules for all infrastructure</li>
+        <li>KMS encryption + audit logging baseline</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Deliverables</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Environment Ready</h4>
+        <p>Dev, Staging, Production environments provisioned via Terraform</p>
+      </div>
+      <div class="card">
+        <h4>MLOps Scaffold</h4>
+        <p>MLflow running, CI/CD pipeline tested with a sample model end-to-end</p>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h4>Security Baseline</h4>
+        <p>IAM policies, encryption, VPC networking, CloudTrail enabled</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 1 is all about building the right foundation. We provision the AWS infrastructure with Terraform — this means everything is reproducible and version-controlled. We set up SageMaker, MLflow, CI/CD, and the Snowflake integration. By week 3, we'll have deployed a sample model end-to-end through the pipeline to validate the entire platform works before we bring in your real models.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: PHASE 2 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 2: Batch Models <span class="audience-tag">Weeks 4-6</span></h2>
+  <span class="phase-badge">WALK</span>
+  <div class="two-col">
+    <div>
+      <h3>Customer Segmentation</h3>
+      <ul>
+        <li>Register model in MLflow</li>
+        <li>SageMaker Batch Transform job</li>
+        <li>Step Functions orchestration (daily/weekly)</li>
+        <li>Output → Snowflake → CRM integration</li>
+        <li>Model Monitor for data drift</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.4em;">→ Marketing team gets refreshed segments automatically</p>
+    </div>
+    <div>
+      <h3>Inventory Management</h3>
+      <ul>
+        <li>Register model in MLflow</li>
+        <li>SageMaker Batch Transform job</li>
+        <li>Step Functions orchestration (daily)</li>
+        <li>Output → Snowflake → Inventory system API</li>
+        <li>Accuracy monitoring + alerting</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.4em;">→ Supply chain team gets demand forecasts daily</p>
+    </div>
+  </div>
+  <div style="margin-top:0.5em;">
+    <div class="pipeline">
+      <div class="step">S3 / Snowflake</div>
+      <div class="arrow">→</div>
+      <div class="step">Feature Prep</div>
+      <div class="arrow">→</div>
+      <div class="step highlight">SageMaker Batch</div>
+      <div class="arrow">→</div>
+      <div class="step">Snowflake</div>
+      <div class="arrow">→</div>
+      <div class="step">Downstream Systems</div>
+    </div>
+  </div>
+  <aside class="notes">
+    In Phase 2, we deploy the two batch models. These are lower-risk because they run on a schedule rather than in real-time — perfect for validating our platform with real production workloads. Customer segmentation outputs feed directly into your CRM so marketing can run targeted campaigns. Inventory forecasts go to your supply chain systems daily. Both are monitored for data drift and accuracy degradation.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: PHASE 3 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 3: Real-Time Models <span class="audience-tag">Weeks 7-10</span></h2>
+  <span class="phase-badge">RUN</span>
+  <div class="card-grid cols-3">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Fraud Detection</h4>
+      <p><span class="tag tag-rt">Real-Time</span> &lt;100ms</p>
+      <ul>
+        <li>SageMaker real-time endpoint</li>
+        <li>Kinesis stream for transaction events</li>
+        <li>Online feature lookup</li>
+        <li>Auto-scaling for peak load</li>
+        <li>Shadow mode → production cutover</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Recommendation Engine</h4>
+      <p><span class="tag tag-rt">Real-Time</span> &lt;200ms</p>
+      <ul>
+        <li>SageMaker endpoint + caching</li>
+        <li>User behavior event stream</li>
+        <li>A/B testing framework</li>
+        <li>Fallback to popular items</li>
+        <li>Integration with web &amp; mobile</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#d4a017;">
+      <h4>Dynamic Pricing</h4>
+      <p><span class="tag tag-nrt">Near-Real-Time</span> ~1s</p>
+      <ul>
+        <li>SageMaker endpoint</li>
+        <li>Demand signal aggregation</li>
+        <li>Price guardrails &amp; business rules</li>
+        <li>Competitor price feeds</li>
+        <li>Margin optimization logic</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 3 is where the big business value hits. Fraud detection needs to respond in under 100 milliseconds — we use SageMaker real-time endpoints with Kinesis for event streaming. We deploy in shadow mode first, running alongside your existing system, so we can validate accuracy before cutting over. Recommendations get A/B testing from day one so we can measure uplift. Dynamic pricing includes business rule guardrails — you keep control over pricing boundaries.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: PHASE 4 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 4: Harden &amp; Handoff <span class="audience-tag">Weeks 11-14</span></h2>
+  <span class="phase-badge">OPERATIONALIZE</span>
+  <div class="card-grid cols-2">
+    <div class="card">
+      <h4>Load Testing &amp; Performance</h4>
+      <ul>
+        <li>Simulate Black Friday peak traffic (10x normal)</li>
+        <li>Validate auto-scaling policies</li>
+        <li>Latency SLA verification per model</li>
+        <li>Chaos engineering for failover testing</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>GDPR &amp; Compliance Audit</h4>
+      <ul>
+        <li>PII data flow mapping</li>
+        <li>Right-to-erasure pipeline verification</li>
+        <li>Encryption audit (at rest + in transit)</li>
+        <li>Access control review + penetration test</li>
+      </ul>
+    </div>
+    <div class="card card-accent">
+      <h4>Documentation</h4>
+      <ul>
+        <li>Architecture decision records (ADRs)</li>
+        <li>Runbooks for each model pipeline</li>
+        <li>Incident response playbooks</li>
+        <li>Infrastructure-as-Code documentation</li>
+      </ul>
+    </div>
+    <div class="card card-success">
+      <h4>Knowledge Transfer</h4>
+      <ul>
+        <li>4 hands-on training sessions</li>
+        <li>Pair programming with your ML team</li>
+        <li>On-call shadowing (2 weeks)</li>
+        <li>30-day post-handoff support included</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 4 ensures this platform is truly production-ready and your team can own it going forward. We simulate Black Friday traffic to validate scaling. We audit GDPR compliance end-to-end. We write runbooks and playbooks for every model pipeline. And critically, we do hands-on knowledge transfer — not just a documentation dump, but pair programming and on-call shadowing with your team. Plus 30 days of post-handoff support.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: RESOURCE PLAN -->
+<!-- ============================================================ -->
+<section>
+  <h2>Resource Plan</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Phase 1</th>
+        <th>Phase 2</th>
+        <th>Phase 3</th>
+        <th>Phase 4</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Solutions Architect</strong> (Lead)</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+      </tr>
+      <tr>
+        <td><strong>ML Engineer</strong></td>
+        <td>Part-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>MLOps / Platform Engineer</strong></td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>Data Engineer</strong></td>
+        <td>Part-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.6em; font-size:0.72em;">
+    <p><strong>Blended rate:</strong> ~$275/hour &nbsp;|&nbsp; <strong>Peak team size:</strong> 4 FTEs &nbsp;|&nbsp; <strong>Your team involvement:</strong> 1 technical lead + stakeholders for sprint reviews</p>
+  </div>
+  <aside class="notes">
+    Here's how we staff the engagement. The Solutions Architect — that would be me — leads the full engagement. We ramp up ML engineering and data engineering for the heavy deployment phases, then taper down as we move to hardening and handoff. We need one technical lead from your side as our primary point of contact, plus stakeholders available for sprint reviews every two weeks.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: TIMELINE (GANTT) -->
+<!-- ============================================================ -->
+<section>
+  <h2>Timeline &mdash; 14 Weeks</h2>
+  <div style="margin-top:0.3em;">
+    <!-- Week headers -->
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div class="gantt-header">W1</div><div class="gantt-header">W2</div><div class="gantt-header">W3</div>
+      <div class="gantt-header">W4</div><div class="gantt-header">W5</div><div class="gantt-header">W6</div>
+      <div class="gantt-header">W7</div><div class="gantt-header">W8</div><div class="gantt-header">W9</div>
+      <div class="gantt-header">W10</div><div class="gantt-header">W11</div><div class="gantt-header">W12</div>
+      <div class="gantt-header">W13</div><div class="gantt-header">W14</div>
+    </div>
+    <!-- Phase 1 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Foundation</div>
+      <div style="grid-column: 2/5;"><div class="gantt-bar" style="background:var(--navy);">Phase 1</div></div>
+    </div>
+    <!-- Phase 2 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Segmentation</div>
+      <div style="grid-column: 5/7;"><div class="gantt-bar" style="background:#2980b9;">Deploy</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Inventory</div>
+      <div style="grid-column: 5/8;"><div class="gantt-bar" style="background:#2980b9;">Deploy + Integrate</div></div>
+    </div>
+    <!-- Phase 3 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Fraud Detection</div>
+      <div style="grid-column: 8/11;"><div class="gantt-bar" style="background:var(--danger);">Shadow → Prod</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Reco Engine</div>
+      <div style="grid-column: 8/12;"><div class="gantt-bar" style="background:var(--danger);">Deploy + A/B</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Dynamic Pricing</div>
+      <div style="grid-column: 9/12;"><div class="gantt-bar" style="background:var(--orange);">Deploy + Guardrails</div></div>
+    </div>
+    <!-- Phase 4 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Harden &amp; Test</div>
+      <div style="grid-column: 12/15;"><div class="gantt-bar" style="background:var(--success);">Load Test + Audit</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Knowledge Transfer</div>
+      <div style="grid-column: 12/16;"><div class="gantt-bar" style="background:var(--teal);">Training + Handoff</div></div>
+    </div>
+    <!-- Milestones -->
+    <div class="gantt-row" style="margin-top:8px;">
+      <div class="gantt-label" style="font-size:0.85em; color:var(--teal);">Milestones</div>
+      <div style="grid-column:4/5; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:7/8; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:11/12; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:15/16; text-align:center; font-size:0.85em;">&#9670;</div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div style="grid-column:3/6; text-align:center; font-size:0.75em; color:var(--gray-mid);">Platform Ready</div>
+      <div style="grid-column:6/9; text-align:center; font-size:0.75em; color:var(--gray-mid);">Batch Live</div>
+      <div style="grid-column:10/13; text-align:center; font-size:0.75em; color:var(--gray-mid);">Real-Time Live</div>
+      <div style="grid-column:13/16; text-align:center; font-size:0.75em; color:var(--gray-mid);">Go-Live &#x2713;</div>
+    </div>
+  </div>
+  <aside class="notes">
+    Here's the timeline visualized. You can see the four phases with clear milestones. Platform ready at week 3. Batch models live by week 6 or 7. Real-time models live by week 10 or 11. Full go-live with handoff complete at week 14. Each milestone is a checkpoint where we validate with your team before moving forward.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 14: PRICING -->
+<!-- ============================================================ -->
+<section>
+  <h2>Investment <span class="audience-tag">VP</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Avg. Team</th>
+        <th>Estimated Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Phase 1:</strong> Foundation</td>
+        <td>3 weeks</td>
+        <td>2.5 FTEs</td>
+        <td>$82,500</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 2:</strong> Batch Models</td>
+        <td>3 weeks</td>
+        <td>3.5 FTEs</td>
+        <td>$115,500</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 3:</strong> Real-Time Models</td>
+        <td>4 weeks</td>
+        <td>3.5 FTEs</td>
+        <td>$154,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 4:</strong> Harden &amp; Handoff</td>
+        <td>4 weeks</td>
+        <td>2 FTEs</td>
+        <td>$88,000</td>
+      </tr>
+      <tr style="font-weight:700;">
+        <td colspan="3" style="text-align:right; background:var(--navy); color:white;">Total Estimated Investment</td>
+        <td style="background:var(--navy); color:var(--teal); font-size:1.15em;">$440,000</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.5em; font-size:0.65em; color:var(--gray-mid);">
+    <p>Based on blended rate of $275/hr. Actuals billed time &amp; materials with weekly reporting. AWS infrastructure costs estimated at $8-15K/month (not included). Snowflake usage billed separately per your existing contract.</p>
+  </div>
+  <aside class="notes">
+    Here's the investment breakdown by phase. The total is 440 thousand dollars at our blended rate of 275 per hour. This is time and materials with weekly reporting — you have full visibility into where every hour goes. AWS infrastructure runs about 8 to 15K per month depending on traffic. Against the 5 to 10 million in annual impact we discussed, this pays for itself in under 6 months.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15: WHY PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Why phData</h2>
+  <div class="card-grid cols-2">
+    <div class="card card-accent">
+      <h4>Snowflake + AWS Expertise</h4>
+      <p>#1 Snowflake partner globally. AWS Advanced consulting partner. Your data is already in Snowflake &mdash; we know how to build ML platforms around it.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>ML at Scale</h4>
+      <p>100+ production ML deployments. We've solved real-time serving, drift detection, and compliance at scale across retail, fintech, and healthcare.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Proven Methodology</h4>
+      <p>Phased, risk-managed delivery. You see working models in production by week 6 &mdash; not a "big bang" at week 14.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Knowledge Transfer Focus</h4>
+      <p>We build platforms your team owns. Pair programming, runbooks, training, and 30-day post-handoff support are built into every engagement.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Why phData over another consultancy? Three reasons. First, we're the number one Snowflake partner and an AWS advanced partner — your stack is our specialty. Second, we've done this over 100 times. We know the pitfalls of real-time ML serving at scale. Third, we don't just build and leave. Knowledge transfer is baked into our methodology — your team will own this platform when we're done.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16: NEXT STEPS -->
+<!-- ============================================================ -->
+<section>
+  <h2>Next Steps</h2>
+  <div style="max-width:600px; margin:0 auto;">
+    <div class="pipeline" style="flex-direction:column; gap:16px; align-items:stretch;">
+      <div class="step" style="text-align:left; display:flex; align-items:center; gap:14px; padding:14px 20px;">
+        <span style="background:var(--teal); color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">1</span>
+        <span><strong>Statement of Work</strong> &mdash; Finalize scope, milestones, and terms</span>
+      </div>
+      <div class="step" style="text-align:left; display:flex; align-items:center; gap:14px; padding:14px 20px;">
+        <span style="background:var(--teal); color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">2</span>
+        <span><strong>Kickoff Meeting</strong> &mdash; Align team, access, and sprint cadence</span>
+      </div>
+      <div class="step" style="text-align:left; display:flex; align-items:center; gap:14px; padding:14px 20px;">
+        <span style="background:var(--teal); color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">3</span>
+        <span><strong>Environment Access</strong> &mdash; AWS account, Snowflake, Git repos</span>
+      </div>
+      <div class="step highlight" style="text-align:left; display:flex; align-items:center; gap:14px; padding:14px 20px;">
+        <span style="background:white; color:var(--teal); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;">4</span>
+        <span style="color:white;"><strong>Sprint 1 Begins</strong> &mdash; Foundation infrastructure in week 1</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Here's how we move forward. Step one: we finalize the Statement of Work with exact scope and milestones. Step two: kickoff meeting to align the team. Step three: we get access to your AWS account, Snowflake, and code repos. Step four: Sprint 1 begins and we start building the foundation infrastructure. We can have the SOW ready within a week.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17: THANK YOU -->
+<!-- ============================================================ -->
+<section class="section-divider center-slide">
+  <div>
+    <svg width="180" height="48" viewBox="0 0 180 48" style="margin-bottom:0.5em;">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h2>Thank You</h2>
+  <p style="font-size:1em; margin-top:0.5em;">Questions &amp; Discussion</p>
+  <p style="font-size:0.65em; color:var(--gray-mid); margin-top:1.5em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    phData | Data &amp; ML Consulting
+  </p>
+  <aside class="notes">
+    Thank you for your time today. I'm happy to dive into any area in more detail — whether that's technical architecture, specific model deployment patterns, pricing, or timeline. What questions do you have?
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- APPENDIX SLIDES -->
+<!-- ============================================================ -->
+
+<!-- A1: DETAILED ARCHITECTURE -->
+<section>
+  <div class="appendix-label">APPENDIX A1</div>
+  <h2>Detailed Architecture</h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 500" width="840" height="460" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- VPC boundary -->
+      <rect x="10" y="10" width="900" height="480" rx="12" fill="#f8fafc" stroke="#1B3A5C" stroke-width="2" stroke-dasharray="8"/>
+      <text x="30" y="35" font-size="13" font-weight="700" fill="#1B3A5C">AWS VPC (10.0.0.0/16)</text>
+
+      <!-- Public subnet -->
+      <rect x="30" y="50" width="420" height="90" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="45" y="70" font-size="10" font-weight="600" fill="#6b7a8d">Public Subnet (10.0.1.0/24)</text>
+      <rect x="45" y="80" width="110" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">API Gateway</text>
+      <text x="100" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">REST + WebSocket</text>
+      <rect x="175" y="80" width="110" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="230" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">ALB</text>
+      <text x="230" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">Load Balancer</text>
+      <rect x="305" y="80" width="130" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="370" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">CloudFront CDN</text>
+      <text x="370" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">Edge caching</text>
+
+      <!-- Private subnet - Compute -->
+      <rect x="30" y="155" width="420" height="170" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="45" y="175" font-size="10" font-weight="600" fill="#2AADAD">Private Subnet - Compute (10.0.2.0/24)</text>
+
+      <!-- SageMaker endpoints -->
+      <rect x="45" y="188" width="190" height="120" rx="5" fill="#fff" stroke="#2AADAD"/>
+      <text x="140" y="206" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">SageMaker Endpoints</text>
+      <rect x="55" y="214" width="80" height="24" rx="3" fill="#e74c3c"/>
+      <text x="95" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Fraud (ml.g5)</text>
+      <rect x="145" y="214" width="80" height="24" rx="3" fill="#e74c3c"/>
+      <text x="185" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Reco (ml.g5)</text>
+      <rect x="55" y="244" width="80" height="24" rx="3" fill="#d4a017"/>
+      <text x="95" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Pricing (ml.m5)</text>
+      <rect x="145" y="244" width="80" height="24" rx="3" fill="#2980b9"/>
+      <text x="185" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Batch (ml.m5)</text>
+      <text x="140" y="296" text-anchor="middle" font-size="8" fill="#6b7a8d">Auto-scaling: 2-20 instances</text>
+
+      <!-- EKS -->
+      <rect x="255" y="188" width="180" height="120" rx="5" fill="#fff" stroke="#2AADAD"/>
+      <text x="345" y="206" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">EKS Cluster</text>
+      <rect x="265" y="214" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="302" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">MLflow</text>
+      <rect x="350" y="214" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="387" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Monitoring</text>
+      <rect x="265" y="244" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="302" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Feature Svc</text>
+      <rect x="350" y="244" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="387" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">API Layer</text>
+      <text x="345" y="296" text-anchor="middle" font-size="8" fill="#6b7a8d">Managed node groups, Karpenter</text>
+
+      <!-- Streaming -->
+      <rect x="30" y="340" width="420" height="70" rx="6" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="45" y="360" font-size="10" font-weight="600" fill="#f39c12">Streaming Layer</text>
+      <rect x="45" y="370" width="120" height="28" rx="4" fill="#f39c12"/>
+      <text x="105" y="388" text-anchor="middle" font-size="9" fill="white" font-weight="600">Kinesis Data Streams</text>
+      <rect x="180" y="370" width="120" height="28" rx="4" fill="#f39c12"/>
+      <text x="240" y="388" text-anchor="middle" font-size="9" fill="white" font-weight="600">Step Functions</text>
+      <rect x="315" y="370" width="120" height="28" rx="4" fill="#f39c12"/>
+      <text x="375" y="388" text-anchor="middle" font-size="9" fill="white" font-weight="600">EventBridge</text>
+
+      <!-- Private subnet - Data -->
+      <rect x="470" y="50" width="420" height="170" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="485" y="70" font-size="10" font-weight="600" fill="#6b7a8d">Private Subnet - Data (10.0.3.0/24)</text>
+
+      <rect x="485" y="82" width="130" height="50" rx="4" fill="#1B3A5C"/>
+      <text x="550" y="104" text-anchor="middle" font-size="10" fill="white" font-weight="600">Snowflake</text>
+      <text x="550" y="120" text-anchor="middle" font-size="8" fill="#2AADAD">via PrivateLink</text>
+
+      <rect x="630" y="82" width="120" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="690" y="104" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">S3 Buckets</text>
+      <text x="690" y="118" text-anchor="middle" font-size="8" fill="#6b7a8d">Models, Features, Data</text>
+
+      <rect x="760" y="82" width="115" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="817" y="104" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">DynamoDB</text>
+      <text x="817" y="118" text-anchor="middle" font-size="8" fill="#6b7a8d">Online Features</text>
+
+      <rect x="485" y="145" width="130" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="550" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Feature Store</text>
+      <text x="550" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">SageMaker FS</text>
+
+      <rect x="630" y="145" width="120" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="690" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">ElastiCache</text>
+      <text x="690" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">Redis (Reco cache)</text>
+
+      <rect x="760" y="145" width="115" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="817" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">ECR</text>
+      <text x="817" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">Container Images</text>
+
+      <!-- Security & Monitoring -->
+      <rect x="470" y="235" width="420" height="100" rx="6" fill="#fdecea" stroke="#e74c3c"/>
+      <text x="485" y="255" font-size="10" font-weight="600" fill="#e74c3c">Security &amp; Compliance</text>
+      <rect x="485" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="532" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">IAM</text>
+      <text x="532" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Role-based</text>
+      <rect x="590" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="637" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">KMS</text>
+      <text x="637" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Encryption</text>
+      <rect x="695" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="742" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">CloudTrail</text>
+      <text x="742" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Audit logs</text>
+      <rect x="800" y="268" width="80" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="840" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">WAF</text>
+      <text x="840" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Firewall</text>
+
+      <!-- Monitoring -->
+      <rect x="470" y="350" width="420" height="60" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="485" y="370" font-size="10" font-weight="600" fill="#2AADAD">Observability</text>
+      <rect x="485" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="545" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">CloudWatch</text>
+      <rect x="615" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="675" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">Model Monitor</text>
+      <rect x="745" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="805" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">SNS Alerts</text>
+
+      <!-- CI/CD -->
+      <rect x="470" y="425" width="420" height="55" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="485" y="445" font-size="10" font-weight="600" fill="#6b7a8d">CI/CD Pipeline</text>
+      <rect x="485" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="530" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">CodeCommit</text>
+      <rect x="585" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="630" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">CodePipeline</text>
+      <rect x="685" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="730" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">CodeBuild</text>
+      <rect x="785" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="830" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">Terraform</text>
+    </svg>
+  </div>
+  <aside class="notes">
+    This is the full infrastructure diagram. Everything runs within a VPC with public and private subnets. SageMaker endpoints run in the private compute subnet with auto-scaling from 2 to 20 instances. Snowflake connects via PrivateLink for security. Redis provides caching for the recommendation engine. Everything is encrypted with KMS, audited with CloudTrail, and monitored with CloudWatch and Model Monitor.
+  </aside>
+</section>
+
+<!-- A2: REAL-TIME SERVING PIPELINE -->
+<section>
+  <div class="appendix-label">APPENDIX A2</div>
+  <h2>Real-Time Serving Pipeline</h2>
+  <div class="two-col">
+    <div>
+      <h3>Fraud Detection Flow</h3>
+      <div class="pipeline" style="flex-direction:column; gap:6px; align-items:stretch;">
+        <div class="step" style="font-size:0.65em;">Transaction Event → Kinesis Stream</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">Lambda: Enrich with online features (DynamoDB)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.65em;">SageMaker Endpoint (ml.g5.xlarge)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">Score → Approve / Flag / Block</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">Response → Payments API (&lt;100ms e2e)</div>
+      </div>
+    </div>
+    <div>
+      <h3>Recommendation Engine Flow</h3>
+      <div class="pipeline" style="flex-direction:column; gap:6px; align-items:stretch;">
+        <div class="step" style="font-size:0.65em;">Page View / Cart Event → Kinesis</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">Check Redis cache (user → reco)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.65em;">Cache miss → SageMaker Endpoint</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">A/B split: model v1 vs v2</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.65em;">Top-N items → Web/Mobile (&lt;200ms e2e)</div>
+      </div>
+      <p class="small muted" style="margin-top:0.4em;">Fallback: if endpoint timeout → return popular items from cache</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Here's the detail on the real-time pipelines. For fraud detection, a transaction event hits Kinesis, Lambda enriches it with features from DynamoDB, calls the SageMaker endpoint, and returns approve/flag/block — all under 100 milliseconds. For recommendations, we use Redis caching aggressively. On cache miss, we call SageMaker with an A/B split between model versions. If the endpoint times out, we gracefully fall back to popular items from cache.
+  </aside>
+</section>
+
+<!-- A3: BATCH PIPELINE DETAIL -->
+<section>
+  <div class="appendix-label">APPENDIX A3</div>
+  <h2>Batch Pipeline Detail</h2>
+  <div style="text-align:center; margin:0.5em 0;">
+    <div class="pipeline">
+      <div class="step">EventBridge<br><span style="font-size:0.8em;">Cron trigger</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Step Function<br><span style="font-size:0.8em;">Orchestrator</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Data Prep<br><span style="font-size:0.8em;">Snowflake → S3</span></div>
+      <div class="arrow">→</div>
+      <div class="step highlight">SageMaker<br><span style="font-size:0.8em;">Batch Transform</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Validate<br><span style="font-size:0.8em;">Quality checks</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Snowflake<br><span style="font-size:0.8em;">Results table</span></div>
+    </div>
+  </div>
+  <div class="card-grid cols-2" style="margin-top:0.5em;">
+    <div class="card">
+      <h4>Customer Segmentation</h4>
+      <ul>
+        <li><strong>Schedule:</strong> Weekly (Sunday 2am UTC)</li>
+        <li><strong>Input:</strong> 12-month customer behavior features</li>
+        <li><strong>Output:</strong> Segment labels + scores → Snowflake</li>
+        <li><strong>SLA:</strong> Complete within 2 hours</li>
+        <li><strong>Downstream:</strong> CRM sync via Snowflake task</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Inventory Management</h4>
+      <ul>
+        <li><strong>Schedule:</strong> Daily (5am UTC)</li>
+        <li><strong>Input:</strong> Sales history, seasonality, events</li>
+        <li><strong>Output:</strong> 14-day demand forecast per SKU → Snowflake</li>
+        <li><strong>SLA:</strong> Complete within 1 hour</li>
+        <li><strong>Downstream:</strong> Inventory system API push</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Error Handling &amp; Retry Strategy</h4>
+    <p>Step Functions retry with exponential backoff (3 attempts, max 5 min delay). On final failure: SNS alert → PagerDuty → on-call engineer. Previous successful output remains active until new run succeeds.</p>
+  </div>
+  <aside class="notes">
+    The batch pipeline uses EventBridge cron triggers to kick off Step Functions. Data flows from Snowflake to S3, through SageMaker Batch Transform, gets validated, and results land back in Snowflake. The Step Function handles retries with exponential backoff — if all retries fail, we alert via PagerDuty and keep the previous successful output active. Customer segmentation runs weekly, inventory forecasting runs daily.
+  </aside>
+</section>
+
+<!-- A4: MODEL MONITORING -->
+<section>
+  <div class="appendix-label">APPENDIX A4</div>
+  <h2>Model Monitoring &amp; Retraining</h2>
+  <div class="two-col">
+    <div>
+      <h3>Monitoring Stack</h3>
+      <table style="font-size:0.85em;">
+        <thead>
+          <tr><th>Metric</th><th>Tool</th><th>Threshold</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data drift</td><td>Model Monitor</td><td>PSI &gt; 0.2</td></tr>
+          <tr><td>Prediction drift</td><td>Model Monitor</td><td>KS stat &gt; 0.1</td></tr>
+          <tr><td>Accuracy decay</td><td>Custom metric</td><td>&gt;5% from baseline</td></tr>
+          <tr><td>Latency (p99)</td><td>CloudWatch</td><td>Model-specific SLA</td></tr>
+          <tr><td>Error rate</td><td>CloudWatch</td><td>&gt;1% 5xx</td></tr>
+          <tr><td>Throughput</td><td>CloudWatch</td><td>Per-model baseline</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Retraining Pipeline</h3>
+      <div class="pipeline" style="flex-direction:column; gap:4px; align-items:stretch;">
+        <div class="step" style="font-size:0.6em;">Drift alert triggers retraining</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">SageMaker Training Job (new data)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Validation against holdout set</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Register in MLflow as "Challenger"</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step highlight" style="font-size:0.6em;">Champion vs Challenger (shadow traffic)</div>
+        <div class="arrow" style="text-align:center;">↓</div>
+        <div class="step" style="font-size:0.6em;">Auto-promote if Challenger wins</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Monitoring uses SageMaker Model Monitor for data drift and prediction drift, plus CloudWatch for operational metrics. When drift exceeds thresholds — PSI above 0.2, for example — it triggers an automated retraining pipeline. The new model runs as a "challenger" against the current "champion" on shadow traffic. If the challenger performs better on the holdout set, it auto-promotes. This means your models stay fresh without manual intervention.
+  </aside>
+</section>
+
+<!-- A5: CI/CD FOR ML -->
+<section>
+  <div class="appendix-label">APPENDIX A5</div>
+  <h2>CI/CD for ML</h2>
+  <div style="text-align:center; margin:0.5em 0;">
+    <div class="pipeline">
+      <div class="step">Git Push<br><span style="font-size:0.8em;">CodeCommit</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Build &amp; Test<br><span style="font-size:0.8em;">CodeBuild</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Model Validation<br><span style="font-size:0.8em;">Accuracy gates</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Stage Deploy<br><span style="font-size:0.8em;">Staging env</span></div>
+      <div class="arrow">→</div>
+      <div class="step highlight">Canary Deploy<br><span style="font-size:0.8em;">10% → 50% → 100%</span></div>
+      <div class="arrow">→</div>
+      <div class="step">Production<br><span style="font-size:0.8em;">Full traffic</span></div>
+    </div>
+  </div>
+  <div class="card-grid cols-2" style="margin-top:0.5em;">
+    <div class="card">
+      <h4>Model Pipeline (ML Code Changes)</h4>
+      <ul>
+        <li>Unit tests on feature engineering code</li>
+        <li>Model validation: accuracy, latency, bias checks</li>
+        <li>Register passing model in MLflow</li>
+        <li>Deploy to staging → integration tests</li>
+        <li>Canary rollout: 10% → 50% → 100% with rollback</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Infra Pipeline (Terraform Changes)</h4>
+      <ul>
+        <li><code>terraform plan</code> on PR (auto-comment diff)</li>
+        <li>Security scan (tfsec / Checkov)</li>
+        <li>Apply to staging on merge to main</li>
+        <li>Manual approval gate for production</li>
+        <li>State managed in S3 + DynamoDB locking</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    We have two CI/CD pipelines. The model pipeline handles ML code changes — it runs unit tests, validates model accuracy against gates, deploys to staging for integration tests, then does canary rollout in production. If metrics degrade during canary, it auto-rolls back. The infrastructure pipeline handles Terraform changes — plan on PR, security scan, apply to staging on merge, manual approval for production. Terraform state is managed in S3 with DynamoDB locking.
+  </aside>
+</section>
+
+<!-- A6: SECURITY & GDPR -->
+<section>
+  <div class="appendix-label">APPENDIX A6</div>
+  <h2>Security &amp; GDPR Compliance</h2>
+  <div class="card-grid cols-2">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Encryption</h4>
+      <ul>
+        <li><strong>At rest:</strong> KMS-managed keys for S3, EBS, RDS, DynamoDB</li>
+        <li><strong>In transit:</strong> TLS 1.3 everywhere, VPC endpoints</li>
+        <li><strong>Snowflake:</strong> PrivateLink, no public internet exposure</li>
+        <li><strong>Model artifacts:</strong> Encrypted in S3, signed with KMS</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Access Control</h4>
+      <ul>
+        <li><strong>IAM:</strong> Least-privilege roles per service</li>
+        <li><strong>SageMaker:</strong> Execution roles scoped to specific models</li>
+        <li><strong>Snowflake:</strong> Row-level security for PII tables</li>
+        <li><strong>MFA:</strong> Required for all human access</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>GDPR Compliance</h4>
+      <ul>
+        <li><strong>PII masking:</strong> Tokenization in feature pipelines</li>
+        <li><strong>Right to erasure:</strong> Automated deletion pipeline</li>
+        <li><strong>Data retention:</strong> Configurable per data class</li>
+        <li><strong>Consent tracking:</strong> Integration with consent management</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Audit &amp; Logging</h4>
+      <ul>
+        <li><strong>CloudTrail:</strong> All API calls logged</li>
+        <li><strong>VPC Flow Logs:</strong> Network traffic audit</li>
+        <li><strong>Model predictions:</strong> Logged for explainability</li>
+        <li><strong>Access reviews:</strong> Quarterly IAM audit</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Security and GDPR are first-class concerns, not afterthoughts. Everything is encrypted at rest with KMS and in transit with TLS 1.3. Snowflake connects via PrivateLink — no data traverses the public internet. For GDPR, we implement PII tokenization in the feature pipelines, an automated right-to-erasure pipeline, and configurable data retention policies. All access is logged in CloudTrail, and we do quarterly IAM audits.
+  </aside>
+</section>
+
+<!-- A7: SCALABILITY -->
+<section>
+  <div class="appendix-label">APPENDIX A7</div>
+  <h2>Scalability &amp; Peak Load</h2>
+  <div class="two-col">
+    <div>
+      <h3>Auto-Scaling Strategy</h3>
+      <table style="font-size:0.85em;">
+        <thead>
+          <tr><th>Component</th><th>Min</th><th>Max</th><th>Metric</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Fraud endpoint</td><td>2</td><td>20</td><td>Invocations/min</td></tr>
+          <tr><td>Reco endpoint</td><td>2</td><td>20</td><td>Invocations/min</td></tr>
+          <tr><td>Pricing endpoint</td><td>1</td><td>10</td><td>Invocations/min</td></tr>
+          <tr><td>Kinesis shards</td><td>4</td><td>32</td><td>Bytes/sec</td></tr>
+          <tr><td>EKS nodes</td><td>3</td><td>15</td><td>CPU utilization</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Peak Load Preparation</h3>
+      <ul>
+        <li><strong>Pre-scaling:</strong> Schedule-based scaling before known peaks (Black Friday, Cyber Monday)</li>
+        <li><strong>Warm pools:</strong> SageMaker warm pool for faster instance launch</li>
+        <li><strong>Load testing:</strong> Locust framework simulating 10x normal traffic</li>
+        <li><strong>Circuit breakers:</strong> Graceful degradation when capacity exceeded</li>
+        <li><strong>CDN caching:</strong> CloudFront for recommendation API responses (60s TTL)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Target Performance SLAs</h4>
+    <p>Fraud: p99 &lt;100ms, 99.99% uptime &nbsp;|&nbsp; Reco: p99 &lt;200ms, 99.9% uptime &nbsp;|&nbsp; Pricing: p99 &lt;1s, 99.9% uptime &nbsp;|&nbsp; Batch: complete within SLA window, 99.5% success rate</p>
+  </div>
+  <aside class="notes">
+    For scalability, each SageMaker endpoint auto-scales independently based on invocation rate. Fraud detection scales from 2 to 20 instances, Kinesis from 4 to 32 shards. For known peaks like Black Friday, we use schedule-based pre-scaling to have capacity ready before traffic spikes. SageMaker warm pools keep instances ready for fast launch. We validate all of this with Locust load testing at 10x normal traffic during Phase 4.
+  </aside>
+</section>
+
+<!-- A8: FEATURE STORE -->
+<section>
+  <div class="appendix-label">APPENDIX A8</div>
+  <h2>Feature Store Design</h2>
+  <div class="two-col">
+    <div>
+      <h3>Online Store (Real-Time)</h3>
+      <div class="card" style="border-top-color:#e74c3c;">
+        <h4>SageMaker Feature Store + DynamoDB</h4>
+        <ul>
+          <li><strong>Latency:</strong> &lt;10ms single-digit ms lookups</li>
+          <li><strong>Use case:</strong> Fraud features (transaction velocity, device fingerprint, account age)</li>
+          <li><strong>Use case:</strong> Reco features (user embeddings, recent behavior)</li>
+          <li><strong>Update:</strong> Streaming via Kinesis → Lambda → Feature Store</li>
+          <li><strong>TTL:</strong> Feature-specific (1hr to 30 days)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Offline Store (Batch)</h3>
+      <div class="card">
+        <h4>S3 + Snowflake</h4>
+        <ul>
+          <li><strong>Format:</strong> Parquet on S3, tables in Snowflake</li>
+          <li><strong>Use case:</strong> Segmentation features (12-month aggregates)</li>
+          <li><strong>Use case:</strong> Inventory features (historical sales, seasonality)</li>
+          <li><strong>Training:</strong> Point-in-time correct feature retrieval</li>
+          <li><strong>Versioning:</strong> Feature group versions in SageMaker FS</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Feature Groups (Examples)</h4>
+    <table style="font-size:0.85em;">
+      <thead>
+        <tr><th>Group</th><th>Key</th><th>Features</th><th>Store</th><th>Update Freq</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>User Profile</td><td>user_id</td><td>age, tenure, lifetime_value, segment</td><td>Both</td><td>Daily</td></tr>
+        <tr><td>Transaction Velocity</td><td>user_id</td><td>txn_count_1h, txn_count_24h, avg_amount_7d</td><td>Online</td><td>Real-time</td></tr>
+        <tr><td>Product Embeddings</td><td>product_id</td><td>embedding_vector (128d), category, price_tier</td><td>Both</td><td>Weekly</td></tr>
+        <tr><td>Demand Signals</td><td>sku_id</td><td>sales_7d, sales_30d, trend, seasonality_idx</td><td>Offline</td><td>Daily</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="notes">
+    The feature store has two tiers. The online store uses SageMaker Feature Store backed by DynamoDB for single-digit millisecond lookups — critical for fraud detection and recommendations. The offline store uses S3 and Snowflake for batch features like customer segmentation aggregates. We maintain point-in-time correctness for training to prevent data leakage. Feature groups are versioned so we can track changes over time.
+  </aside>
+</section>
+
+</div><!-- end slides -->
+</div><!-- end reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  width: 1100,
+  height: 700,
+  margin: 0.08,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  controlsTutorial: false,
+  progress: true,
+  center: false,
+  navigationMode: 'linear'
+});
+</script>
+</body>
+</html>

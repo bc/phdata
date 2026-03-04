@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Custom MLOps Platform for AwesomeStuff.com | phData</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.min.css">
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2AADAD;
+    --teal-light: #e6f7f7;
+    --gray-light: #f4f6f8;
+    --gray-mid: #6b7a8d;
+    --white: #ffffff;
+    --text: #2c3e50;
+    --danger: #e74c3c;
+    --success: #27ae60;
+    --orange: #f39c12;
+  }
+
+  .reveal {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--text);
+    font-size: 28px;
+  }
+
+  .reveal h1, .reveal h2, .reveal h3 {
+    color: var(--navy);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.01em;
+  }
+
+  .reveal h1 { font-size: 2.0em; }
+  .reveal h2 { font-size: 1.5em; margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.15em; color: var(--teal); margin-bottom: 0.4em; }
+
+  .reveal section { text-align: left; }
+
+  .reveal .center-slide { text-align: center; }
+
+  .reveal ul, .reveal ol {
+    display: block;
+    margin-left: 0.8em;
+    font-size: 0.88em;
+    line-height: 1.7;
+  }
+
+  .reveal li { margin-bottom: 0.3em; }
+
+  .reveal .slide-number {
+    background: var(--navy);
+    color: var(--white);
+    font-size: 14px;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* phData top bar */
+  .reveal .slides section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--navy), var(--teal));
+  }
+
+  /* Title slide */
+  .title-slide {
+    text-align: center !important;
+  }
+  .title-slide h1 {
+    font-size: 1.8em;
+    margin-bottom: 0.15em;
+  }
+  .title-slide .subtitle {
+    color: var(--teal);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 1.2em;
+  }
+  .title-slide .meta {
+    color: var(--gray-mid);
+    font-size: 0.65em;
+    margin-top: 1.5em;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 0.5em;
+  }
+  .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .card-grid.cols-5 { grid-template-columns: 1fr 1fr 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--white);
+    border: 1px solid #dde3ea;
+    border-radius: 8px;
+    padding: 18px;
+    border-top: 3px solid var(--teal);
+  }
+  .card h4 {
+    color: var(--navy);
+    font-size: 0.78em;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+  }
+  .card p, .card ul {
+    font-size: 0.68em;
+    margin: 0;
+    color: var(--gray-mid);
+    line-height: 1.5;
+  }
+  .card ul { margin-left: 1em; }
+
+  .card-accent { border-top-color: var(--navy); }
+  .card-success { border-top-color: var(--success); }
+  .card-warn { border-top-color: var(--orange); }
+
+  /* Stat callouts */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin: 0.6em 0;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 18px 28px;
+    background: var(--gray-light);
+    border-radius: 8px;
+    min-width: 140px;
+  }
+  .stat-box .number {
+    font-size: 1.6em;
+    font-weight: 800;
+    color: var(--teal);
+    display: block;
+  }
+  .stat-box .label {
+    font-size: 0.6em;
+    color: var(--gray-mid);
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* Phase badge */
+  .phase-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.55em;
+    padding: 3px 12px;
+    border-radius: 12px;
+    margin-bottom: 0.4em;
+    font-weight: 600;
+  }
+
+  /* Tables */
+  .reveal table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72em;
+    margin-top: 0.4em;
+  }
+  .reveal table th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .reveal table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #e0e5eb;
+  }
+  .reveal table tr:nth-child(even) td {
+    background: var(--gray-light);
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-size: 0.55em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-rt { background: #fdecea; color: var(--danger); }
+  .tag-batch { background: #eaf4fe; color: #2980b9; }
+  .tag-nrt { background: #fef9e7; color: #d4a017; }
+  .tag-algo { background: #e6f7f7; color: var(--teal); }
+
+  /* Two-column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+  }
+
+  /* Section divider */
+  .section-divider {
+    text-align: center !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .section-divider h2 {
+    font-size: 1.8em;
+    margin-bottom: 0.2em;
+  }
+  .section-divider p {
+    color: var(--gray-mid);
+    font-size: 0.85em;
+  }
+
+  /* SVG diagrams */
+  .diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 0.3em 0;
+  }
+  .diagram-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Appendix label */
+  .appendix-label {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.45em;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  /* Audience tag */
+  .audience-tag {
+    font-size: 0.45em;
+    color: var(--gray-mid);
+    font-weight: 400;
+    margin-left: 8px;
+  }
+
+  /* Smaller text helper */
+  .small { font-size: 0.75em; }
+  .muted { color: var(--gray-mid); }
+
+  /* Pipeline boxes */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    margin: 0.5em 0;
+    flex-wrap: wrap;
+  }
+  .pipeline .step {
+    background: var(--gray-light);
+    border: 1px solid #d0d8e0;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 0.62em;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: center;
+    min-width: 100px;
+  }
+  .pipeline .step.highlight {
+    background: var(--teal);
+    color: white;
+    border-color: var(--teal);
+  }
+  .pipeline .arrow {
+    font-size: 1.2em;
+    color: var(--teal);
+    padding: 0 4px;
+  }
+
+  /* Gantt chart - 16 weeks */
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 140px repeat(16, 1fr);
+    gap: 2px;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.58em;
+  }
+  .gantt-label {
+    font-weight: 600;
+    color: var(--navy);
+    text-align: right;
+    padding-right: 10px;
+  }
+  .gantt-bar {
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9em;
+  }
+  .gantt-header {
+    font-size: 0.5em;
+    text-align: center;
+    color: var(--gray-mid);
+    font-weight: 600;
+  }
+
+  /* Notes for speaker */
+  .reveal .speaker-notes {
+    font-size: 16px;
+  }
+
+  /* Print overrides */
+  @media print {
+    .reveal .slides section {
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ============================================================ -->
+<section class="title-slide center-slide">
+  <div style="margin-bottom:0.3em;">
+    <svg width="180" height="48" viewBox="0 0 180 48">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h1>Custom MLOps Platform<br>for AwesomeStuff.com</h1>
+  <div class="subtitle">Purpose-Built ML, Full Ownership</div>
+  <p style="font-size:0.7em; color:var(--gray-mid); margin-top:1em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    <span style="font-size:0.85em;">February 2026</span>
+  </p>
+  <aside class="notes">
+    Welcome everyone. Today I'll walk you through how phData will build you a bespoke ML platform on Kubernetes that you fully own and control. We pick the right algorithm and framework for each job — no vendor lock-in, no managed-service constraints. Purpose-built ML, delivered in 16 weeks.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: AGENDA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Agenda</h2>
+  <ol style="font-size:0.85em; line-height:2;">
+    <li>About phData</li>
+    <li>Understanding Your Challenge</li>
+    <li>Our Approach &mdash; Build for Ownership</li>
+    <li>Architecture Overview</li>
+    <li>Algorithm Selection &mdash; Right Tool for Every Job</li>
+    <li>Business Value &amp; ROI</li>
+    <li>Phase Details &amp; Timeline</li>
+    <li>Resource Plan &amp; Pricing</li>
+    <li>Why phData &amp; Next Steps</li>
+  </ol>
+  <aside class="notes">
+    Here's our roadmap for today. We start with who we are, align on the challenge, then walk through the custom architecture and algorithm choices — this is where we differentiate. We finish with pricing and next steps. Deep technical details are in the appendix for our Q&A.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: ABOUT PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>About phData</h2>
+  <div class="stat-row">
+    <div class="stat-box">
+      <span class="number">450+</span>
+      <span class="label">Data &amp; ML Engineers</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">300+</span>
+      <span class="label">Enterprise Clients</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">K8s</span>
+      <span class="label">Kubernetes Experts</span>
+    </div>
+    <div class="stat-box">
+      <span class="number">OSS</span>
+      <span class="label">Open-Source First</span>
+    </div>
+  </div>
+  <div class="card-grid cols-3" style="margin-top:0.6em;">
+    <div class="card">
+      <h4>Custom ML &amp; AI</h4>
+      <p>100+ production ML deployments using purpose-built algorithms — XGBoost, PyTorch, LightGBM, FAISS — matched to each problem</p>
+    </div>
+    <div class="card">
+      <h4>Kubernetes &amp; MLOps</h4>
+      <p>EKS-native platforms with Triton, KServe, Feast, MLflow, and Argo CD. Full GitOps-driven ML lifecycle</p>
+    </div>
+    <div class="card">
+      <h4>Open-Source Mastery</h4>
+      <p>Deep expertise across the open-source ML stack. No vendor lock-in. You own every line of code and configuration</p>
+    </div>
+  </div>
+  <aside class="notes">
+    phData is one of the largest pure-play data and ML consultancies. What sets us apart for this engagement is our deep Kubernetes and open-source ML expertise. We don't just wrap managed services — we pick the right algorithm and framework for each problem and deploy it on infrastructure you fully own. 100+ production ML models, all built with purpose-selected tools.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: UNDERSTANDING YOUR CHALLENGE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Understanding Your Challenge</h2>
+  <div class="two-col">
+    <div>
+      <h3>5 Trained Models, Not Yet in Production</h3>
+      <table style="font-size:0.85em;">
+        <tr><td><strong>Recommendation Engine</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Fraud Detection</strong></td><td><span class="tag tag-rt">Real-Time</span></td></tr>
+        <tr><td><strong>Inventory Management</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Customer Segmentation</strong></td><td><span class="tag tag-batch">Batch</span></td></tr>
+        <tr><td><strong>Dynamic Pricing</strong></td><td><span class="tag tag-nrt">Near-Real-Time</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Key Pain Points</h3>
+      <ul>
+        <li><strong>Scalability</strong> &mdash; Peak shopping traffic (Black Friday, holidays)</li>
+        <li><strong>Real-time latency</strong> &mdash; Fraud &amp; reco must respond in ms</li>
+        <li><strong>System integration</strong> &mdash; CRM, inventory, payments, Snowflake</li>
+        <li><strong>Monitoring gaps</strong> &mdash; No drift detection or retraining pipeline</li>
+        <li><strong>Compliance</strong> &mdash; GDPR, PII handling, audit trails</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Let me make sure we're aligned on the challenge. You have five models that your data science team has trained and validated — they work. The gap is getting them into production reliably, at scale, with proper monitoring and compliance. Our approach: build a custom platform with the right algorithm for each job, deployed on Kubernetes infrastructure you fully own and control.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: OUR APPROACH -->
+<!-- ============================================================ -->
+<section>
+  <h2>Our Approach: Build for Ownership</h2>
+  <p class="muted small" style="margin-bottom:0.5em;">Crawl &rarr; Walk &rarr; Run &mdash; Custom-built production value in 16 weeks</p>
+  <div class="card-grid cols-4">
+    <div class="card card-accent">
+      <h4>Phase 1</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Foundation</p>
+      <p>Weeks 1-3</p>
+      <p>EKS cluster, Feast, MLflow, Airflow, CI/CD, Kafka</p>
+    </div>
+    <div class="card">
+      <h4>Phase 2</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Batch Models</p>
+      <p>Weeks 4-7</p>
+      <p>HDBSCAN segmentation + LightGBM/Prophet inventory</p>
+    </div>
+    <div class="card">
+      <h4>Phase 3</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Real-Time Models</p>
+      <p>Weeks 8-12</p>
+      <p>XGBoost fraud, two-tower reco, Thompson sampling pricing</p>
+    </div>
+    <div class="card card-success">
+      <h4>Phase 4</h4>
+      <p style="color:var(--navy); font-weight:700; margin-bottom:6px;">Harden &amp; Handoff</p>
+      <p>Weeks 13-16</p>
+      <p>Load testing, GDPR audit, training, knowledge transfer</p>
+    </div>
+  </div>
+  <div style="margin-top:0.7em; text-align:center;">
+    <div class="pipeline">
+      <div class="step">Foundation</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Batch (Low Risk)</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step highlight">Real-Time (High Value)</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Harden &amp; Transfer</div>
+    </div>
+  </div>
+  <aside class="notes">
+    We take the same crawl-walk-run approach, but build everything custom. Phase 1 stands up the Kubernetes-based platform — EKS, Feast feature store, MLflow, Airflow, Argo CD. Phase 2 deploys batch models with purpose-selected algorithms. Phase 3 tackles real-time models on Triton Inference Server. Phase 4 hardens everything and transfers full ownership. The timeline is 16 weeks instead of 14 because we're building more bespoke infrastructure — but what you get is a platform you fully own with zero vendor lock-in.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: ARCHITECTURE OVERVIEW -->
+<!-- ============================================================ -->
+<section>
+  <h2>Architecture Overview <span class="audience-tag">Dir. Technology &bull; Architect</span></h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 440" width="840" height="400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- Background -->
+      <rect x="10" y="10" width="900" height="420" rx="12" fill="#f8fafc" stroke="#d0d8e0"/>
+
+      <!-- Data Sources -->
+      <rect x="30" y="50" width="130" height="340" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="95" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">DATA SOURCES</text>
+      <rect x="40" y="65" width="110" height="34" rx="5" fill="#1B3A5C"/>
+      <text x="95" y="87" text-anchor="middle" font-size="10" fill="white" font-weight="600">Snowflake</text>
+      <rect x="40" y="108" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="130" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">S3 Data Lake</text>
+      <rect x="40" y="151" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="173" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Kafka (MSK)</text>
+      <rect x="40" y="194" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="216" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">CRM / ERP</text>
+      <rect x="40" y="237" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="259" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Payments API</text>
+      <rect x="40" y="280" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="302" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Web / Mobile</text>
+      <rect x="40" y="323" width="110" height="34" rx="5" fill="#fff" stroke="#b8c5d4"/>
+      <text x="95" y="345" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">PostgreSQL</text>
+
+      <!-- Feature Store (Feast) -->
+      <rect x="185" y="50" width="130" height="120" rx="8" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="250" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">FEATURE STORE</text>
+      <text x="250" y="75" text-anchor="middle" font-size="11" fill="#1B3A5C" font-weight="600">Feast</text>
+      <text x="250" y="93" text-anchor="middle" font-size="9" fill="#6b7a8d">Online: Redis</text>
+      <text x="250" y="107" text-anchor="middle" font-size="9" fill="#6b7a8d">Offline: S3 / Parquet</text>
+      <text x="250" y="121" text-anchor="middle" font-size="9" fill="#6b7a8d">Feature Registry</text>
+      <text x="250" y="155" text-anchor="middle" font-size="9" fill="#2AADAD" font-weight="600">Open Source</text>
+
+      <!-- ML Platform -->
+      <rect x="185" y="190" width="130" height="110" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="250" y="178" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">ML PLATFORM</text>
+      <text x="250" y="215" text-anchor="middle" font-size="11" fill="#1B3A5C" font-weight="600">MLflow on EKS</text>
+      <text x="250" y="235" text-anchor="middle" font-size="9" fill="#6b7a8d">Experiment Tracking</text>
+      <text x="250" y="250" text-anchor="middle" font-size="9" fill="#6b7a8d">Model Registry</text>
+      <text x="250" y="265" text-anchor="middle" font-size="9" fill="#6b7a8d">S3 Artifact Store</text>
+      <text x="250" y="288" text-anchor="middle" font-size="9" fill="#f39c12" font-weight="600">Open Source</text>
+
+      <!-- EKS Serving Layer -->
+      <rect x="345" y="50" width="250" height="250" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="470" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">EKS MODEL SERVING</text>
+
+      <!-- Real-time box -->
+      <rect x="355" y="58" width="230" height="110" rx="6" fill="#fdecea" stroke="#e74c3c" stroke-dasharray="4"/>
+      <text x="470" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#e74c3c">REAL-TIME (Triton / KServe)</text>
+      <rect x="365" y="85" width="100" height="28" rx="4" fill="#e74c3c"/>
+      <text x="415" y="103" text-anchor="middle" font-size="8" fill="white" font-weight="600">Fraud &lt;50ms</text>
+      <rect x="475" y="85" width="100" height="28" rx="4" fill="#e74c3c"/>
+      <text x="525" y="103" text-anchor="middle" font-size="8" fill="white" font-weight="600">Reco &lt;150ms</text>
+      <rect x="365" y="120" width="100" height="28" rx="4" fill="#d4a017"/>
+      <text x="415" y="138" text-anchor="middle" font-size="8" fill="white" font-weight="600">Pricing ~500ms</text>
+      <text x="525" y="138" text-anchor="middle" font-size="8" fill="#6b7a8d">FastAPI</text>
+      <text x="525" y="148" text-anchor="middle" font-size="8" fill="#6b7a8d">+ KEDA scaling</text>
+
+      <!-- Batch box -->
+      <rect x="355" y="178" width="230" height="60" rx="6" fill="#eaf4fe" stroke="#2980b9" stroke-dasharray="4"/>
+      <text x="470" y="195" text-anchor="middle" font-size="10" font-weight="700" fill="#2980b9">BATCH (Airflow)</text>
+      <rect x="365" y="203" width="100" height="26" rx="4" fill="#2980b9"/>
+      <text x="415" y="220" text-anchor="middle" font-size="8" fill="white" font-weight="600">Segmentation</text>
+      <rect x="475" y="203" width="100" height="26" rx="4" fill="#2980b9"/>
+      <text x="525" y="220" text-anchor="middle" font-size="8" fill="white" font-weight="600">Inventory</text>
+
+      <!-- Algorithms label -->
+      <rect x="355" y="248" width="230" height="42" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="470" y="266" text-anchor="middle" font-size="9" font-weight="700" fill="#2AADAD">XGBoost | PyTorch | LightGBM</text>
+      <text x="470" y="280" text-anchor="middle" font-size="8" fill="#6b7a8d">HDBSCAN | Prophet | FAISS | Thompson Sampling</text>
+
+      <!-- Streaming -->
+      <rect x="345" y="315" width="250" height="75" rx="8" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="470" y="305" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">STREAMING &amp; ORCHESTRATION</text>
+      <text x="470" y="342" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Apache Kafka (MSK)</text>
+      <text x="470" y="358" text-anchor="middle" font-size="9" fill="#6b7a8d">Event ingestion &amp; real-time triggers</text>
+      <text x="470" y="374" text-anchor="middle" font-size="9" fill="#6b7a8d">Airflow on EKS for batch orchestration</text>
+
+      <!-- Monitoring -->
+      <rect x="625" y="50" width="265" height="140" rx="8" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="757" y="38" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">MONITORING &amp; OPS</text>
+      <text x="757" y="75" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Prometheus + Grafana</text>
+      <text x="757" y="92" text-anchor="middle" font-size="9" fill="#6b7a8d">Latency, throughput, errors</text>
+      <text x="757" y="110" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Evidently AI</text>
+      <text x="757" y="127" text-anchor="middle" font-size="9" fill="#6b7a8d">Data drift &amp; model quality</text>
+      <text x="757" y="148" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Automated Retraining</text>
+      <text x="757" y="165" text-anchor="middle" font-size="9" fill="#6b7a8d">Champion / Challenger</text>
+      <text x="757" y="182" text-anchor="middle" font-size="9" fill="#2AADAD" font-weight="600">Open Source</text>
+
+      <!-- Security -->
+      <rect x="625" y="205" width="265" height="90" rx="8" fill="#fdecea" stroke="#e74c3c"/>
+      <text x="757" y="195" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">SECURITY &amp; GDPR</text>
+      <text x="757" y="234" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">IAM + KMS + OPA Gatekeeper</text>
+      <text x="757" y="254" text-anchor="middle" font-size="9" fill="#6b7a8d">Pod security, network policies</text>
+      <text x="757" y="274" text-anchor="middle" font-size="9" fill="#6b7a8d">PII masking, audit logs, right to erasure</text>
+
+      <!-- CI/CD -->
+      <rect x="625" y="315" width="265" height="75" rx="8" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="757" y="305" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">CI/CD &amp; INFRASTRUCTURE</text>
+      <text x="757" y="342" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">GitHub Actions + Argo CD</text>
+      <text x="757" y="358" text-anchor="middle" font-size="9" fill="#6b7a8d">Canary deployments, GitOps</text>
+      <text x="757" y="374" text-anchor="middle" font-size="9" fill="#6b7a8d">Terraform IaC, multi-env</text>
+
+      <!-- Arrows -->
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L8,3 L0,6" fill="#2AADAD"/>
+        </marker>
+      </defs>
+      <line x1="150" y1="110" x2="180" y2="110" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="150" y1="240" x2="180" y2="240" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="315" y1="110" x2="340" y2="110" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="315" y1="240" x2="340" y2="240" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="150" y1="345" x2="340" y2="350" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="470" y1="315" x2="470" y2="300" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="595" y1="120" x2="620" y2="120" stroke="#2AADAD" stroke-width="2" marker-end="url(#ah)"/>
+    </svg>
+  </div>
+  <aside class="notes">
+    Here's the high-level architecture — and this is where we're fundamentally different from a managed-service approach. Everything runs on EKS — your Kubernetes cluster. Real-time models are served by Triton Inference Server and KServe with KEDA auto-scaling, not SageMaker endpoints. Feast is our open-source feature store backed by Redis for online serving and S3/Parquet offline. MLflow tracks experiments and models. Airflow orchestrates batch pipelines. Prometheus and Grafana for monitoring, Evidently AI for drift detection. GitHub Actions and Argo CD for GitOps CI/CD. You own every component.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: ALGORITHM SELECTION -->
+<!-- ============================================================ -->
+<section>
+  <h2>Algorithm Selection <span class="audience-tag">Key Differentiator</span></h2>
+  <p class="muted small" style="margin-bottom:0.4em;">The right algorithm for every problem &mdash; not one-size-fits-all</p>
+  <div class="card-grid cols-5" style="gap:10px;">
+    <div class="card" style="padding:12px; border-top-color:#e74c3c;">
+      <h4 style="font-size:0.7em;">Fraud Detection</h4>
+      <p style="font-size:0.62em; color:var(--navy); font-weight:700;">XGBoost</p>
+      <p style="font-size:0.58em;">+ rule engine overlay</p>
+      <ul style="font-size:0.56em; margin-top:6px;">
+        <li>Fast inference (&lt;50ms)</li>
+        <li>SHAP explainability</li>
+        <li>Feature importance</li>
+        <li>Triton ensemble</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:12px; border-top-color:#e74c3c;">
+      <h4 style="font-size:0.7em;">Recommendations</h4>
+      <p style="font-size:0.62em; color:var(--navy); font-weight:700;">Two-Tower NN</p>
+      <p style="font-size:0.58em;">PyTorch + LightGBM</p>
+      <ul style="font-size:0.56em; margin-top:6px;">
+        <li>Candidate generation</li>
+        <li>FAISS ANN search</li>
+        <li>LightGBM re-ranker</li>
+        <li>&lt;150ms end-to-end</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:12px; border-top-color:#2980b9;">
+      <h4 style="font-size:0.7em;">Inventory Mgmt</h4>
+      <p style="font-size:0.62em; color:var(--navy); font-weight:700;">LightGBM + Prophet</p>
+      <p style="font-size:0.58em;">Ensemble approach</p>
+      <ul style="font-size:0.56em; margin-top:6px;">
+        <li>Demand forecasting</li>
+        <li>Seasonality decomp</li>
+        <li>Trend + holidays</li>
+        <li>Per-SKU forecasts</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:12px; border-top-color:#2980b9;">
+      <h4 style="font-size:0.7em;">Segmentation</h4>
+      <p style="font-size:0.62em; color:var(--navy); font-weight:700;">HDBSCAN</p>
+      <p style="font-size:0.58em;">On learned embeddings</p>
+      <ul style="font-size:0.56em; margin-top:6px;">
+        <li>Sentence-transformers</li>
+        <li>PCA reduction</li>
+        <li>No fixed K needed</li>
+        <li>Noise-robust clusters</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:12px; border-top-color:#d4a017;">
+      <h4 style="font-size:0.7em;">Dynamic Pricing</h4>
+      <p style="font-size:0.62em; color:var(--navy); font-weight:700;">Thompson Sampling</p>
+      <p style="font-size:0.58em;">Multi-armed bandit</p>
+      <ul style="font-size:0.56em; margin-top:6px;">
+        <li>Contextual features</li>
+        <li>Explore vs exploit</li>
+        <li>Custom RL loop</li>
+        <li>Price guardrails</li>
+      </ul>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:0.5em; font-size:0.7em; color:var(--navy); font-weight:600;">
+    Every algorithm chosen for a specific reason: <span style="color:var(--teal);">interpretability</span> | <span style="color:var(--teal);">speed</span> | <span style="color:var(--teal);">accuracy</span> | <span style="color:var(--teal);">flexibility</span>
+  </div>
+  <aside class="notes">
+    This is the KEY slide — our algorithm selection. For fraud, we use XGBoost because it gives you fast inference under 50 milliseconds AND interpretability through SHAP values. Your compliance team can explain every decision. For recommendations, we build a two-tower neural network in PyTorch for candidate generation with FAISS approximate nearest neighbor search, then a LightGBM re-ranker for the final sort — best of both worlds. Inventory uses a LightGBM plus Prophet ensemble that decomposes seasonality. Segmentation uses HDBSCAN on learned embeddings — no need to guess the number of clusters. Dynamic pricing uses Thompson Sampling, a multi-armed bandit approach that naturally balances exploration and exploitation. Every choice is deliberate.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: BUSINESS VALUE -->
+<!-- ============================================================ -->
+<section>
+  <h2>Business Value &amp; ROI <span class="audience-tag">VP &bull; Sales</span></h2>
+  <div class="card-grid cols-2">
+    <div class="card card-success">
+      <h4>Fraud Detection</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">$2-4M annual savings</p>
+      <p>Real-time XGBoost fraud blocking with &lt;50ms latency reduces chargebacks by 60-80%. SHAP explanations for audit compliance.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Recommendation Engine</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">8-15% revenue uplift</p>
+      <p>Two-tower + FAISS delivers personalized recommendations at scale. A/B testing framework measures uplift from day one.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Inventory Management</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">20-30% stockout reduction</p>
+      <p>LightGBM + Prophet ensemble captures seasonality and trends. Daily per-SKU forecasts minimize overstock and lost sales.</p>
+    </div>
+    <div class="card card-success">
+      <h4>Customer Segmentation + Pricing</h4>
+      <p style="font-size:1.1em; color:var(--success); font-weight:700;">15-25% marketing efficiency</p>
+      <p>HDBSCAN segments + Thompson Sampling pricing optimize margins and reduce acquisition costs with no vendor lock-in.</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:0.5em;">
+    <div class="stat-row" style="margin:0;">
+      <div class="stat-box" style="padding:12px 24px;">
+        <span class="number" style="font-size:1.3em;">$5-10M+</span>
+        <span class="label">Annual Impact</span>
+      </div>
+      <div class="stat-box" style="padding:12px 24px;">
+        <span class="number" style="font-size:1.3em;">&lt; 6 mo</span>
+        <span class="label">Payback Period</span>
+      </div>
+      <div class="stat-box" style="padding:12px 24px;">
+        <span class="number" style="font-size:1.3em;">100%</span>
+        <span class="label">IP Ownership</span>
+      </div>
+      <div class="stat-box" style="padding:12px 24px;">
+        <span class="number" style="font-size:1.3em;">$0</span>
+        <span class="label">Vendor Lock-in</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Same business impact as a managed-service approach — 5 to 10 million annually — but with two critical additional benefits. First: you own 100% of the intellectual property. Every model, every pipeline, every configuration. Second: zero vendor lock-in. If you want to move to GCP tomorrow, your Kubernetes workloads, Feast features, and MLflow models move with you. That's the real long-term value of building custom.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: PHASE 1 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 1: Foundation <span class="audience-tag">Weeks 1-3</span></h2>
+  <span class="phase-badge">CRAWL</span>
+  <div class="two-col">
+    <div>
+      <h3>What We Build</h3>
+      <ul>
+        <li>AWS VPC, subnets, security groups</li>
+        <li>EKS cluster with managed node groups</li>
+        <li>Feast feature store (Redis + S3)</li>
+        <li>MLflow on EKS + PostgreSQL backend</li>
+        <li>Airflow on EKS for orchestration</li>
+        <li>Apache Kafka (MSK) for event streaming</li>
+        <li>GitHub Actions + Argo CD pipeline</li>
+        <li>Terraform modules for all infrastructure</li>
+        <li>KMS encryption + audit logging baseline</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Deliverables</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>EKS Platform Ready</h4>
+        <p>Dev, Staging, Production EKS clusters provisioned via Terraform with KEDA autoscaler</p>
+      </div>
+      <div class="card">
+        <h4>MLOps Scaffold</h4>
+        <p>MLflow, Feast, Airflow running on EKS. CI/CD tested with sample model end-to-end via Argo CD</p>
+      </div>
+      <div class="card" style="margin-top:12px;">
+        <h4>Security Baseline</h4>
+        <p>IAM, KMS, OPA Gatekeeper, network policies, pod security standards</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 1 builds the custom platform foundation. We provision EKS clusters with Terraform — managed node groups with KEDA for event-driven autoscaling. Feast deploys as the feature store with Redis for online serving and S3 Parquet for offline. MLflow and Airflow run as EKS workloads backed by PostgreSQL. Kafka via MSK handles event streaming. Argo CD provides GitOps deployments. By week 3, we'll have deployed a sample model through the entire pipeline to validate the platform end-to-end.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: PHASE 2 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 2: Batch Models <span class="audience-tag">Weeks 4-7</span></h2>
+  <span class="phase-badge">WALK</span>
+  <div class="two-col">
+    <div>
+      <h3>Customer Segmentation</h3>
+      <ul>
+        <li><span class="tag tag-algo">HDBSCAN</span> on learned embeddings</li>
+        <li>Sentence-transformers for text features</li>
+        <li>PCA for dimensionality reduction</li>
+        <li>Airflow DAG (weekly schedule)</li>
+        <li>Output &rarr; Snowflake &rarr; CRM integration</li>
+        <li>Evidently AI for data drift monitoring</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.4em;">&rarr; Marketing gets auto-discovered segments weekly</p>
+    </div>
+    <div>
+      <h3>Inventory Management</h3>
+      <ul>
+        <li><span class="tag tag-algo">LightGBM</span> demand forecasting</li>
+        <li><span class="tag tag-algo">Prophet</span> seasonality decomposition</li>
+        <li>Ensemble: weighted average of both models</li>
+        <li>Airflow DAG (daily schedule)</li>
+        <li>Output &rarr; Snowflake &rarr; Inventory system API</li>
+        <li>Accuracy monitoring + alerting</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.4em;">&rarr; Supply chain gets per-SKU forecasts daily</p>
+    </div>
+  </div>
+  <div style="margin-top:0.5em;">
+    <div class="pipeline">
+      <div class="step">S3 / Snowflake</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Feast Features</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step highlight">Airflow &rarr; Model</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Snowflake</div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Downstream Systems</div>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 2 deploys the two batch models with an extra week for algorithm tuning. Customer segmentation uses HDBSCAN clustering on learned embeddings — this automatically discovers the right number of segments instead of forcing a fixed K. We use sentence-transformers for text features like reviews and support tickets, then PCA to reduce dimensionality before clustering. Inventory management is an ensemble of LightGBM for demand forecasting and Prophet for seasonality decomposition — Prophet captures holidays and trends, LightGBM captures the complex feature interactions. Both are orchestrated by Airflow, monitored by Evidently AI.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: PHASE 3 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 3: Real-Time Models <span class="audience-tag">Weeks 8-12</span></h2>
+  <span class="phase-badge">RUN</span>
+  <div class="card-grid cols-3">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Fraud Detection</h4>
+      <p><span class="tag tag-rt">Real-Time</span> <span class="tag tag-algo">XGBoost</span> &lt;50ms</p>
+      <ul>
+        <li>Triton Inference Server ensemble</li>
+        <li>Rule engine pre/post-processing</li>
+        <li>Kafka stream for transactions</li>
+        <li>SHAP explanations per prediction</li>
+        <li>KEDA auto-scaling on queue depth</li>
+        <li>Shadow mode &rarr; production cutover</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Recommendation Engine</h4>
+      <p><span class="tag tag-rt">Real-Time</span> <span class="tag tag-algo">Two-Tower</span> &lt;150ms</p>
+      <ul>
+        <li>PyTorch two-tower candidate gen</li>
+        <li>FAISS approximate nearest neighbor</li>
+        <li>LightGBM re-ranking stage</li>
+        <li>Redis caching layer</li>
+        <li>A/B testing framework</li>
+        <li>Fallback to popular items</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#d4a017;">
+      <h4>Dynamic Pricing</h4>
+      <p><span class="tag tag-nrt">Near-Real-Time</span> <span class="tag tag-algo">MAB</span> ~500ms</p>
+      <ul>
+        <li>Thompson Sampling with context</li>
+        <li>Custom reinforcement learning loop</li>
+        <li>FastAPI microservice on EKS</li>
+        <li>Price guardrails &amp; business rules</li>
+        <li>Competitor price feeds</li>
+        <li>Explore/exploit balance tuning</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 3 is where the custom approach really shines. Fraud detection runs XGBoost on Triton Inference Server as an ensemble pipeline — the rule engine runs as a pre-processing step in the same Triton graph, so the entire request stays in-process under 50 milliseconds. That's twice as fast as a typical SageMaker endpoint. Recommendations use a two-tower neural network for candidate generation — one tower for users, one for items — then FAISS finds the nearest neighbors in the embedding space, and LightGBM re-ranks the top candidates. Dynamic pricing uses Thompson Sampling, a multi-armed bandit that naturally balances exploring new prices with exploiting known-good prices.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: PHASE 4 -->
+<!-- ============================================================ -->
+<section>
+  <h2>Phase 4: Harden &amp; Handoff <span class="audience-tag">Weeks 13-16</span></h2>
+  <span class="phase-badge">OPERATIONALIZE</span>
+  <div class="card-grid cols-2">
+    <div class="card">
+      <h4>Load Testing &amp; Performance</h4>
+      <ul>
+        <li>Simulate Black Friday peak traffic (10x normal)</li>
+        <li>Validate KEDA auto-scaling policies on EKS</li>
+        <li>Latency SLA verification per model</li>
+        <li>Chaos engineering for failover testing</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>GDPR &amp; Compliance Audit</h4>
+      <ul>
+        <li>PII data flow mapping across all pipelines</li>
+        <li>Right-to-erasure pipeline verification</li>
+        <li>Encryption audit (at rest + in transit)</li>
+        <li>Pod security &amp; network policy review</li>
+      </ul>
+    </div>
+    <div class="card card-accent">
+      <h4>Documentation</h4>
+      <ul>
+        <li>Architecture decision records (ADRs)</li>
+        <li>Runbooks for each model pipeline</li>
+        <li>Incident response playbooks</li>
+        <li>Terraform + Helm chart documentation</li>
+      </ul>
+    </div>
+    <div class="card card-success">
+      <h4>Knowledge Transfer</h4>
+      <ul>
+        <li>4 hands-on training sessions</li>
+        <li>Pair programming with your ML team</li>
+        <li>On-call shadowing (2 weeks)</li>
+        <li>30-day post-handoff support included</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Phase 4 ensures production-readiness and team ownership. We simulate Black Friday traffic to validate KEDA auto-scaling on EKS. We audit GDPR compliance including pod security policies and network policies — Kubernetes-specific security that a managed service would abstract away. We write runbooks for every pipeline, document every Helm chart and Terraform module, and do hands-on knowledge transfer. Your team will understand every component because there are no black boxes.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 13: RESOURCE PLAN -->
+<!-- ============================================================ -->
+<section>
+  <h2>Resource Plan</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Phase 1</th>
+        <th>Phase 2</th>
+        <th>Phase 3</th>
+        <th>Phase 4</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Solutions Architect</strong> (Lead)</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+      </tr>
+      <tr>
+        <td><strong>ML Engineer</strong></td>
+        <td>Part-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>ML Research Engineer</strong></td>
+        <td>&mdash;</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>MLOps / Platform Engineer</strong></td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+      </tr>
+      <tr>
+        <td><strong>Data Engineer</strong></td>
+        <td>Part-time</td>
+        <td>Full-time</td>
+        <td>Part-time</td>
+        <td>&mdash;</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.6em; font-size:0.72em;">
+    <p><strong>Blended rate:</strong> ~$275/hour &nbsp;|&nbsp; <strong>Peak team size:</strong> 5 FTEs &nbsp;|&nbsp; <strong>New role:</strong> ML Research Engineer for algorithm tuning &amp; optimization</p>
+    <p class="muted" style="font-size:0.9em;">Your team involvement: 1 technical lead + stakeholders for sprint reviews</p>
+  </div>
+  <aside class="notes">
+    The team is one person larger than a managed-service approach. The key addition is the ML Research Engineer — this role focuses on algorithm selection, hyperparameter tuning, and optimization. They're the ones making sure we pick XGBoost over a random forest for fraud, tuning the two-tower architecture for recommendations, and calibrating the Thompson Sampling exploration rate for pricing. This expertise is what makes the custom approach work. Peak team is 5 FTEs during Phases 2 and 3.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 14: TIMELINE (GANTT) -->
+<!-- ============================================================ -->
+<section>
+  <h2>Timeline &mdash; 16 Weeks</h2>
+  <div style="margin-top:0.3em;">
+    <!-- Week headers -->
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div class="gantt-header">W1</div><div class="gantt-header">W2</div><div class="gantt-header">W3</div>
+      <div class="gantt-header">W4</div><div class="gantt-header">W5</div><div class="gantt-header">W6</div>
+      <div class="gantt-header">W7</div><div class="gantt-header">W8</div><div class="gantt-header">W9</div>
+      <div class="gantt-header">W10</div><div class="gantt-header">W11</div><div class="gantt-header">W12</div>
+      <div class="gantt-header">W13</div><div class="gantt-header">W14</div><div class="gantt-header">W15</div>
+      <div class="gantt-header">W16</div>
+    </div>
+    <!-- Phase 1 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Foundation</div>
+      <div style="grid-column: 2/5;"><div class="gantt-bar" style="background:var(--navy);">Phase 1</div></div>
+    </div>
+    <!-- Phase 2 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Segmentation</div>
+      <div style="grid-column: 5/8;"><div class="gantt-bar" style="background:#2980b9;">HDBSCAN Deploy</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Inventory</div>
+      <div style="grid-column: 5/9;"><div class="gantt-bar" style="background:#2980b9;">LightGBM+Prophet</div></div>
+    </div>
+    <!-- Phase 3 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Fraud Detection</div>
+      <div style="grid-column: 9/13;"><div class="gantt-bar" style="background:var(--danger);">XGBoost + Triton</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Reco Engine</div>
+      <div style="grid-column: 9/14;"><div class="gantt-bar" style="background:var(--danger);">Two-Tower + FAISS</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Dynamic Pricing</div>
+      <div style="grid-column: 10/14;"><div class="gantt-bar" style="background:var(--orange);">Thompson Sampling</div></div>
+    </div>
+    <!-- Phase 4 -->
+    <div class="gantt-row">
+      <div class="gantt-label">Harden &amp; Test</div>
+      <div style="grid-column: 14/17;"><div class="gantt-bar" style="background:var(--success);">Load Test + Audit</div></div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label">Knowledge Transfer</div>
+      <div style="grid-column: 14/18;"><div class="gantt-bar" style="background:var(--teal);">Training + Handoff</div></div>
+    </div>
+    <!-- Milestones -->
+    <div class="gantt-row" style="margin-top:8px;">
+      <div class="gantt-label" style="font-size:0.85em; color:var(--teal);">Milestones</div>
+      <div style="grid-column:4/5; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:8/9; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:13/14; text-align:center; font-size:0.85em;">&#9670;</div>
+      <div style="grid-column:17/18; text-align:center; font-size:0.85em;">&#9670;</div>
+    </div>
+    <div class="gantt-row">
+      <div class="gantt-label"></div>
+      <div style="grid-column:3/6; text-align:center; font-size:0.75em; color:var(--gray-mid);">Platform Ready</div>
+      <div style="grid-column:7/10; text-align:center; font-size:0.75em; color:var(--gray-mid);">Batch Live</div>
+      <div style="grid-column:11/15; text-align:center; font-size:0.75em; color:var(--gray-mid);">Real-Time Live</div>
+      <div style="grid-column:15/18; text-align:center; font-size:0.75em; color:var(--gray-mid);">Go-Live &#x2713;</div>
+    </div>
+  </div>
+  <aside class="notes">
+    Here's the 16-week timeline. Two extra weeks compared to a managed approach — one for batch algorithm tuning, two for the more complex real-time model serving on Triton and KServe. Platform ready at week 3. Batch models live by week 7 or 8. Real-time models live by week 12 or 13. Full go-live with handoff complete at week 16. The extra time is worth it because you get purpose-built algorithms and a platform you completely own.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 15: PRICING -->
+<!-- ============================================================ -->
+<section>
+  <h2>Investment <span class="audience-tag">VP</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Phase</th>
+        <th>Duration</th>
+        <th>Avg. Team</th>
+        <th>Estimated Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Phase 1:</strong> Foundation</td>
+        <td>3 weeks</td>
+        <td>2.5 FTEs</td>
+        <td>$100,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 2:</strong> Batch Models</td>
+        <td>4 weeks</td>
+        <td>4 FTEs</td>
+        <td>$130,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 3:</strong> Real-Time Models</td>
+        <td>5 weeks</td>
+        <td>4.5 FTEs</td>
+        <td>$200,000</td>
+      </tr>
+      <tr>
+        <td><strong>Phase 4:</strong> Harden &amp; Handoff</td>
+        <td>4 weeks</td>
+        <td>3 FTEs</td>
+        <td>$150,000</td>
+      </tr>
+      <tr style="font-weight:700;">
+        <td colspan="3" style="text-align:right; background:var(--navy); color:white;">Total Estimated Investment</td>
+        <td style="background:var(--navy); color:var(--teal); font-size:1.15em;">$580,000</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:0.5em; font-size:0.65em; color:var(--gray-mid);">
+    <p>Based on blended rate of $275/hr. Actuals billed time &amp; materials with weekly reporting. AWS infrastructure costs estimated at $6-12K/month (lower than managed services, no SageMaker endpoint fees). Snowflake usage billed separately per your existing contract.</p>
+  </div>
+  <aside class="notes">
+    The total investment is 580 thousand dollars — roughly 140K more than a managed-service approach. But here's what you get for that: purpose-built algorithms tuned for your exact use cases, zero vendor lock-in, lower ongoing infrastructure costs since you're not paying SageMaker endpoint premiums, and full IP ownership. AWS costs run 6 to 12K per month — typically lower than a SageMaker-heavy architecture because you're running on standard EKS compute. Against the 5 to 10 million in annual impact, this still pays for itself in under 6 months.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 16: WHY PHDATA -->
+<!-- ============================================================ -->
+<section>
+  <h2>Why phData</h2>
+  <div class="card-grid cols-2">
+    <div class="card card-accent">
+      <h4>Open-Source &amp; Kubernetes Mastery</h4>
+      <p>Deep expertise across the open-source ML stack — Triton, KServe, Feast, MLflow, Airflow, Argo CD. We build platforms, not wrappers around managed services.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Algorithm Expertise</h4>
+      <p>We pick the right tool for each job. XGBoost for fraud, two-tower NNs for recommendations, Thompson Sampling for pricing — every choice is backed by research and production experience.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Full Ownership, Zero Lock-in</h4>
+      <p>Everything we build, you own. Open-source tools on Kubernetes means you can move clouds, swap components, or extend the platform without permission from any vendor.</p>
+    </div>
+    <div class="card card-accent">
+      <h4>Knowledge Transfer Focus</h4>
+      <p>We build platforms your team owns. Pair programming, runbooks, training, and 30-day post-handoff support are built into every engagement.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    Why phData for a custom build? First, we have deep Kubernetes and open-source ML expertise — we've deployed Triton, KServe, and Feast in production many times. Second, our ML research engineers pick the right algorithm for each problem, not just the easiest one to deploy. Third, everything we build is yours — open-source tools, no vendor lock-in, portable infrastructure. And fourth, knowledge transfer isn't an afterthought. Your team will understand every component because we pair-program throughout and document everything.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 17: THANK YOU -->
+<!-- ============================================================ -->
+<section class="section-divider center-slide">
+  <div>
+    <svg width="180" height="48" viewBox="0 0 180 48" style="margin-bottom:0.5em;">
+      <rect x="0" y="8" width="40" height="32" rx="4" fill="#1B3A5C"/>
+      <text x="8" y="32" font-family="sans-serif" font-size="18" font-weight="800" fill="#2AADAD">ph</text>
+      <text x="48" y="33" font-family="sans-serif" font-size="22" font-weight="700" fill="#1B3A5C">phData</text>
+    </svg>
+  </div>
+  <h2>Thank You</h2>
+  <p style="font-size:1em; margin-top:0.5em;">Questions &amp; Discussion</p>
+  <p style="font-size:0.65em; color:var(--gray-mid); margin-top:1.5em;">
+    Brian &mdash; Principal Solutions Architect<br>
+    phData | Custom ML &amp; Data Engineering
+  </p>
+  <aside class="notes">
+    Thank you for your time today. I'm happy to dive into any area in more detail — whether that's the algorithm choices, EKS architecture, Triton serving setup, or pricing. The appendix has detailed architecture diagrams and algorithm deep-dives. What questions do you have?
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- APPENDIX SLIDES -->
+<!-- ============================================================ -->
+
+<!-- A1: DETAILED ARCHITECTURE -->
+<section>
+  <div class="appendix-label">APPENDIX A1</div>
+  <h2>Detailed Architecture</h2>
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 500" width="840" height="460" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+      <!-- VPC boundary -->
+      <rect x="10" y="10" width="900" height="480" rx="12" fill="#f8fafc" stroke="#1B3A5C" stroke-width="2" stroke-dasharray="8"/>
+      <text x="30" y="35" font-size="13" font-weight="700" fill="#1B3A5C">AWS VPC (10.0.0.0/16)</text>
+
+      <!-- Public subnet -->
+      <rect x="30" y="50" width="420" height="90" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="45" y="70" font-size="10" font-weight="600" fill="#6b7a8d">Public Subnet (10.0.1.0/24)</text>
+      <rect x="45" y="80" width="110" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="100" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">API Gateway</text>
+      <text x="100" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">REST + gRPC</text>
+      <rect x="175" y="80" width="110" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="230" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">ALB / Ingress</text>
+      <text x="230" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">NGINX Ingress Ctrl</text>
+      <rect x="305" y="80" width="130" height="42" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="370" y="100" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">CloudFront CDN</text>
+      <text x="370" y="114" text-anchor="middle" font-size="8" fill="#6b7a8d">Edge caching</text>
+
+      <!-- EKS Cluster -->
+      <rect x="30" y="155" width="420" height="200" rx="6" fill="#e6f7f7" stroke="#2AADAD" stroke-width="2"/>
+      <text x="45" y="175" font-size="10" font-weight="600" fill="#2AADAD">EKS Cluster &mdash; Private Subnet (10.0.2.0/24)</text>
+
+      <!-- Triton / KServe -->
+      <rect x="45" y="188" width="190" height="150" rx="5" fill="#fff" stroke="#2AADAD"/>
+      <text x="140" y="206" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">Triton / KServe Pods</text>
+      <rect x="55" y="214" width="80" height="24" rx="3" fill="#e74c3c"/>
+      <text x="95" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Fraud (XGBoost)</text>
+      <rect x="145" y="214" width="80" height="24" rx="3" fill="#e74c3c"/>
+      <text x="185" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Reco (PyTorch)</text>
+      <rect x="55" y="244" width="80" height="24" rx="3" fill="#d4a017"/>
+      <text x="95" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Pricing (MAB)</text>
+      <rect x="145" y="244" width="80" height="24" rx="3" fill="#2980b9"/>
+      <text x="185" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">FastAPI Svc</text>
+      <rect x="55" y="274" width="80" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="95" y="290" text-anchor="middle" font-size="8" fill="white" font-weight="600">FAISS Index</text>
+      <rect x="145" y="274" width="80" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="185" y="290" text-anchor="middle" font-size="8" fill="white" font-weight="600">Rule Engine</text>
+      <text x="140" y="326" text-anchor="middle" font-size="8" fill="#6b7a8d">KEDA: auto-scale 2-30 pods</text>
+
+      <!-- Platform Services -->
+      <rect x="255" y="188" width="180" height="150" rx="5" fill="#fff" stroke="#2AADAD"/>
+      <text x="345" y="206" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">Platform Services</text>
+      <rect x="265" y="214" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="302" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">MLflow</text>
+      <rect x="350" y="214" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="387" y="230" text-anchor="middle" font-size="8" fill="white" font-weight="600">Airflow</text>
+      <rect x="265" y="244" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="302" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Feast Server</text>
+      <rect x="350" y="244" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="387" y="260" text-anchor="middle" font-size="8" fill="white" font-weight="600">Grafana</text>
+      <rect x="265" y="274" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="302" y="290" text-anchor="middle" font-size="8" fill="white" font-weight="600">Prometheus</text>
+      <rect x="350" y="274" width="75" height="24" rx="3" fill="#1B3A5C"/>
+      <text x="387" y="290" text-anchor="middle" font-size="8" fill="white" font-weight="600">Argo CD</text>
+      <text x="345" y="326" text-anchor="middle" font-size="8" fill="#6b7a8d">Managed node groups, Karpenter</text>
+
+      <!-- Streaming -->
+      <rect x="30" y="370" width="420" height="60" rx="6" fill="#fef9e7" stroke="#f39c12"/>
+      <text x="45" y="390" font-size="10" font-weight="600" fill="#f39c12">Streaming &amp; Orchestration</text>
+      <rect x="45" y="398" width="120" height="24" rx="4" fill="#f39c12"/>
+      <text x="105" y="414" text-anchor="middle" font-size="8" fill="white" font-weight="600">Apache Kafka (MSK)</text>
+      <rect x="180" y="398" width="120" height="24" rx="4" fill="#f39c12"/>
+      <text x="240" y="414" text-anchor="middle" font-size="8" fill="white" font-weight="600">Airflow DAGs</text>
+      <rect x="315" y="398" width="120" height="24" rx="4" fill="#f39c12"/>
+      <text x="375" y="414" text-anchor="middle" font-size="8" fill="white" font-weight="600">EventBridge</text>
+
+      <!-- Data Layer -->
+      <rect x="470" y="50" width="420" height="170" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="485" y="70" font-size="10" font-weight="600" fill="#6b7a8d">Data Layer (10.0.3.0/24)</text>
+
+      <rect x="485" y="82" width="120" height="50" rx="4" fill="#1B3A5C"/>
+      <text x="545" y="104" text-anchor="middle" font-size="10" fill="white" font-weight="600">Snowflake</text>
+      <text x="545" y="120" text-anchor="middle" font-size="8" fill="#2AADAD">via PrivateLink</text>
+
+      <rect x="615" y="82" width="120" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="675" y="104" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">S3 Buckets</text>
+      <text x="675" y="118" text-anchor="middle" font-size="8" fill="#6b7a8d">Models, Features, Data</text>
+
+      <rect x="745" y="82" width="130" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="810" y="104" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Redis (ElastiCache)</text>
+      <text x="810" y="118" text-anchor="middle" font-size="8" fill="#6b7a8d">Online Features + Cache</text>
+
+      <rect x="485" y="145" width="120" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="545" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">PostgreSQL</text>
+      <text x="545" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">MLflow + Airflow DB</text>
+
+      <rect x="615" y="145" width="120" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="675" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">Feast Registry</text>
+      <text x="675" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">Feature definitions</text>
+
+      <rect x="745" y="145" width="130" height="50" rx="4" fill="#fff" stroke="#b8c5d4"/>
+      <text x="810" y="165" text-anchor="middle" font-size="10" fill="#1B3A5C" font-weight="600">ECR</text>
+      <text x="810" y="180" text-anchor="middle" font-size="8" fill="#6b7a8d">Container Images</text>
+
+      <!-- Security -->
+      <rect x="470" y="235" width="420" height="100" rx="6" fill="#fdecea" stroke="#e74c3c"/>
+      <text x="485" y="255" font-size="10" font-weight="600" fill="#e74c3c">Security &amp; Compliance</text>
+      <rect x="485" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="532" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">IAM / IRSA</text>
+      <text x="532" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Pod-level roles</text>
+      <rect x="590" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="637" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">OPA Gatekeeper</text>
+      <text x="637" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Policy engine</text>
+      <rect x="695" y="268" width="95" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="742" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">KMS + Secrets</text>
+      <text x="742" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Encryption</text>
+      <rect x="800" y="268" width="80" height="50" rx="4" fill="#fff" stroke="#e74c3c"/>
+      <text x="840" y="288" text-anchor="middle" font-size="9" fill="#1B3A5C" font-weight="600">Calico</text>
+      <text x="840" y="304" text-anchor="middle" font-size="8" fill="#6b7a8d">Net policies</text>
+
+      <!-- Observability -->
+      <rect x="470" y="350" width="420" height="60" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+      <text x="485" y="370" font-size="10" font-weight="600" fill="#2AADAD">Observability (Open Source)</text>
+      <rect x="485" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="545" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">Prometheus</text>
+      <rect x="615" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="675" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">Grafana</text>
+      <rect x="745" y="378" width="120" height="24" rx="3" fill="#2AADAD"/>
+      <text x="805" y="394" text-anchor="middle" font-size="8" fill="white" font-weight="600">Evidently AI</text>
+
+      <!-- CI/CD -->
+      <rect x="470" y="425" width="420" height="55" rx="6" fill="#eef2f7" stroke="#b8c5d4"/>
+      <text x="485" y="445" font-size="10" font-weight="600" fill="#6b7a8d">CI/CD Pipeline (GitOps)</text>
+      <rect x="485" y="452" width="100" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="535" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">GitHub Actions</text>
+      <rect x="595" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="640" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">Argo CD</text>
+      <rect x="695" y="452" width="90" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="740" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">Helm Charts</text>
+      <rect x="795" y="452" width="85" height="22" rx="3" fill="#1B3A5C"/>
+      <text x="837" y="467" text-anchor="middle" font-size="8" fill="white" font-weight="600">Terraform</text>
+    </svg>
+  </div>
+  <aside class="notes">
+    This is the full VPC diagram. Everything runs within a VPC. The EKS cluster in the private subnet hosts all model serving via Triton and KServe pods, plus platform services like MLflow, Airflow, Grafana, Prometheus, and Argo CD. KEDA scales pods from 2 to 30 based on queue depth and request rate. The data layer uses Snowflake via PrivateLink, Redis via ElastiCache for online features and caching, PostgreSQL for metadata backends, and S3 for artifacts. Security uses IAM with IRSA for pod-level roles, OPA Gatekeeper for policy enforcement, Calico for network policies, and KMS for encryption.
+  </aside>
+</section>
+
+<!-- A2: ALGORITHM DEEP-DIVE: FRAUD -->
+<section>
+  <div class="appendix-label">APPENDIX A2</div>
+  <h2>Algorithm Deep-Dive: Fraud Detection</h2>
+  <div class="two-col">
+    <div>
+      <h3>XGBoost + Rule Engine on Triton</h3>
+      <div class="pipeline" style="flex-direction:column; gap:6px; align-items:stretch;">
+        <div class="step" style="font-size:0.6em;">Transaction Event &rarr; Kafka Topic</div>
+        <div class="arrow" style="text-align:center;">&darr;</div>
+        <div class="step" style="font-size:0.6em;">FastAPI: Fetch features from Redis (Feast)</div>
+        <div class="arrow" style="text-align:center;">&darr;</div>
+        <div class="step" style="font-size:0.6em;">Rule Engine: velocity checks, blocklists</div>
+        <div class="arrow" style="text-align:center;">&darr;</div>
+        <div class="step highlight" style="font-size:0.6em;">Triton: XGBoost ensemble (&lt;50ms)</div>
+        <div class="arrow" style="text-align:center;">&darr;</div>
+        <div class="step" style="font-size:0.6em;">SHAP explanation + score &rarr; Approve / Flag / Block</div>
+        <div class="arrow" style="text-align:center;">&darr;</div>
+        <div class="step" style="font-size:0.6em;">Response &rarr; Payments API (&lt;50ms e2e)</div>
+      </div>
+    </div>
+    <div>
+      <h3>Why XGBoost</h3>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Interpretability</h4>
+        <p>SHAP values explain every fraud decision. Compliance team can audit any prediction. Feature importance identifies key fraud signals.</p>
+      </div>
+      <div class="card" style="margin-bottom:12px;">
+        <h4>Speed</h4>
+        <p>XGBoost on Triton achieves &lt;5ms model inference. With feature lookup and rule engine, total pipeline stays under 50ms.</p>
+      </div>
+      <div class="card">
+        <h4>Rule Engine Overlay</h4>
+        <p>Business rules run as Triton pre-processing step: velocity limits (10+ txns/min &rarr; auto-block), known device blocklists, geo-velocity checks. Rules bypass ML when signal is clear.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    The fraud detection pipeline is where XGBoost really shines. The model runs on Triton Inference Server as part of an ensemble — the rule engine runs as a pre-processing step in the same Triton graph. This keeps everything in-process for sub-50ms total latency. XGBoost gives us two things a neural network can't: first, SHAP values that explain every single fraud decision for your compliance team. Second, feature importance that tells you exactly which signals are driving fraud. The rule engine handles obvious cases — 10 transactions per minute from the same card gets auto-blocked without calling the model.
+  </aside>
+</section>
+
+<!-- A3: ALGORITHM DEEP-DIVE: RECOMMENDATIONS -->
+<section>
+  <div class="appendix-label">APPENDIX A3</div>
+  <h2>Algorithm Deep-Dive: Recommendations</h2>
+  <div class="two-col">
+    <div>
+      <h3>Two-Tower + FAISS + LightGBM</h3>
+      <div class="diagram-container">
+        <svg viewBox="0 0 380 320" width="380" height="320" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+          <!-- User Tower -->
+          <rect x="20" y="10" width="120" height="80" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+          <text x="80" y="35" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">User Tower</text>
+          <text x="80" y="52" text-anchor="middle" font-size="8" fill="#6b7a8d">PyTorch</text>
+          <text x="80" y="66" text-anchor="middle" font-size="8" fill="#6b7a8d">behavior + profile</text>
+          <text x="80" y="80" text-anchor="middle" font-size="8" fill="#6b7a8d">&rarr; 128d embedding</text>
+
+          <!-- Item Tower -->
+          <rect x="240" y="10" width="120" height="80" rx="6" fill="#e6f7f7" stroke="#2AADAD"/>
+          <text x="300" y="35" text-anchor="middle" font-size="10" font-weight="700" fill="#1B3A5C">Item Tower</text>
+          <text x="300" y="52" text-anchor="middle" font-size="8" fill="#6b7a8d">PyTorch</text>
+          <text x="300" y="66" text-anchor="middle" font-size="8" fill="#6b7a8d">attributes + desc</text>
+          <text x="300" y="80" text-anchor="middle" font-size="8" fill="#6b7a8d">&rarr; 128d embedding</text>
+
+          <!-- Arrows down -->
+          <line x1="80" y1="90" x2="190" y2="130" stroke="#2AADAD" stroke-width="2"/>
+          <line x1="300" y1="90" x2="190" y2="130" stroke="#2AADAD" stroke-width="2"/>
+
+          <!-- FAISS -->
+          <rect x="120" y="120" width="140" height="50" rx="6" fill="#2AADAD"/>
+          <text x="190" y="145" text-anchor="middle" font-size="11" font-weight="700" fill="white">FAISS ANN Search</text>
+          <text x="190" y="162" text-anchor="middle" font-size="8" fill="#e6f7f7">Top 100 candidates &lt;10ms</text>
+
+          <!-- Arrow down -->
+          <line x1="190" y1="170" x2="190" y2="190" stroke="#2AADAD" stroke-width="2"/>
+
+          <!-- Re-ranker -->
+          <rect x="100" y="190" width="180" height="50" rx="6" fill="#fef9e7" stroke="#f39c12"/>
+          <text x="190" y="215" text-anchor="middle" font-size="11" font-weight="700" fill="#1B3A5C">LightGBM Re-Ranker</text>
+          <text x="190" y="232" text-anchor="middle" font-size="8" fill="#6b7a8d">Context features + business rules</text>
+
+          <!-- Arrow down -->
+          <line x1="190" y1="240" x2="190" y2="260" stroke="#2AADAD" stroke-width="2"/>
+
+          <!-- Output -->
+          <rect x="110" y="260" width="160" height="40" rx="6" fill="#e74c3c"/>
+          <text x="190" y="280" text-anchor="middle" font-size="10" font-weight="700" fill="white">Top 10 Recommendations</text>
+          <text x="190" y="294" text-anchor="middle" font-size="8" fill="#fdecea">&lt;150ms total e2e</text>
+        </svg>
+      </div>
+    </div>
+    <div>
+      <h3>Pipeline Details</h3>
+      <div class="card" style="margin-bottom:10px;">
+        <h4>Candidate Generation (Two-Tower)</h4>
+        <ul>
+          <li>User tower: browsing history, purchase history, demographics</li>
+          <li>Item tower: product attributes, descriptions, images</li>
+          <li>Both produce 128-dimension embeddings</li>
+          <li>Trained on implicit feedback (clicks, purchases)</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-bottom:10px;">
+        <h4>FAISS Approximate Nearest Neighbor</h4>
+        <ul>
+          <li>IVF-PQ index over all product embeddings</li>
+          <li>Returns top 100 candidates in &lt;10ms</li>
+          <li>Index rebuilt nightly, updated hourly for new products</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>LightGBM Re-Ranking</h4>
+        <ul>
+          <li>Features: similarity score, price, stock, recency, user segment</li>
+          <li>Business rules: diversity, margin targets, sponsored items</li>
+          <li>A/B testing: compare tower versions + ranking strategies</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    The recommendation pipeline has three stages. First, the two-tower neural network produces embeddings — a user tower that encodes browsing and purchase behavior, and an item tower that encodes product attributes. Both produce 128-dimensional vectors. Second, FAISS does approximate nearest neighbor search to find the top 100 candidate items in under 10 milliseconds. Third, LightGBM re-ranks those candidates using context features like price, stock level, and user segment, plus business rules for diversity and sponsored items. Total pipeline under 150 milliseconds. The beauty is each stage can be improved independently.
+  </aside>
+</section>
+
+<!-- A4: BATCH PIPELINE -->
+<section>
+  <div class="appendix-label">APPENDIX A4</div>
+  <h2>Batch Pipeline &mdash; Airflow DAGs</h2>
+  <div style="text-align:center; margin:0.5em 0;">
+    <div class="pipeline">
+      <div class="step">EventBridge<br><span style="font-size:0.8em;">Cron trigger</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Airflow DAG<br><span style="font-size:0.8em;">Orchestrator</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Feast Features<br><span style="font-size:0.8em;">Offline Store</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step highlight">Model Inference<br><span style="font-size:0.8em;">EKS Pod</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Validate<br><span style="font-size:0.8em;">Evidently AI</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Snowflake<br><span style="font-size:0.8em;">Results table</span></div>
+    </div>
+  </div>
+  <div class="card-grid cols-2" style="margin-top:0.5em;">
+    <div class="card">
+      <h4>Customer Segmentation (HDBSCAN)</h4>
+      <ul>
+        <li><strong>Schedule:</strong> Weekly (Sunday 2am UTC)</li>
+        <li><strong>Pipeline:</strong> Sentence-transformer embeddings &rarr; PCA(50d) &rarr; HDBSCAN clustering</li>
+        <li><strong>Input:</strong> 12-month customer behavior + text features</li>
+        <li><strong>Output:</strong> Segment labels + cluster probabilities &rarr; Snowflake</li>
+        <li><strong>SLA:</strong> Complete within 2 hours</li>
+        <li><strong>Downstream:</strong> CRM sync via Snowflake task</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Inventory Management (LightGBM + Prophet)</h4>
+      <ul>
+        <li><strong>Schedule:</strong> Daily (5am UTC)</li>
+        <li><strong>Pipeline:</strong> Prophet seasonality &rarr; LightGBM residuals &rarr; weighted ensemble</li>
+        <li><strong>Input:</strong> Sales history, seasonality, events, promotions</li>
+        <li><strong>Output:</strong> 14-day demand forecast per SKU &rarr; Snowflake</li>
+        <li><strong>SLA:</strong> Complete within 1 hour</li>
+        <li><strong>Downstream:</strong> Inventory system API push</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Error Handling &amp; Retry Strategy</h4>
+    <p>Airflow retries with exponential backoff (3 attempts, max 5 min delay). On final failure: PagerDuty alert via Prometheus AlertManager. Previous successful output remains active until new run succeeds. All DAG runs logged in MLflow.</p>
+  </div>
+  <aside class="notes">
+    Both batch pipelines are orchestrated by Airflow DAGs running on EKS. The segmentation pipeline first generates sentence-transformer embeddings from text features, reduces them with PCA, then clusters with HDBSCAN. The inventory pipeline runs Prophet for seasonality decomposition, then LightGBM on the residuals, combining both in a weighted ensemble. Evidently AI validates the outputs for drift before they land in Snowflake. Airflow handles retries with exponential backoff, and PagerDuty alerts on final failure.
+  </aside>
+</section>
+
+<!-- A5: CI/CD PIPELINE -->
+<section>
+  <div class="appendix-label">APPENDIX A5</div>
+  <h2>CI/CD Pipeline &mdash; GitOps</h2>
+  <div style="text-align:center; margin:0.5em 0;">
+    <div class="pipeline">
+      <div class="step">Git Push<br><span style="font-size:0.8em;">GitHub</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Build &amp; Test<br><span style="font-size:0.8em;">GitHub Actions</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Model Validation<br><span style="font-size:0.8em;">Accuracy gates</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Container Build<br><span style="font-size:0.8em;">ECR push</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step highlight">Argo CD Sync<br><span style="font-size:0.8em;">Canary deploy</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step">Production<br><span style="font-size:0.8em;">Full traffic</span></div>
+    </div>
+  </div>
+  <div class="card-grid cols-2" style="margin-top:0.5em;">
+    <div class="card">
+      <h4>Model Pipeline (ML Code Changes)</h4>
+      <ul>
+        <li>Unit tests on feature engineering code</li>
+        <li>Model validation: accuracy, latency, bias checks</li>
+        <li>Register passing model in MLflow</li>
+        <li>Build container image &rarr; push to ECR</li>
+        <li>Argo CD canary: 10% &rarr; 50% &rarr; 100% with auto-rollback</li>
+        <li>Prometheus metrics gate between canary stages</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Infra Pipeline (Terraform / Helm Changes)</h4>
+      <ul>
+        <li><code>terraform plan</code> on PR (auto-comment diff)</li>
+        <li>Security scan (tfsec / Checkov / Trivy)</li>
+        <li>Helm chart linting &amp; dry-run</li>
+        <li>Apply to staging on merge to main</li>
+        <li>Manual approval gate for production</li>
+        <li>Terraform state in S3 + DynamoDB locking</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    The CI/CD pipeline is fully GitOps. GitHub Actions handles build, test, and model validation. Passing models get containerized and pushed to ECR. Argo CD then syncs the deployment, rolling out canary-style: 10% of traffic, then 50%, then 100%. Between each stage, Prometheus metrics are checked — if latency or error rate degrades, Argo CD auto-rolls back. For infrastructure changes, Terraform plans on PR with security scanning via tfsec and Trivy, and Helm charts are linted before deploy. Everything is version-controlled and auditable.
+  </aside>
+</section>
+
+<!-- A6: MONITORING STACK -->
+<section>
+  <div class="appendix-label">APPENDIX A6</div>
+  <h2>Monitoring Stack</h2>
+  <div class="two-col">
+    <div>
+      <h3>Prometheus + Grafana</h3>
+      <table style="font-size:0.85em;">
+        <thead>
+          <tr><th>Metric</th><th>Tool</th><th>Threshold</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Data drift</td><td>Evidently AI</td><td>PSI &gt; 0.2</td></tr>
+          <tr><td>Prediction drift</td><td>Evidently AI</td><td>KS stat &gt; 0.1</td></tr>
+          <tr><td>Accuracy decay</td><td>Custom metric</td><td>&gt;5% from baseline</td></tr>
+          <tr><td>Latency (p99)</td><td>Prometheus</td><td>Model-specific SLA</td></tr>
+          <tr><td>Error rate</td><td>Prometheus</td><td>&gt;1% 5xx</td></tr>
+          <tr><td>Throughput</td><td>Prometheus</td><td>Per-model baseline</td></tr>
+          <tr><td>Pod health</td><td>Prometheus</td><td>Ready replicas</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted" style="margin-top:0.5em;">Grafana dashboards: model performance, infra health, business KPIs. Alerting via AlertManager &rarr; PagerDuty + Slack.</p>
+    </div>
+    <div>
+      <h3>Evidently AI Drift Reports</h3>
+      <div class="card" style="margin-bottom:10px;">
+        <h4>Scheduled Drift Monitoring</h4>
+        <ul>
+          <li>Hourly drift checks for real-time models</li>
+          <li>Daily drift checks for batch models</li>
+          <li>HTML reports stored in S3, linked from Grafana</li>
+          <li>Automatic alert on threshold breach</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Retraining Trigger</h4>
+        <ul>
+          <li>Drift alert triggers Airflow retraining DAG</li>
+          <li>Train on fresh data, validate on holdout</li>
+          <li>Register as "Challenger" in MLflow</li>
+          <li>Champion vs Challenger on shadow traffic</li>
+          <li>Auto-promote if Challenger wins</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    Monitoring is built entirely on open-source tools. Prometheus scrapes metrics from Triton, KServe, and FastAPI — latency, throughput, error rates, pod health. Grafana provides dashboards for model performance, infrastructure health, and business KPIs. Evidently AI runs scheduled drift detection — hourly for real-time models, daily for batch — generating reports stored in S3. When drift crosses thresholds, AlertManager triggers a PagerDuty alert AND kicks off an Airflow retraining DAG. The retrained model runs as a challenger against the champion on shadow traffic before auto-promotion.
+  </aside>
+</section>
+
+<!-- A7: SECURITY & GDPR -->
+<section>
+  <div class="appendix-label">APPENDIX A7</div>
+  <h2>Security &amp; GDPR Compliance</h2>
+  <div class="card-grid cols-2">
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Encryption &amp; Network</h4>
+      <ul>
+        <li><strong>At rest:</strong> KMS-managed keys for S3, EBS, RDS</li>
+        <li><strong>In transit:</strong> TLS 1.3 everywhere, mTLS between pods</li>
+        <li><strong>Snowflake:</strong> PrivateLink, no public internet exposure</li>
+        <li><strong>Network policies:</strong> Calico CNI, deny-by-default</li>
+        <li><strong>Ingress:</strong> WAF + rate limiting on ALB</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Kubernetes Security</h4>
+      <ul>
+        <li><strong>OPA Gatekeeper:</strong> Policy-as-code for pod security</li>
+        <li><strong>IRSA:</strong> Pod-level IAM roles (no shared credentials)</li>
+        <li><strong>Pod Security Standards:</strong> Restricted baseline enforced</li>
+        <li><strong>Secrets:</strong> External Secrets Operator + AWS Secrets Manager</li>
+        <li><strong>Image scanning:</strong> Trivy in CI/CD pipeline</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>GDPR Compliance</h4>
+      <ul>
+        <li><strong>PII masking:</strong> Tokenization in Feast feature pipelines</li>
+        <li><strong>Right to erasure:</strong> Automated deletion pipeline</li>
+        <li><strong>Data retention:</strong> Configurable per data class</li>
+        <li><strong>Consent tracking:</strong> Integration with consent management</li>
+        <li><strong>SHAP audit trail:</strong> Explain any ML decision</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top-color:#e74c3c;">
+      <h4>Audit &amp; Logging</h4>
+      <ul>
+        <li><strong>CloudTrail:</strong> All AWS API calls logged</li>
+        <li><strong>K8s Audit:</strong> All API server events logged</li>
+        <li><strong>Model predictions:</strong> Logged for explainability</li>
+        <li><strong>Access reviews:</strong> Quarterly IAM + RBAC audit</li>
+        <li><strong>Compliance reports:</strong> Automated via OPA</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    Security for a Kubernetes-native platform has additional layers compared to a managed-service approach. OPA Gatekeeper enforces pod security policies as code — no container can run as root, no privileged containers allowed. IRSA gives each pod its own IAM role, so there are no shared credentials floating around. Calico network policies enforce deny-by-default — pods can only communicate on explicitly allowed paths. Secrets are managed by the External Secrets Operator pulling from AWS Secrets Manager. For GDPR, we add SHAP audit trails so every ML prediction can be explained — critical for GDPR's right to explanation.
+  </aside>
+</section>
+
+<!-- A8: FEATURE STORE DESIGN -->
+<section>
+  <div class="appendix-label">APPENDIX A8</div>
+  <h2>Feature Store Design &mdash; Feast</h2>
+  <div class="two-col">
+    <div>
+      <h3>Online Store (Real-Time)</h3>
+      <div class="card" style="border-top-color:#e74c3c;">
+        <h4>Redis via ElastiCache</h4>
+        <ul>
+          <li><strong>Latency:</strong> &lt;5ms single-digit ms lookups</li>
+          <li><strong>Use case:</strong> Fraud features (transaction velocity, device fingerprint, account age)</li>
+          <li><strong>Use case:</strong> Reco features (user embeddings, recent behavior)</li>
+          <li><strong>Update:</strong> Streaming via Kafka &rarr; Feast materialization job</li>
+          <li><strong>TTL:</strong> Feature-specific (1hr to 30 days)</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <h3>Offline Store (Batch)</h3>
+      <div class="card">
+        <h4>S3 Parquet + Snowflake</h4>
+        <ul>
+          <li><strong>Format:</strong> Parquet on S3, tables in Snowflake</li>
+          <li><strong>Use case:</strong> Segmentation features (12-month aggregates)</li>
+          <li><strong>Use case:</strong> Inventory features (historical sales, seasonality)</li>
+          <li><strong>Training:</strong> Point-in-time correct feature retrieval</li>
+          <li><strong>Versioning:</strong> Feast feature service versions</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:0.5em;">
+    <h4>Feast Feature Groups</h4>
+    <table style="font-size:0.85em;">
+      <thead>
+        <tr><th>Feature View</th><th>Entity Key</th><th>Features</th><th>Store</th><th>Update Freq</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>User Profile</td><td>user_id</td><td>age, tenure, lifetime_value, segment</td><td>Both</td><td>Daily</td></tr>
+        <tr><td>Txn Velocity</td><td>user_id</td><td>txn_count_1h, txn_count_24h, avg_amount_7d</td><td>Online</td><td>Real-time</td></tr>
+        <tr><td>Product Embeddings</td><td>product_id</td><td>embedding_vector (128d), category, price_tier</td><td>Both</td><td>Weekly</td></tr>
+        <tr><td>Demand Signals</td><td>sku_id</td><td>sales_7d, sales_30d, trend, seasonality_idx</td><td>Offline</td><td>Daily</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="notes">
+    Feast is our open-source feature store, replacing SageMaker Feature Store. The online store uses Redis via ElastiCache for sub-5ms lookups — this is where fraud detection and recommendation features live for real-time serving. The offline store uses S3 Parquet files and Snowflake tables for batch features like segmentation aggregates and inventory history. Feast handles point-in-time correct feature retrieval for training, preventing data leakage. Feature materialization runs via Kafka for streaming updates and Airflow for batch updates. Everything is defined in code as Feast feature views — version-controlled and reproducible.
+  </aside>
+</section>
+
+</div><!-- end slides -->
+</div><!-- end reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  width: 1100,
+  height: 700,
+  margin: 0.08,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  controlsTutorial: false,
+  progress: true,
+  center: false,
+  navigationMode: 'linear'
+});
+</script>
+</body>
+</html>
