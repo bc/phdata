@@ -242,3 +242,120 @@ Buffer: 27 days for edge cases, manual review, legal holds
 | 3 | **Fraud** | First real-time model. Highest business value. Deploy in shadow mode first (score but don't block). Validates Redis + FastAPI + ECS pattern. |
 | 4 | **Pricing** | Reuses fraud's Redis + FastAPI infrastructure. Rule engine needs business stakeholder alignment (takes time). |
 | 5 | **Reco** | Highest QPS, most complex caching. Deploy last so infrastructure is battle-tested. |
+
+---
+
+## Sources & Evidence
+
+### A. Fraud Detection — Sources
+
+| Claim | Source | Key Data Point | Year | Confidence |
+|-------|--------|---------------|------|------------|
+| XGBoost is industry standard for tabular fraud (300-500 trees, depth 6-8) | [ACM — XGBoost Fraud Detection E-commerce](https://dl.acm.org/doi/10.1145/3768801.3768881) + [ML Contests 2024](https://mlcontests.com/state-of-machine-learning-competitions-2024/) | Production e-commerce fraud used n_estimators=300, max_depth=6; GBDTs win majority of tabular competitions | 2024-2025 | High |
+| Model ~15-25 MB disk, ~50-80 MB in memory | [Medium — Shrinking XGBoost Model Size](https://medium.com/@gmkrajkumar/shrinking-the-giant-how-i-reduced-my-xgboost-model-size-without-sacrificing-performance-412641a27274) | Compact models (200-300 trees, ~50 features) serialize to 15-50 MB | 2024 | Medium |
+| CPU inference p50 ~2-4 ms, p99 ~8-12 ms | [Research Square — CatBoost/XGBoost/LightGBM Comparative](https://www.researchsquare.com/article/rs-7539803/v1) | P99 < 10 ms cited as high-frequency trading threshold; LightGBM 25-30% lower tail latency than XGBoost | 2024-2025 | Medium |
+| E2E with feature fetch: p50 ~15-30 ms, p99 ~50-80 ms | [Redis — AI Fraud Detection](https://redis.io/blog/ai-fraud-detection-real-time-intelligence/) | Fraud scoring under 50ms with Redis caching; 20-100+ features within 100ms budget | 2024 | Medium |
+| Peak QPS 5K-15K on Black Friday (8-15x normal) | [Stripe BFCM 2024](https://stripe.com/newsroom/news/bfcm2024) + [PayU 2024](https://corporate.payu.com/blog/how-payment-providers-drove-e-commerce-success-during-black-friday/) | Stripe: 137K txn/min peak; PayU: 3,678 req/sec; MONEI: 205% spike vs normal | 2024 | Medium |
+| Each 100 ms latency = ~1% conversion drop | [GigaSpaces (Amazon study)](https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/) | Walmart confirmed same finding; widely accepted industry rule | 2006 origin, cited 2024 | High |
+| False positive rate target < 0.5% | [GJETA — Real-time Fraud Cloud-Native Fintech](https://gjeta.com/sites/default/files/GJETA-2025-0087.pdf) | Conventional systems avg 3.2% FPR; advanced AI achieves ~0.7%; 0.5% is aspirational | 2025 | Low-Medium |
+| GDPR Art 17(3)(e) fraud retention exception | [GDPR-Info.eu — Art. 17](https://gdpr-info.eu/art-17-gdpr/) + [EDPB Guidelines 2024](https://www.edpb.europa.eu/system/files/2024-10/edpb_guidelines_202401_legitimateinterest_en.pdf) | Statutory: "establishment, exercise or defence of legal claims" | Statutory | Very High |
+| Velocity features in Redis sliding windows | [Redis Fraud Detection Tutorial](https://redis.io/tutorials/howtos/solutions/fraud-detection/transaction-risk-scoring/) + [Apps in the Open](https://appsintheopen.com/posts/22-calculating-velocity-scores-at-the-speed-of-redis) | 12K-16K velocity scores/sec; ~72K Redis ops/sec per CPU | 2024 | Very High |
+| Redis ElastiCache 5-10 GB for 1M users | [Redis FAQ](https://redis.io/docs/latest/develop/get-started/faq/) | 1M simple hashes = ~160 MB; 5-10 GB requires full multi-window ZSET feature store | 2024 | Medium (needs context) |
+
+### B. Recommendation Engine — Sources
+
+| Claim | Source | Key Data Point | Year | Confidence |
+|-------|--------|---------------|------|------------|
+| ALS effective for e-commerce CF | [arXiv 2410.17644](https://arxiv.org/abs/2410.17644) + [Shaped.ai blog](https://www.shaped.ai/blog/matrix-factorization-the-bedrock-of-collaborative-filtering-recommendations) | 6 MF models evaluated across 4 CF datasets; ALS "highly parallelizable" for implicit feedback | 2024 | High |
+| FAISS ANN retrieval: p50 ~5-10 ms, p99 ~20-30 ms | [datasciencebyexample.com](https://www.datasciencebyexample.com/2024/07/07/measure-average-latency-with-faiss-vector-store/) | ~7 ms average latency on 500K vectors (CPU, M1) | 2024 | Partial |
+| Precomputed recs: ~70-80% cache hit rate | [Kwai/Kuaishou arXiv](https://arxiv.org/html/2404.14961) + [Redis caching blog](https://redis.io/blog/why-your-cache-hit-ratio-strategy-needs-an-update/) | Kwai reports 40% at peak; Redis targets 80%+; range is system-dependent | 2024 | Partial |
+| 10% relevance improvement = 2-5% GMV uplift | [McKinsey personalization](https://www.mckinsey.com/capabilities/growth-marketing-and-sales/our-insights/the-value-of-getting-personalization-right-or-wrong-is-multiplying) | Personalization drives 10-15% revenue lift (5-25% range) | 2021, cited 2024 | Moderate |
+| Peak QPS 20K-50K on Black Friday | [Allegro.com Two-Tower paper (ACM RecSys 2025)](https://arxiv.org/html/2508.03702v1) | "20k RPS, 40ms p99 CPU latency" at Allegro production | 2025 | High |
+| Apriori/FP-Growth for cart cross-sell | [ACM ICCIT 2024](https://dl.acm.org/doi/full/10.1145/3678610.3678618) | FP-Growth on retail transaction data; 72.1% confidence rules | 2024 | High |
+| CLIP + sentence-transformers for product embeddings | [Mercari SigLIP (arXiv)](https://arxiv.org/html/2510.13359v1) + [Walmart VL-CLIP (arXiv 2025)](https://arxiv.org/html/2507.17080) | Mercari: +50% CTR, +14% CVR; Walmart: +18.6% CTR, +4% GMV | 2024-2025 | High |
+| Two-tower vs ALS trade-offs | [Allegro.com (ACM RecSys 2025)](https://arxiv.org/html/2508.03702v1) + [Google Cloud docs](https://docs.cloud.google.com/architecture/implement-two-tower-retrieval-large-scale-candidate-generation) | Two-tower: +2.1-2.4% CTR; handles cold-start; ALS faster to train/deploy | 2024-2025 | High |
+| Diversity re-ranking improves quality | [ACM TORS 2024](https://dl.acm.org/doi/10.1145/3700604) + [WWW 2024](https://dl.acm.org/doi/10.1145/3589334.3645625) | LLM re-rankers improve ILD with managed relevance trade-off | 2024 | High |
+
+### C. Inventory / Demand Forecasting — Sources
+
+| Claim | Source | Key Data Point | Year | Confidence |
+|-------|--------|---------------|------|------------|
+| LightGBM global model beats Prophet for e-commerce | [arXiv — Local vs Global Models](https://arxiv.org/html/2411.06394v1) + [M5 Competition](https://phdinds-aim.github.io/time_series_handbook/08_WinningestMethods/lightgbm_m5_forecasting.html) | Global LightGBM outperformed local by 21.42%; used by all top-50 M5 competitors | 2024 + M5 canonical | Moderate-High |
+| Model size 60-80 MB / 120-300 MB RAM | Engineering estimate | Plausible for 2K-5K trees, 150-250 features; no published benchmark | — | Weak |
+| 100K SKUs in 30-120 sec on single CPU | [Microsoft LightGBM Benchmark](https://microsoft.github.io/lightgbm-benchmark/results/inferencing/) | 394-645 μs per prediction → 100K rows = ~39-65 sec (single thread) | 2023-2024 | Moderate |
+| 150-250 features per (SKU, date) | [Netguru — ML for Demand Forecasting](https://www.netguru.com/blog/ml-for-demand-forecasting) | Production pipelines "generate 200-300 derived features" | 2024 | Moderate |
+| 1% stockout on $500M GMV = ~$5M lost sales | [Hydrian](https://hydrian.com/library/stockout-cost/) + [HBR Oct 2024](https://hbr.org/2024/10/how-online-retailers-can-avoid-costly-out-of-stock-issues) | Formula: Sales × Stockout Rate × Spill Rate; IHL: stockouts cost $1.2T globally | 2024 | Strong |
+| Feature engineering = 60% of the work | [Nature Scientific Reports — Primacy of Feature Engineering](https://www.nature.com/articles/s41598-026-35197-y) | Feature engineering is "primary driver" of accuracy; specific 60% figure is practitioner estimate | 2026 | Weak (concept strong, % not sourced) |
+| 2K-5K trees for retail demand | [M5 LightGBM Tuning](https://phdinds-aim.github.io/time_series_handbook/08_WinningestMethods/lightgbm_m5_tuning.html) + [Microsoft Benchmark](https://microsoft.github.io/lightgbm-benchmark/results/inferencing/) | M5 winner: n_estimators=2000, max_depth=4; 5K-tree benchmarked | 2021 (canonical) | Strong |
+| Per-SKU shipping lead times for demand timing | [ScienceDirect — Data-driven Lead Time Forecasting](https://www.sciencedirect.com/science/article/abs/pii/S0925527326000769) + [Deposco](https://deposco.com/blog/demand-planning/) | ML-based per-SKU lead time forecasting; "each SKU needs a different lead time" | 2024-2026 | Strong |
+
+### D. Customer Segmentation — Sources
+
+| Claim | Source | Key Data Point | Year | Confidence |
+|-------|--------|---------------|------|------------|
+| K-Means on RFM is standard (K=8-15) | [ACM ICCIT 2025](https://dl.acm.org/doi/10.1145/3731763.3731805) + [RFM K-Means BIRCH 2024](https://www.researchgate.net/publication/382684957) | K-Means outperforms BIRCH on RFM; academic literature finds K=3-8 optimal (K=8-15 is enterprise practice) | 2024-2025 | High (K range caveat) |
+| PCA before K-Means for high-dim features | [PMC/PLOS ONE 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC11805403/) | "Customer segmentation data exhibits high correlations; PCA effectively represents various characteristics" | 2025 | High |
+| Model size < 1 MB | Architectural derivation | 15 clusters × 10 features = 1,200 floats = ~9.6 KB; confirmed as "lightweight" in deployment guides | — | Moderate |
+| 1M customers in < 60 sec | [scikit-learn KMeans docs](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html) | K-Means predict is O(kn) — fastest clustering inference; actual ~1-5 sec for 1M rows | 2024 | Moderate |
+| T-SNE/PCA for cluster validation | [PMC 2025 — Dimensionality Reduction Review](https://pmc.ncbi.nlm.nih.gov/articles/PMC12453773/) + [GeeksforGeeks 2024](https://www.geeksforgeeks.org/machine-learning/difference-between-pca-vs-t-sne/) | t-SNE "ideal for visualizing clusters"; PCA for "global structure" | 2024-2025 | High |
+| LLM-generated cluster names | [arXiv — k-LLMmeans (ICLR 2026)](https://arxiv.org/abs/2502.09667) + [LangLasso (arXiv 2025)](https://arxiv.org/abs/2601.10458) | "Summary-as-centroid retains k-means assignments while producing human-readable prototypes" | 2025 | High |
+| Centroid checkpointing for longitudinal tracking | [MDPI — Concept Drift Detection 2024](https://www.mdpi.com/2078-2489/15/12/786) | Centroid-based methods reviewed for production ML drift monitoring | 2024 | Moderate |
+| RFM as core features | [Shopify 2025](https://www.shopify.com/blog/rfm-analysis) + [Braze 2025](https://www.braze.com/resources/articles/rfm-segmentation) | "RFM reflects real shopping patterns"; "easier to apply and scale" | 2025 | High |
+| GDPR deletion must propagate to CRM/email/ads | [GDPR Art. 17](https://gdpr-info.eu/art-17-gdpr/) + [Twilio Segment](https://www.twilio.com/en-us/recipes/streamline-gdpr-compliance-with-segment-end-user-privacy-tools) | "Controller must inform other controllers processing the data"; Segment auto-kicks deletions to all destinations | 2024-2025 | High |
+
+### E. Dynamic Pricing — Sources
+
+| Claim | Source | Key Data Point | Year | Confidence |
+|-------|--------|---------------|------|------------|
+| Hybrid ML elasticity (batch) + rule engine (real-time) | [IJCESEN paper](https://ijcesen.com/index.php/ijcesen/article/view/4981) + [42signals](https://www.42signals.com/blog/dynamic-pricing-models-ecommerce/) | "Rule-based constraint layers with ML models for demand elasticity estimation" | 2026 | High |
+| Thompson Sampling bandit for price A/B | [MDPI Mathematics](https://www.mdpi.com/2227-7390/12/8/1123) + [IEEE Dynamic Pricing TS](https://ieeexplore.ieee.org/document/10486080) | Outperforms Laplace approx in convergence + regret; 4 TS variants implemented | 2024 | High |
+| Price shock increases abandonment 15-25% | [MarketingLTB 2025](https://marketingltb.com/blog/statistics/cart-abandonment-rate-statistics/) + [Baymard Institute](https://baymard.com/lists/cart-abandonment-rate) | "Price mismatch raises abandonment by 21%"; 48% abandon due to unexpected costs | 2024-2025 | Moderate (21% is best cite) |
+| Elasticity varies by SKU + competition | [Revology Analytics 2024](https://www.revologyanalytics.com/articles-insights/mastering-price-elasticity-modeling-best-practices-for-2024) | Only 28% of SKUs need close price parity; 3.1% GM gain from SKU-level modeling | 2024 | High |
+| LightGBM for price elasticity estimation | [Sagepub — STL-GBM Model](https://journals.sagepub.com/doi/10.1177/14727978251338001) + [KDD 2025 Workshop](https://causal-machine-learning.github.io/kdd2025-workshop/papers/24.pdf) | STL-GBM for dynamic elasticity forecasting; debiased ML framework for price optimization | 2025 | High |
+| Competitor monitoring: Prisync, Competera, Intelligence Node | [SuperAGI Comparison](https://web.superagi.com/ai-price-optimization-showdown-competera-vs-intelligence-node-vs-prisync-which-tool-reigns-supreme) | Intelligence Node: 10-second refresh, 99%+ accuracy, 1.2B+ SKUs tracked | 2025 | High |
+| Cross-price elasticity weighted by competitor share | [Tredence](https://www.tredence.com/blog/win-the-cpg-price-wars-with-new-crossprice-elasticity-capabilities) | 1,200 pricing opportunities found at 90-95% accuracy; SKU-market cluster analysis | 2024 | Moderate |
+| Dynamic pricing = margin optimizer | [AI CERTs](https://www.aicerts.ai/news/dynamic-pricing-algorithms-real-time-revenue-for-ecommerce/) + [Competera](https://competera.ai/resources/articles/ai-pricing-retail-industry-rulebook) | "Margins expand by as much as 10%"; Competera: 4.5% gross profit uplift | 2025-2026 | High |
+| Price rendering < 50 ms | [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_long_is_too_long) | "Provide feedback within 100ms, preferably within 50ms" — general web standard, not pricing-specific | 2024 | Moderate |
+
+---
+
+## Cloudflare Workers + KV Evaluation
+
+### Can Cloudflare Workers + KV replace AWS ECS + Redis for ML serving?
+
+**Short answer: No for primary ML serving. Yes as an edge complement.**
+
+#### Hard Blockers
+
+| Constraint | Limit | Impact |
+|-----------|-------|--------|
+| **Worker memory** | 128 MB per isolate | Cannot load XGBoost (25 MB) + FAISS (35 MB) + Redis client + runtime overhead. Practical ceiling ~20-30 MB for model weights. |
+| **KV eventual consistency** | Up to 60 seconds propagation | Fatal for velocity features (fraud detection requires features from <1 sec ago). Cannot use KV as a feature store. |
+| **KV write rate** | 1 write/sec/key | Cannot sustain per-transaction ZADD writes for velocity features (need 5-15K writes/sec). |
+| **KV write pricing** | $5.00/million writes | At 10K QPS fraud scoring → 864M writes/day → $4,320/day just for KV writes. |
+| **No GPU** | Workers run V8 isolates only | Workers AI exists but is for LLMs/embeddings, not XGBoost/LightGBM. |
+| **CPU time limit** | 30s default, 5 min max | ONNX inference for XGBoost in WASM: 50-300 ms CPU per prediction — workable but inefficient. |
+
+Source: [Cloudflare Workers Limits](https://developers.cloudflare.com/workers/platform/limits/), [KV Pricing](https://developers.cloudflare.com/kv/platform/pricing/), [How KV Works](https://developers.cloudflare.com/kv/concepts/how-kv-works/)
+
+#### Where Workers Could Complement AWS
+
+| Use Case | Pattern | Benefit |
+|----------|---------|---------|
+| **Edge routing / auth** | Worker validates API key + rate limits → forwards to AWS ECS | Global edge PoPs reduce user-to-API latency by 20-50 ms |
+| **Recommendation cache** | Worker checks KV for precomputed recs → cache miss routes to ECS | 70-80% cache hit rate offloads ECS; KV reads = $0.50/M |
+| **A/B test routing** | Worker reads experiment config from KV → routes to model variant | Config changes infrequently, so 60s propagation is fine |
+| **Response caching** | Worker caches pricing/reco responses by input hash → TTL 30-60s | Reduces QPS to origin by 50-80% during traffic spikes |
+
+#### Cost Comparison at Scale (10K QPS, fraud scoring)
+
+| Component | AWS (ECS + ElastiCache) | Cloudflare (Workers + KV) |
+|-----------|------------------------|--------------------------|
+| Compute | 5-8 c5.2xlarge = ~$1,200-1,900/mo | Workers: ~$150/mo (CPU-time billing) |
+| Feature store | ElastiCache r6g.xlarge = ~$380/mo | KV writes: $4,320/day = ~$130K/mo (deal-breaker) |
+| Model serving | Included in ECS | Cannot self-host; Workers AI doesn't support XGBoost |
+| **Total** | **~$1,700-2,300/mo** | **~$130K+/mo** (KV write cost dominates) |
+
+**Bottom line:** KV's write pricing ($5/M) makes it economically impossible as a real-time feature store. Workers + KV is 50-70x more expensive than AWS for write-heavy ML workloads. It works beautifully as a read-heavy caching layer on top of AWS.
+
+Sources: [Cloudflare KV Pricing](https://developers.cloudflare.com/kv/platform/pricing/), [Baselime: 80% lower cost from AWS to CF](https://blog.cloudflare.com/80-percent-lower-cloud-cost-how-baselime-moved-from-aws-to-cloudflare/), [Workers vs Lambda cost comparison](https://www.vantage.sh/blog/cloudflare-workers-vs-aws-lambda-cost)
