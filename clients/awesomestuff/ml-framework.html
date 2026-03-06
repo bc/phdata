@@ -1734,7 +1734,7 @@ graph LR
 </table>
 <p><strong>Key insight:</strong> The ML is trivial (K-Means is undergraduate-level). The value is in (1) choosing the right features and (2) delivering actionable segment reports that marketing can immediately act on via their own tools (Braze, Salesforce, ad platforms).</p>
 <hr>
-<div class="markdown-heading"><h3 class="heading-element">E. Dynamic Pricing (Near-Real-Time)</h3><a id="user-content-e-dynamic-pricing-near-real-time" class="anchor" aria-label="Permalink: E. Dynamic Pricing (Near-Real-Time)" href="#e-dynamic-pricing-near-real-time"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h3 class="heading-element">E. Dynamic Pricing (Batch)</h3><a id="user-content-e-dynamic-pricing-batch" class="anchor" aria-label="Permalink: E. Dynamic Pricing (Batch)" href="#e-dynamic-pricing-batch"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <table>
 <thead>
 <tr>
@@ -1754,7 +1754,7 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
-<td>Rule engine: p50 &lt;1 ms, p99 &lt;5 ms (just arithmetic). Redis lookup: 1-3 ms. E2E: p50 ~3-8 ms, p99 ~15-25 ms. Precompute elasticity daily in batch; real-time layer is just the rule engine.</td>
+<td>Batch. Repricing worker runs every 10 minutes as a scheduled ECS task. Scores all SKUs (or priority subset), applies rule engine, writes final prices to Redis. Backend reads pre-computed price from Redis in 1-3 ms. Prices are at most ~10 minutes stale — acceptable for e-commerce.</td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
@@ -1762,12 +1762,12 @@ graph LR
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
-<td><a class="sourced" data-url="https://queue-it.com/blog/black-friday-statistics/">15,000-40,000 on Black Friday (fires on page load for price display)<span class="cite-tooltip"><span class="cite-verdict partial">Partial — same traffic caveat as fraud</span><div class="cite-quote">Same reasoning as fraud QPS: depends on merchant size. Queue-it shows Black Friday traffic is 2-3x a normal day overall. For a $500M merchant with millions of daily page views, 15-40K page loads/sec at peak is the high end. Price lookups are cheaper than fraud scoring since they're Redis key-value reads.</div><div class="cite-source"><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a></div></span></a>. BUT: only 200-500 SKUs may have active dynamic pricing. Price <em>changes</em> are lower volume: ~1-5K SKUs/hour.</td>
+<td>N/A — batch repricing. <a class="sourced" data-url="https://queue-it.com/blog/black-friday-statistics/">Price <em>reads</em> from Redis can handle 15-40K QPS on Black Friday<span class="cite-tooltip"><span class="cite-verdict partial">Partial — same traffic caveat as fraud</span><div class="cite-quote">Same reasoning as fraud QPS: depends on merchant size. Queue-it shows Black Friday traffic is 2-3x a normal day overall. For a $500M merchant with millions of daily page views, 15-40K page loads/sec at peak is the high end. Price lookups are cheaper than fraud scoring since they're Redis key-value reads.</div><div class="cite-source"><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a></div></span></a>, but the repricing worker itself processes ~1-5K SKUs/cycle every 10 min.</td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Target: &lt;50 ms</strong> (price must render with the page — can't be async like recs). Hard limit: 200 ms before cart abandonment risk. <strong>Correctness matters more than speed</strong> — <a class="sourced" data-url="https://baymard.com/lists/cart-abandonment-rate">"price shock" (different price shown vs checkout) increases abandonment by 15-25%<span class="cite-tooltip"><span class="cite-verdict partial">Partial — broader than stated</span><div class="cite-quote">Baymard Institute (50-study meta-analysis): "48% of US customers say unexpected costs are the main reason for abandoning shopping carts." The specific 15-25% figure for price-specific discrepancy is not directly sourced — the broader stat is 48% for all unexpected costs. With a 70% base abandonment rate, ~34% of all shoppers abandon due to cost surprises. Better framing: "Unexpected costs at checkout are the #1 reason for cart abandonment."</div><div class="cite-source"><a href="https://baymard.com/lists/cart-abandonment-rate" target="_blank">Baymard Institute — Cart Abandonment Rate Statistics (2026)</a></div></span></a>.</td>
+<strong>Batch SLA: prices refreshed every ≤10 minutes.</strong> Backend reads from Redis (~1-3 ms), so page load is never bottlenecked by pricing. 10-minute staleness is acceptable — <strong>consistency matters more than freshness</strong>: <a class="sourced" data-url="https://baymard.com/lists/cart-abandonment-rate">"price shock" (different price shown vs checkout) is the #1 driver of cart abandonment<span class="cite-tooltip"><span class="cite-verdict partial">Partial — broader than stated</span><div class="cite-quote">Baymard Institute (50-study meta-analysis): "48% of US customers say unexpected costs are the main reason for abandoning shopping carts." The specific 15-25% figure for price-specific discrepancy is not directly sourced — the broader stat is 48% for all unexpected costs. With a 70% base abandonment rate, ~34% of all shoppers abandon due to cost surprises. Better framing: "Unexpected costs at checkout are the #1 reason for cart abandonment."</div><div class="cite-source"><a href="https://baymard.com/lists/cart-abandonment-rate" target="_blank">Baymard Institute — Cart Abandonment Rate Statistics (2026)</a></div></span></a>. The price in Redis is the price at checkout — no discrepancy.</td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
@@ -1876,11 +1876,11 @@ graph LR
 <tr>
 <td>Pricing</td>
 <td>50 MB</td>
-<td>15-25 ms e2e</td>
-<td>15-40K</td>
+<td>Batch (≤10 min stale)</td>
+<td>Batch</td>
 <td>LOW-MED</td>
 <td>EC2 + GitHub Actions → LightGBM → ONNX → S3</td>
-<td>Backend reads <strong>Redis</strong> (1-3 ms). Background <strong>ECS worker</strong> reprices every 10 min via ONNX + rules + competitor API</td>
+<td><strong>Batch repricing worker</strong> every 10 min → Redis. Backend reads pre-computed price (1-3 ms)</td>
 </tr>
 </tbody>
 </table>
@@ -1912,9 +1912,9 @@ graph LR
 Applied:
   Fraud    = Train(XGBoost→ONNX)   + ECS(FastAPI+ORT)  + Redis(velocity features)
   Reco     = Train(ALS→FAISS)      + ECS(FastAPI+FAISS) + Redis(user vectors+cache)
-  Pricing  = Train(LightGBM→ONNX)  + ECS(FastAPI+ORT)  + Redis(coefficients)
-  Forecast = Train(LightGBM)       + Warehouse only      ← no ECS needed
-  Segment  = Train(K-Means)        + Warehouse only      ← no ECS needed
+  Pricing  = Train(LightGBM→ONNX)  + Batch repricing → Redis  ← 10 min cycle
+  Forecast = Train(LightGBM)       + Batch → Warehouse        ← daily
+  Segment  = Train(K-Means)        + Batch → S3 report        ← daily
 </code></pre>
 <div class="markdown-heading"><h3 class="heading-element">Design Principles</h3><a id="user-content-design-principles" class="anchor" aria-label="Permalink: Design Principles" href="#design-principles"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <table>
@@ -1931,15 +1931,15 @@ Applied:
 </tr>
 <tr>
 <td><strong>One Dockerfile</strong></td>
-<td>All three real-time models (Fraud, Reco, Pricing) use the same FastAPI + ONNX Runtime container. Different model artifact, same serving code. <code>docker build</code> → ECR → ECS service update with <code>MODEL_ARTIFACT_S3=s3://...</code> → done.</td>
+<td>Both real-time models (Fraud, Reco) use the same FastAPI + ONNX Runtime container. Different model artifact, same serving code. Pricing reuses the same Docker image for its batch repricing worker. <code>docker build</code> → ECR → ECS service update with <code>MODEL_ARTIFACT_S3=s3://...</code> → done.</td>
 </tr>
 <tr>
 <td><strong>Redis is the shared brain</strong></td>
-<td>One Redis cluster serves all three real-time models: velocity features (fraud), user embeddings + rec cache (reco), elasticity coefficients (pricing). Build the Redis infrastructure once.</td>
+<td>One Redis cluster serves all models that need fast lookups: velocity features (fraud), user embeddings + rec cache (reco), pre-computed prices (pricing). Build the Redis infrastructure once.</td>
 </tr>
 <tr>
 <td><strong>Batch is just a script</strong></td>
-<td>Forecast and Segmentation don't need containers, APIs, or serving infrastructure. They're Python scripts on a schedule. Don't over-engineer what a cron job can handle.</td>
+<td>Forecast, Segmentation, and Pricing don't need real-time serving — they're scheduled jobs. Pricing runs every 10 min, the others daily. Don't over-engineer what a scheduled task can handle.</td>
 </tr>
 <tr>
 <td><strong>MLflow is the registry</strong></td>
@@ -1967,7 +1967,7 @@ Applied:
 <tr>
 <td><strong>FastAPI + ONNX Runtime + Docker</strong></td>
 <td>Real-time model serving (optimized)</td>
-<td>Fraud, Reco, Pricing</td>
+<td>Fraud, Reco (real-time); Pricing (batch worker reuses same image)</td>
 <td>ECS Fargate behind ALB. ONNX Runtime gives 2-4x speedup on tree models (XGBoost, LightGBM). FAISS stays native. Container portable to any runtime: K8s, Cloud Run, Fly.io.</td>
 </tr>
 <tr>
@@ -1985,7 +1985,7 @@ Applied:
 <tr>
 <td><strong>Airflow</strong></td>
 <td>Batch orchestration</td>
-<td>Forecast, Segmentation, Pricing (batch)</td>
+<td>Forecast, Segmentation, Pricing (all batch)</td>
 <td>Airflow, Prefect, Dagster, or plain cron. If ≤3 jobs, cron is fine. All are open-source.</td>
 </tr>
 <tr>
@@ -2209,7 +2209,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <tr>
 <td>4</td>
 <td><strong>Pricing</strong></td>
-<td>Reuses fraud's Redis + FastAPI + Docker infrastructure — literally the same stack with a different model. Rule engine needs business stakeholder alignment (takes time).</td>
+<td>Batch repricing worker reuses fraud's Docker + Redis infrastructure. Rule engine needs business stakeholder alignment (takes time). 10-min cycle is non-critical — safe to iterate.</td>
 </tr>
 <tr>
 <td>5</td>
@@ -2243,9 +2243,9 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Principal Solutions Architect</td>
 <td>Principal</td>
 <td>Both</td>
-<td>40</td>
-<td>$275/hr</td>
-<td>Technical authority across both workstreams. Owns architecture decisions, code reviews, infrastructure design (ECS, Redis, ALB). Runs sprint planning. Accountable for production readiness and system design quality.</td>
+<td>20</td>
+<td>$400/hr</td>
+<td>Technical authority. Owns architecture decisions, code reviews, sprint planning. Accountable for production readiness.</td>
 </tr>
 <tr>
 <td><strong>Project Manager / Research Analyst</strong></td>
@@ -2254,7 +2254,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Both</td>
 <td>30</td>
 <td>$225/hr</td>
-<td>Manages timeline, budget, and stakeholder communication. Researches model approaches, competitive pricing APIs, GDPR requirements. Writes documentation. Tracks sprint velocity, risk register, and dependency mapping between workstreams.</td>
+<td>Timeline, budget, stakeholder comms. Researches approaches, GDPR requirements. Tracks velocity and cross-workstream dependencies.</td>
 </tr>
 <tr>
 <td><strong>E-Commerce Business SME</strong></td>
@@ -2263,10 +2263,10 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Both (advisory)</td>
 <td>4</td>
 <td>$250/hr</td>
-<td>Domain expert on e-commerce operations — pricing strategy, inventory planning, fraud patterns, marketing segmentation. Validates model inputs/outputs against business reality. Reviews rule engine logic (price floors, MAP, margin constraints). Attends weekly review.</td>
+<td>Domain expert: pricing strategy, inventory, fraud patterns, segmentation. Validates model I/O against business reality. Weekly review.</td>
 </tr>
 <tr>
-<td colspan="7" style="background:#e8f5e9; font-weight:bold;">Workstream 1 — Batch Jobs (Segmentation, Forecasting)</td>
+<td colspan="7" style="background:#e8f5e9; font-weight:bold;">Workstream 1 — Batch Jobs (Segmentation, Forecasting, Pricing)</td>
 </tr>
 <tr>
 <td><strong>ML Engineer</strong></td>
@@ -2275,7 +2275,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>WS1 — Batch</td>
 <td>40</td>
 <td>$225/hr</td>
-<td>Builds K-Means segmentation and LightGBM demand forecasting pipelines. Feature engineering in SQL/Python, model training, MLflow integration, ONNX export. Owns the operations digest output and segmentation report generation.</td>
+<td>K-Means segmentation, LightGBM forecasting + pricing. Feature engineering, ONNX export, MLflow. Owns repricing worker and ops digest.</td>
 </tr>
 <tr>
 <td><strong>Data Engineer</strong></td>
@@ -2284,10 +2284,10 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>WS1 — Batch</td>
 <td>40</td>
 <td>$200/hr</td>
-<td>Builds Snowflake feature pipelines, Airflow/cron scheduling, S3 artifact management, GitHub Actions CI/CD for batch jobs. Sets up ECS one-shot tasks for segmentation. Presigned URL delivery for marketing reports.</td>
+<td>Snowflake pipelines, Airflow/cron scheduling, S3 artifacts, GitHub Actions CI/CD. ECS one-shot tasks, presigned URL delivery.</td>
 </tr>
 <tr>
-<td colspan="7" style="background:#e3f2fd; font-weight:bold;">Workstream 2 — High-Speed Inference (Fraud, Reco, Pricing)</td>
+<td colspan="7" style="background:#e3f2fd; font-weight:bold;">Workstream 2 — High-Speed Inference (Fraud, Reco)</td>
 </tr>
 <tr>
 <td><strong>ML Engineer</strong></td>
@@ -2296,7 +2296,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>WS2 — Real-Time</td>
 <td>40</td>
 <td>$250/hr</td>
-<td>Builds XGBoost fraud, ALS+FAISS reco, and LightGBM pricing models. ONNX Runtime optimization for tree models. Designs the repricing worker and priority queue. Owns model performance (latency, accuracy, A/B testing).</td>
+<td>XGBoost fraud + ALS/FAISS reco. ONNX Runtime optimization. Model performance, latency tuning, A/B testing.</td>
 </tr>
 <tr>
 <td><strong>Platform Engineer</strong></td>
@@ -2305,16 +2305,16 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>WS2 — Real-Time</td>
 <td>40</td>
 <td>$225/hr</td>
-<td>Builds FastAPI serving layer, Docker/ECR pipeline, ECS Fargate deployment, ALB configuration, autoscaling policies. Redis (ElastiCache) setup — velocity features, embeddings, price cache. CloudWatch dashboards and alerting. Canary deployment and rollback automation.</td>
+<td>FastAPI serving, Docker/ECR/ECS Fargate, ALB, autoscaling. Redis setup. CloudWatch dashboards. Canary deploy + rollback.</td>
 </tr>
 <tr>
 <td><strong>DevOps / Infrastructure</strong></td>
 <td>Solutions Engineer</td>
 <td>Mid</td>
-<td>WS2 — Real-Time</td>
+<td>Both</td>
 <td>32</td>
 <td>$185/hr</td>
-<td>Terraform/IaC for all three environments (Dev, Pre-Prod, Prod). GitHub Actions pipelines, CodeRabbit integration, security scanning (Trivy, Bandit, pip-audit). Manages ECR, networking, IAM roles, secrets. Supports both workstreams on CI/CD.</td>
+<td>Terraform/IaC for Dev/Pre-Prod/Prod. GitHub Actions, CodeRabbit, security scanning. ECR, networking, IAM, secrets.</td>
 </tr>
 </tbody>
 </table>
@@ -2333,8 +2333,8 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <tr>
 <td>Leadership (Architect + PM + SME)</td>
 <td>3</td>
-<td>74</td>
-<td>$18,750</td>
+<td>54</td>
+<td>$15,750</td>
 </tr>
 <tr>
 <td>WS1 — Batch (ML Eng + Data Eng)</td>
@@ -2351,12 +2351,16 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <tr style="font-weight:bold; background:#f0f4f8;">
 <td><strong>Total</strong></td>
 <td><strong>8</strong></td>
-<td><strong>266</strong></td>
-<td><strong>$60,670</strong></td>
+<td><strong>246</strong></td>
+<td><strong>$57,670</strong></td>
 </tr>
 <tr>
 <td colspan="3"><strong>Blended effective rate</strong></td>
-<td><strong>$228/hr</strong></td>
+<td><strong>$234/hr</strong></td>
+</tr>
+<tr>
+<td colspan="3"><strong>12-month project estimate</strong></td>
+<td><strong>~$3.0M</strong></td>
 </tr>
 </tbody>
 </table>
@@ -2364,29 +2368,30 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <div class="markdown-heading"><h3 class="heading-element">Workstream Timeline</h3><a id="user-content-workstream-timeline" class="anchor" aria-label="Permalink: Workstream Timeline" href="#workstream-timeline"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <pre class="mermaid">
 gantt
-    title ML Platform — Parallel Workstreams
+    title ML Platform — 12-Month Engagement (Apr 2026 – Mar 2027)
     dateFormat  YYYY-MM-DD
-    axisFormat  %b %d
+    axisFormat  %b '%y
 
     section Leadership
-    Architecture &amp; infra design          :a1, 2026-03-16, 2w
-    Sprint planning &amp; ongoing oversight   :a2, after a1, 14w
+    Architecture &amp; infra design            :a1, 2026-04-01, 4w
+    Sprint planning &amp; ongoing oversight     :a2, after a1, 48w
 
-    section WS1 — Batch
-    Segmentation MVP (K-Means + report)   :b1, 2026-03-16, 4w
-    Segmentation → production             :b2, after b1, 2w
-    Forecasting MVP (LightGBM + digest)   :b3, after b1, 4w
-    Forecasting → production              :b4, after b3, 2w
-    Ops digest refinement + feedback loop :b5, after b4, 4w
+    section WS1 — Batch (Seg, Forecast, Pricing)
+    Segmentation MVP (K-Means + report)     :b1, 2026-04-01, 6w
+    Segmentation → production               :b2, after b1, 3w
+    Forecasting MVP (LightGBM + digest)     :b3, after b2, 6w
+    Forecasting → production                :b4, after b3, 3w
+    Pricing repricing worker MVP            :b5, after b4, 6w
+    Pricing → production + competitor API   :b6, after b5, 4w
+    Iteration: feedback loops + tuning      :b7, after b6, 20w
 
-    section WS2 — Real-Time
-    Shared infra (ECS, Redis, ALB, CI/CD) :c1, 2026-03-16, 3w
-    Fraud detection MVP                   :c2, after c1, 4w
-    Fraud → shadow mode → production      :c3, after c2, 2w
-    Dynamic pricing (repricing worker)    :c4, after c2, 4w
-    Pricing → production                  :c5, after c4, 2w
-    Recommendation engine (FAISS)         :c6, after c4, 4w
-    Reco → production                     :c7, after c6, 2w
+    section WS2 — Real-Time (Fraud, Reco)
+    Shared infra (ECS, Redis, ALB, CI/CD)   :c1, 2026-04-01, 4w
+    Fraud detection MVP                     :c2, after c1, 6w
+    Fraud → shadow mode → production        :c3, after c2, 4w
+    Recommendation engine (FAISS + ALS)     :c4, after c3, 8w
+    Reco → production + caching tuning      :c5, after c4, 4w
+    Iteration: monitoring, A/B, scale       :c6, after c5, 22w
 </pre>
 <p><em>All rates are effective rack rates inclusive of phData overhead, tooling, and management. Rates based on US-based senior consulting talent with ML/data engineering specialization. Actual engagement terms subject to SOW.</em></p>
 </article>
