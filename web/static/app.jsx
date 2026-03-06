@@ -1690,27 +1690,29 @@ function CartPanel({ cart, onClose, removeFromCart, updateCartNote }) {
     }
   };
 
+  const techs = (item) => (item.technologies || "").split(", ").filter(Boolean).slice(0, 2);
+
   return (
     <div className="cart-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="cart-panel">
         <div className="cart-header">
           <div>
             <div className="cart-title">Research Cart</div>
-            <div className="cart-subtitle">{cart.length} case {cart.length === 1 ? "study" : "studies"} collected</div>
+            <div className="cart-subtitle">{cart.length} {cart.length === 1 ? "study" : "studies"} collected</div>
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close cart">&times;</button>
+          <button className="cart-close-btn" onClick={onClose} aria-label="Close cart">&times;</button>
         </div>
 
         <div className="cart-body">
           {cart.length === 0 ? (
             <div className="cart-empty">
-              <CartIcon size={32} />
-              <p>Your cart is empty</p>
-              <p style={{ fontSize: 12, color: "var(--gray-400)" }}>Add case studies from search results or the case studies page</p>
+              <CartIcon size={36} />
+              <p>No studies collected yet</p>
+              <p style={{ fontSize: 11 }}>Use the + button on any case study card to add it here</p>
             </div>
           ) : (
-            cart.map(item => (
-              <div className="cart-item" key={item.id}>
+            cart.map((item, i) => (
+              <div className="cart-item" key={item.id} style={{ animationDelay: `${i * 40}ms` }}>
                 <div className="cart-item-header">
                   <div className="cart-item-title">{item.title}</div>
                   <button className="cart-remove-btn" onClick={() => removeFromCart(item.id)} title="Remove" aria-label="Remove from cart">
@@ -1719,10 +1721,11 @@ function CartPanel({ cart, onClose, removeFromCart, updateCartNote }) {
                 </div>
                 <div className="cart-item-meta">
                   {item.industry && <span className="badge badge-industry" style={{ fontSize: 10 }}>{item.industry}</span>}
+                  {techs(item).map((t, j) => <span key={j} className="badge badge-tech" style={{ fontSize: 10 }}>{t}</span>)}
                 </div>
                 <textarea
                   className="cart-note"
-                  placeholder="Add a note — how should this relate to your summary? (optional)"
+                  placeholder="Guidance for summary — e.g. 'focus on ROI metrics' or 'compare to our fraud model'"
                   value={item.cartNote}
                   onChange={e => updateCartNote(item.id, e.target.value)}
                   rows={2}
@@ -1736,11 +1739,11 @@ function CartPanel({ cart, onClose, removeFromCart, updateCartNote }) {
           <div className="cart-footer">
             {checkoutDone ? (
               <div className="cart-checkout-done">
-                <CheckIcon /> Research launched in Terminal — check for output
+                <CheckIcon /> Launched in Terminal — output at /tmp/phdata-research-summary.md
               </div>
             ) : (
               <button className="cart-checkout-btn" onClick={handleCheckout} disabled={checkingOut}>
-                {checkingOut ? "Launching..." : `Checkout — Summarize ${cart.length} Case ${cart.length === 1 ? "Study" : "Studies"}`}
+                {checkingOut ? "Launching research..." : `Summarize ${cart.length} ${cart.length === 1 ? "Study" : "Studies"}`}
               </button>
             )}
           </div>

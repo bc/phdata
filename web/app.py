@@ -405,6 +405,7 @@ Output the full markdown document. Save it to /tmp/phdata-research-summary.md"""
     script_content = f"""#!/bin/bash
 echo "=== phData Research Cart — Checking out {len(items)} case studies ==="
 echo ""
+unset CLAUDECODE
 claude --allowedTools "mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__computer,Write,Read,Bash" -p "$(cat '{escaped_prompt_path}')"
 echo ""
 echo "=== Done! Output saved to /tmp/phdata-research-summary.md ==="
