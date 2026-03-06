@@ -2257,7 +2257,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Principal Solutions Architect</td>
 <td>Principal</td>
 <td>Both</td>
-<td>20</td>
+<td>10</td>
 <td>$400/hr</td>
 <td>Technical authority. Owns architecture decisions, code reviews, sprint planning. Accountable for production readiness.</td>
 </tr>
@@ -2266,7 +2266,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Senior Consultant, Data &amp; AI Strategy</td>
 <td>Senior</td>
 <td>Both</td>
-<td>30</td>
+<td>20</td>
 <td>$225/hr</td>
 <td>Timeline, budget, stakeholder comms. Researches approaches, GDPR requirements. Tracks velocity and cross-workstream dependencies.</td>
 </tr>
@@ -2296,7 +2296,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Senior ML Engineer</td>
 <td>Senior</td>
 <td>WS1 — Batch</td>
-<td>40</td>
+<td>32</td>
 <td>$225/hr</td>
 <td>K-Means segmentation, LightGBM forecasting + pricing. Feature engineering, ONNX export, MLflow. Owns repricing worker and ops digest.</td>
 </tr>
@@ -2305,7 +2305,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Senior Data Engineer</td>
 <td>Senior</td>
 <td>WS1 — Batch</td>
-<td>40</td>
+<td>32</td>
 <td>$200/hr</td>
 <td>Snowflake pipelines, GH Actions cron scheduling, S3 artifacts, CI/CD. ECS one-shot tasks, presigned URL delivery.</td>
 </tr>
@@ -2317,7 +2317,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>ML Solutions Architect</td>
 <td>Senior</td>
 <td>WS2 — Real-Time</td>
-<td>40</td>
+<td>32</td>
 <td>$250/hr</td>
 <td>XGBoost fraud + ALS/FAISS reco. ONNX Runtime optimization. Model performance, latency tuning, A/B testing.</td>
 </tr>
@@ -2326,7 +2326,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Senior Solutions Engineer</td>
 <td>Senior</td>
 <td>WS2 — Real-Time</td>
-<td>40</td>
+<td>24</td>
 <td>$225/hr</td>
 <td>FastAPI serving, Docker/ECR/ECS Fargate, ALB, autoscaling. Redis setup. CloudWatch dashboards. Canary deploy + rollback.</td>
 </tr>
@@ -2335,7 +2335,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>Solutions Engineer</td>
 <td>Mid</td>
 <td>Both</td>
-<td>32</td>
+<td>16</td>
 <td>$185/hr</td>
 <td>Terraform/IaC for Dev/Pre-Prod/Prod. GitHub Actions, CodeRabbit, security scanning. ECR, networking, IAM, secrets.</td>
 </tr>
@@ -2356,34 +2356,34 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <tr>
 <td>Leadership (Architect + PM + SMEs)</td>
 <td>4</td>
-<td>58</td>
-<td>$16,850</td>
+<td>38</td>
+<td>$10,600</td>
 </tr>
 <tr>
 <td>WS1 — Batch (ML Eng + Data Eng)</td>
 <td>2</td>
-<td>80</td>
-<td>$17,000</td>
+<td>64</td>
+<td>$13,600</td>
 </tr>
 <tr>
 <td>WS2 — Real-Time (ML Eng + Platform Eng + DevOps)</td>
 <td>3</td>
-<td>112</td>
-<td>$24,920</td>
+<td>72</td>
+<td>$16,360</td>
 </tr>
 <tr style="font-weight:bold; background:#f0f4f8;">
 <td><strong>Total</strong></td>
 <td><strong>9</strong></td>
-<td><strong>250</strong></td>
-<td><strong>$58,770</strong></td>
+<td><strong>174</strong></td>
+<td><strong>$40,560</strong></td>
 </tr>
 <tr>
 <td colspan="3"><strong>Blended effective rate</strong></td>
-<td><strong>$235/hr</strong></td>
+<td><strong>$233/hr</strong></td>
 </tr>
 <tr>
 <td colspan="3"><strong>12-month project estimate</strong></td>
-<td><strong>~$3.1M</strong></td>
+<td><strong>$2.1M</strong></td>
 </tr>
 </tbody>
 </table>
@@ -2475,7 +2475,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var html = '<details open><summary><strong>Table of Contents</strong></summary><ul>';
   headings.forEach(function(h) {
     var anchor = h.parentElement.querySelector('a.anchor');
-    var id = anchor ? anchor.getAttribute('href').slice(1) : '';
+    var id = anchor ? anchor.getAttribute('id') : '';
     var level = parseInt(h.tagName.charAt(1));
     var indent = (level - 1) * 16;
     html += '<li style="margin-left:' + indent + 'px;list-style:none;"><a href="#' + id + '">' + h.textContent + '</a></li>';
