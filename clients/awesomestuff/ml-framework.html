@@ -1900,37 +1900,50 @@ graph LR
 </tbody>
 </table>
 <div class="markdown-heading"><h2 class="heading-element">Architecture: One Pattern, Five Models</h2><a id="user-content-architecture-one-pattern-five-models" class="anchor" aria-label="Permalink: Architecture: One Pattern, Five Models" href="#architecture-one-pattern-five-models"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>Every model follows the same two-layer architecture: <strong>Data Prep &amp; Training</strong> (EC2 → S3) and <strong>Inference Deployment</strong> (S3 → ECS Fargate). Build the layers once, deploy each model as a config change.</p>
-<pre><code>┌──────────────────────────────────────────────────────────────────────────────────┐
-│                         THE PATTERN (all 5 models)                              │
-│                                                                                  │
-│   DATA PREP &amp; TRAINING                    INFERENCE DEPLOYMENT                  │
-│   ─────────────────────                    ─────────────────────                  │
-│                                                                                  │
-│   ┌─────────────────┐    ┌─────────┐    ┌──────────────┐    ┌────────────────┐  │
-│   │  EC2 Dev         │    │  S3      │    │  ECS Fargate  │    │  ElastiCache   │  │
-│   │  (VSCode + SSH)  │    │  Bucket  │    │               │    │  (Redis)       │  │
-│   │                  │    │          │    │  FastAPI +     │    │                │  │
-│   │  Train model     │───▶│  model   │───▶│  ONNX Runtime │───▶│  Features,     │  │
-│   │  Export ONNX     │    │  .tar.gz │    │  in Docker     │    │  embeddings,   │  │
-│   │                  │    │          │    │               │    │  cache          │  │
-│   │  GitHub Actions  │    │          │    │  Behind ALB   │    │                │  │
-│   │  workflow_dispatch│    │          │    │  Auto 2-20    │    │                │  │
-│   │  MLflow tracking │    │  ECR     │    │               │    │                │  │
-│   └─────────────────┘    │  images  │    └──────────────┘    └────────────────┘  │
-│                           └─────────┘                                            │
-│                                                                                  │
-│   Batch models skip inference deployment — write directly to warehouse.          │
-│   Real-time models: GitHub Actions builds Docker → ECR → ECS service update.     │
-└──────────────────────────────────────────────────────────────────────────────────┘
+<p>Every model follows the same two-layer architecture: <strong>Data Prep &amp; Training</strong> (EC2 → S3) and <strong>Inference Deployment</strong> (S3 → ECS Fargate or batch). Build the shared layers once, deploy each model as a config change.</p>
+<pre class="mermaid">
+graph TB
+    subgraph Training["DATA PREP &amp; TRAINING"]
+        EC2["EC2 Dev<br/>Train model · Export ONNX<br/>GitHub Actions workflow_dispatch<br/>MLflow tracking"]
+        S3[("S3 Bucket<br/>model.tar.gz")]
+        ECR[("ECR<br/>Docker images")]
+    end
 
-Applied:
-  Fraud    = Train(XGBoost→ONNX)   + ECS(FastAPI+ORT)  + Redis(velocity features)
-  Reco     = Train(ALS→FAISS)      + ECS(FastAPI+FAISS) + Redis(user vectors+cache)
-  Pricing  = Train(LightGBM→ONNX)  + Batch repricing → Redis  ← 10 min cycle
-  Forecast = Train(LightGBM)       + Batch → Warehouse        ← daily
-  Segment  = Train(K-Means)        + Batch → S3 report        ← daily
-</code></pre>
+    subgraph Serving["INFERENCE DEPLOYMENT"]
+        subgraph RealTime["Real-Time (Fraud, Reco)"]
+            ALB["ALB :443"]
+            ECS["ECS Fargate<br/>FastAPI + ONNX Runtime<br/>(auto-scales)"]
+        end
+
+        subgraph Batch["Batch (Forecast, Segment, Pricing)"]
+            BatchWorker["ECS Scheduled Tasks<br/>or GH Actions Cron"]
+        end
+
+        Redis[("ElastiCache Redis<br/>features · embeddings<br/>prices · rec cache")]
+        Output[("S3 Reports<br/>ops digest · segments")]
+    end
+
+    EC2 -->|"model.tar.gz"| S3
+    EC2 -->|"Docker build"| ECR
+    S3 -.->|startup load| ECS
+    ECR -.->|pull image| ECS
+    ALB --> ECS
+    ECS -->|feature fetch| Redis
+    S3 -.->|load model| BatchWorker
+    BatchWorker -->|"prices"| Redis
+    BatchWorker -->|"reports + artifacts"| Output
+</pre>
+<pre class="mermaid">
+graph LR
+    subgraph Applied["How Each Model Maps to the Pattern"]
+        direction TB
+        F["🔴 Fraud<br/>XGBoost → ONNX<br/>ECS real-time + Redis velocity features"]
+        R["🟢 Reco<br/>ALS → FAISS<br/>ECS real-time + Redis rec cache"]
+        P["🟡 Pricing<br/>LightGBM → ONNX<br/>Batch repricing → Redis every 10 min"]
+        Fo["🔵 Forecast<br/>LightGBM<br/>Batch → S3 operations digest daily"]
+        S["🟣 Segment<br/>K-Means<br/>Batch → S3 report + presigned URL daily"]
+    end
+</pre>
 <div class="markdown-heading"><h3 class="heading-element">Design Principles</h3><a id="user-content-design-principles" class="anchor" aria-label="Permalink: Design Principles" href="#design-principles"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <table>
 <thead>
