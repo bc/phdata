@@ -1263,10 +1263,24 @@ body {
   font-size: 14px;
 }
 .cite-legend code { font-size: 13px; }
+#toc {
+  background: var(--color-canvas-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+}
+#toc summary { cursor: pointer; font-size: 16px; }
+#toc ul { padding-left: 0; margin: 8px 0 0; }
+#toc li { padding: 3px 0; font-size: 14px; }
+#toc li a { color: var(--color-accent-fg); text-decoration: none; }
+#toc li a:hover { text-decoration: underline; }
 </style><title>ML Model Deployment Framework — Sourced Edition</title></head><body><article class="markdown-body">
 <div class="cite-legend">
 <strong>How to read this document:</strong> Claims with a <span style="border-bottom: 1.5px dotted var(--color-accent-fg);">dotted underline</span> have been researched. <strong>Hover</strong> to see the source and a supporting quote. <strong>Click</strong> to open the source in a new tab. Verdicts: <span class="cite-verdict supported" style="font-size:11px;padding:2px 7px;border-radius:4px;display:inline-block">SUPPORTED</span> <span class="cite-verdict partial" style="font-size:11px;padding:2px 7px;border-radius:4px;display:inline-block">PARTIAL</span> <span class="cite-verdict adjusted" style="font-size:11px;padding:2px 7px;border-radius:4px;display:inline-block">NEEDS CONTEXT</span>
-</div><div class="markdown-heading"><h1 class="heading-element">ML Model Deployment Framework</h1><a id="user-content-ml-model-deployment-framework" class="anchor" aria-label="Permalink: ML Model Deployment Framework" href="#ml-model-deployment-framework"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+</div>
+<nav id="toc"></nav>
+<div class="markdown-heading"><h1 class="heading-element">ML Model Deployment Framework</h1><a id="user-content-ml-model-deployment-framework" class="anchor" aria-label="Permalink: ML Model Deployment Framework" href="#ml-model-deployment-framework"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>A structured evaluation framework for each of AwesomeStuff.com's 5 ML use cases.</p>
 
 <div class="markdown-heading"><h2 class="heading-element">Three Core Tenets</h2><a id="user-content-three-core-tenets" class="anchor" aria-label="Permalink: Three Core Tenets" href="#three-core-tenets"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -2451,6 +2465,23 @@ mermaid.initialize({
     fontSize: '13px'
   },
   flowchart: { curve: 'basis', padding: 12 }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var toc = document.getElementById('toc');
+  if (!toc) return;
+  var headings = document.querySelectorAll('article h1, article h2, article h3');
+  var html = '<details open><summary><strong>Table of Contents</strong></summary><ul>';
+  headings.forEach(function(h) {
+    var anchor = h.parentElement.querySelector('a.anchor');
+    var id = anchor ? anchor.getAttribute('href').slice(1) : '';
+    var level = parseInt(h.tagName.charAt(1));
+    var indent = (level - 1) * 16;
+    html += '<li style="margin-left:' + indent + 'px;list-style:none;"><a href="#' + id + '">' + h.textContent + '</a></li>';
+  });
+  html += '</ul></details>';
+  toc.innerHTML = html;
 });
 </script>
 </body></html>
