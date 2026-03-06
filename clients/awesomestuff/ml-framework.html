@@ -1780,18 +1780,20 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td>Same Docker/ECS pattern as fraud. FastAPI container loads ONNX model at startup, applies business rule engine (price floors, ceilings, MAP, competitor parity) on top of ML elasticity predictions. <code>MODEL_TYPE=lightgbm_rules</code>. ECS Fargate behind ALB, autoscaling 2-12 tasks. Coefficients cached in Redis. <em>Same Dockerfile, different config.</em>
+<td><strong>Two-layer architecture: pre-computed prices in Redis + background repricing worker.</strong> The e-commerce backend never calls the ML model directly — it reads the latest price from ElastiCache Redis (1-3 ms GET). A background <strong>repricing worker</strong> (ECS scheduled task) runs every 10 minutes, re-scores SKUs through the ONNX model + rule engine, fetches competitor prices (e.g. <a href="https://prisync.com" target="_blank">Prisync</a> API), and writes updated prices back to Redis. <a class="sourced" data-url="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m">Amazon adjusts prices ~2.5 million times per day — the average product price changes every ~10 minutes somewhere on the site<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">Amazon's dynamic pricing engine is widely reported to change prices 2.5M+ times daily across its catalog. CamelCamelCamel price tracking data shows frequent intra-day price fluctuations on popular products, often multiple times per hour during high-demand periods.</div><div class="cite-source"><a href="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m" target="_blank">CamelCamelCamel — Amazon Price Tracker</a></div></span></a>. <strong>Repricing strategy:</strong> if the full catalog (100K SKUs) reprices in &lt;10 minutes, just run them all every cycle. If it takes longer, set up a priority queue ranked by pageview activity — high-traffic SKUs reprice every cycle, long-tail SKUs reprice hourly/daily.
 <pre class="mermaid">
 graph LR
-    subgraph Internet
-        Client["Client<br/>(price display)"]
+    subgraph WebApp["Web Application"]
+        Backend["E-commerce<br/>Backend"]
     end
 
     subgraph AWS["AWS VPC"]
-        ALB["ALB<br/>:443"]
+        subgraph Data
+            Redis[("ElastiCache Redis<br/>sku:price → $29.99<br/>pre-computed prices")]
+        end
 
-        subgraph ECS["ECS Fargate Cluster (auto-scales)"]
-            Task["FastAPI + ORT<br/>+ Rule Engine"]
+        subgraph ECS["ECS Fargate (auto-scales)"]
+            Worker["Repricing Worker<br/>every 10 min<br/>ONNX + Rule Engine"]
         end
 
         subgraph Storage
@@ -1799,22 +1801,27 @@ graph LR
             ECR[("ECR<br/>Docker images")]
         end
 
-        subgraph Data
-            Redis[("ElastiCache<br/>Redis<br/>elasticity coefficients<br/>+ price constraints")]
+        subgraph Queue["Priority Queue"]
+            PQ["Ranked by pageviews<br/>high-traffic SKUs first"]
         end
     end
 
-    Client -->|HTTPS| ALB
-    ALB --> Task
-    S3 -.->|startup load| Task
-    Task -->|coefficient lookup| Redis
+    subgraph External["Competitive Intelligence"]
+        Comp["Competitor Pricing API<br/>(e.g. Prisync)"]
+    end
+
+    Backend -->|"GET sku:price<br/>~1-3 ms"| Redis
+    Worker -->|"SET sku:price<br/>updated prices"| Redis
+    S3 -.->|startup load| Worker
     ECR -.->|pull image| ECS
+    PQ -->|next batch of SKUs| Worker
+    Comp -->|competitor prices| Worker
 </pre>
 </td>
 </tr>
 </tbody>
 </table>
-<p><strong>Key insight:</strong> Dynamic pricing is 80% business logic, 20% ML. The rule engine (price floors, competitor parity, margin constraints) is where the real complexity lives. The ML just provides the demand sensitivity signal.</p>
+<p><strong>Key insight:</strong> The backend never waits for ML — it just reads a Redis key. All the complexity (ONNX inference, rule engine, competitor price fetching, priority queuing) happens in the background repricing worker. Dynamic pricing is 80% business logic, 20% ML.</p>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">Cross-Cutting Summary</h2><a id="user-content-cross-cutting-summary" class="anchor" aria-label="Permalink: Cross-Cutting Summary" href="#cross-cutting-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <table>
@@ -1873,7 +1880,7 @@ graph LR
 <td>15-40K</td>
 <td>LOW-MED</td>
 <td>EC2 + GitHub Actions → LightGBM → ONNX → S3</td>
-<td><strong>ECS Fargate</strong> + ONNX Runtime + Redis</td>
+<td>Backend reads <strong>Redis</strong> (1-3 ms). Background <strong>ECS worker</strong> reprices every 10 min via ONNX + rules + competitor API</td>
 </tr>
 </tbody>
 </table>
