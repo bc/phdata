@@ -2418,6 +2418,293 @@ gantt
     Iteration: monitoring, A/B, scale       :c6, after c5, 22w
 </pre>
 <p><em>All rates are effective rack rates inclusive of phData overhead, tooling, and management. Rates based on US-based senior consulting talent with ML/data engineering specialization. Actual engagement terms subject to SOW.</em></p>
+<hr>
+<div class="markdown-heading"><h2 class="heading-element">Total Cost of Ownership</h2><a id="user-content-total-cost-of-ownership" class="anchor" aria-label="Permalink: Total Cost of Ownership" href="#total-cost-of-ownership"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+
+<div class="markdown-heading"><h3 class="heading-element">AWS Infrastructure (Annual COGS)</h3><a id="user-content-aws-infrastructure-annual-cogs" class="anchor" aria-label="Permalink: AWS Infrastructure (Annual COGS)" href="#aws-infrastructure-annual-cogs"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>All pricing us-east-1, on-demand with 1-year Compute Savings Plan / Reserved Instance pricing where applicable for steady-state resources.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Spec</th>
+<th>On-Demand/mo</th>
+<th>w/ Savings Plan/RI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ECS Fargate — Real-Time</strong></td>
+<td>Fraud: 4 tasks × 1 vCPU / 4 GB (24/7)<br/>Reco: 4 tasks × 2 vCPU / 8 GB (24/7)<br/>+ peak scaling buffer ~6 hrs/day</td>
+<td>$600</td>
+<td>$473</td>
+</tr>
+<tr>
+<td><strong>ECS Fargate — Batch</strong></td>
+<td>Pricing repricing: every 10 min × 5 min run<br/>Segmentation: daily × 2 hrs<br/>Forecasting: daily × 1 hr</td>
+<td>$42</td>
+<td>$42</td>
+</tr>
+<tr>
+<td><strong>ElastiCache Redis</strong></td>
+<td>cache.r6g.large, Multi-AZ (primary + replica)</td>
+<td>$301</td>
+<td>$206</td>
+</tr>
+<tr>
+<td><strong>ALB (×2)</strong></td>
+<td>~5 LCUs average per ALB</td>
+<td>$91</td>
+<td>$91</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td>500 GB (models, reports, training data)</td>
+<td>$12</td>
+<td>$12</td>
+</tr>
+<tr>
+<td><strong>ECR</strong></td>
+<td>10 images × 2 GB</td>
+<td>$2</td>
+<td>$2</td>
+</tr>
+<tr>
+<td><strong>EC2 — Training</strong></td>
+<td>c6i.4xlarge 20 hrs/mo + r6i.4xlarge 10 hrs/mo</td>
+<td>$24</td>
+<td>$24</td>
+</tr>
+<tr>
+<td><strong>CloudWatch</strong></td>
+<td>Logs (20 GB), 30 metrics, 20 alarms, 3 dashboards</td>
+<td>$31</td>
+<td>$31</td>
+</tr>
+<tr>
+<td><strong>Data Transfer</strong></td>
+<td>~200 GB/mo outbound + inter-AZ</td>
+<td>$14</td>
+<td>$14</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Monthly Total</strong></td>
+<td></td>
+<td><strong>$1,117</strong></td>
+<td><strong>$895</strong></td>
+</tr>
+<tr style="font-weight:bold; background:#e8f5e9;">
+<td><strong>Annual Total</strong></td>
+<td></td>
+<td><strong>$13,400</strong></td>
+<td><strong>$10,740</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>Snowflake warehouse costs are separate and depend on existing usage. GitHub Actions minutes are included in GitHub Enterprise plans. Graviton (ARM) Fargate could save an additional ~20% on compute if containers support ARM builds.</em></p>
+
+<div class="markdown-heading"><h3 class="heading-element">Maintenance &amp; Ongoing Operations (Post-Launch)</h3><a id="user-content-maintenance-ongoing-operations" class="anchor" aria-label="Permalink: Maintenance & Ongoing Operations" href="#maintenance-ongoing-operations"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>After the 12-month build, the platform requires ongoing maintenance. This can be handled by a reduced phData team or transitioned to in-house staff.</p>
+<table>
+<thead>
+<tr>
+<th>Activity</th>
+<th>Frequency</th>
+<th>Effort (hrs/mo)</th>
+<th>phData Rate</th>
+<th>Monthly Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model retraining &amp; performance monitoring</td>
+<td>Weekly</td>
+<td>20</td>
+<td>$225/hr</td>
+<td>$4,500</td>
+</tr>
+<tr>
+<td>Infrastructure ops (ECS, Redis, ALB, CI/CD)</td>
+<td>Ongoing</td>
+<td>16</td>
+<td>$200/hr</td>
+<td>$3,200</td>
+</tr>
+<tr>
+<td>Security patching &amp; CVE response</td>
+<td>Weekly + on-demand</td>
+<td>8</td>
+<td>$225/hr</td>
+<td>$1,800</td>
+</tr>
+<tr>
+<td>Feature engineering &amp; model improvement</td>
+<td>Monthly</td>
+<td>16</td>
+<td>$250/hr</td>
+<td>$4,000</td>
+</tr>
+<tr>
+<td>Architecture review &amp; capacity planning</td>
+<td>Quarterly</td>
+<td>4</td>
+<td>$400/hr</td>
+<td>$1,600</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Maintenance Total</strong></td>
+<td></td>
+<td><strong>64</strong></td>
+<td></td>
+<td><strong>$15,100/mo</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="markdown-heading"><h3 class="heading-element">Total Cost of Ownership Summary</h3><a id="user-content-tco-summary" class="anchor" aria-label="Permalink: Total Cost of Ownership Summary" href="#tco-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>Cost Category</th>
+<th>Year 1 (Build)</th>
+<th>Year 2+ (Maintain)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>phData consulting (build / maintain)</td>
+<td>$2,100,000</td>
+<td>$181,200</td>
+</tr>
+<tr>
+<td>AWS infrastructure</td>
+<td>$10,740</td>
+<td>$10,740</td>
+</tr>
+<tr>
+<td>Snowflake (estimated)</td>
+<td>$24,000</td>
+<td>$24,000</td>
+</tr>
+<tr>
+<td>GitHub Enterprise</td>
+<td>$2,520</td>
+<td>$2,520</td>
+</tr>
+<tr>
+<td>CodeRabbit Pro</td>
+<td>$1,440</td>
+<td>$1,440</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Total</strong></td>
+<td><strong>$2,138,700</strong></td>
+<td><strong>$219,900</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="markdown-heading"><h3 class="heading-element">Build vs. Hire: In-House MLOps Team Comparison</h3><a id="user-content-build-vs-hire" class="anchor" aria-label="Permalink: Build vs. Hire: In-House MLOps Team Comparison" href="#build-vs-hire"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>What it would cost to hire the equivalent team in-house, based on <a href="https://www.levels.fyi" target="_blank">Levels.fyi</a> median total compensation (base + stock + bonus) for US-based roles. Fully loaded cost includes benefits, payroll taxes, equipment, and recruiting (~1.3× TC).</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Equivalent phData Role</th>
+<th>Levels.fyi Median TC</th>
+<th>Fully Loaded (1.3×)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Staff/Principal ML Architect</td>
+<td>Principal Solutions Architect</td>
+<td>$340,000</td>
+<td>$442,000</td>
+</tr>
+<tr>
+<td>Engineering Manager</td>
+<td>PM / Research Analyst</td>
+<td>$280,000</td>
+<td>$364,000</td>
+</tr>
+<tr>
+<td>Senior ML Engineer (×2)</td>
+<td>Senior ML Eng + ML Solutions Architect</td>
+<td>$261,000</td>
+<td>$339,300 each</td>
+</tr>
+<tr>
+<td>Senior Data Engineer</td>
+<td>Senior Data Engineer</td>
+<td>$195,000</td>
+<td>$253,500</td>
+</tr>
+<tr>
+<td>Senior Platform/DevOps Eng</td>
+<td>Platform Eng + DevOps</td>
+<td>$210,000</td>
+<td>$273,000</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>In-House Team (6 FTEs)</strong></td>
+<td></td>
+<td><strong>$1,547,000</strong></td>
+<td><strong>$2,011,100/yr</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Plus hidden costs not reflected above:</strong></p>
+<ul>
+<li><strong>Recruiting:</strong> 3-6 months to fill each role × $30-50K recruiter fees per hire = $180-300K upfront</li>
+<li><strong>Ramp-up:</strong> 3-6 months before new hires are productive — Year 1 effective output is ~60%</li>
+<li><strong>Attrition:</strong> ML engineers have ~20% annual turnover (<a href="https://www.levels.fyi" target="_blank">Levels.fyi</a>). Losing one senior engineer mid-project costs 3-6 months of lost momentum</li>
+<li><strong>No PCI/GDPR or e-commerce domain expertise</strong> unless you hire additional specialists</li>
+<li><strong>No flex:</strong> fixed headcount whether you need 174 hrs/wk or 40 hrs/wk</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th>phData (Build + Year 2 Maintain)</th>
+<th>In-House (2-Year Cost)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Year 1</strong></td>
+<td>$2,139K</td>
+<td>$2,011K + $250K recruiting</td>
+</tr>
+<tr>
+<td><strong>Year 2</strong></td>
+<td>$220K</td>
+<td>$2,011K</td>
+</tr>
+<tr style="font-weight:bold; background:#e8f5e9;">
+<td><strong>2-Year Total</strong></td>
+<td><strong>$2,359K</strong></td>
+<td><strong>$4,272K</strong></td>
+</tr>
+<tr>
+<td><strong>Time to first model in prod</strong></td>
+<td>~9 weeks</td>
+<td>~6-9 months (hire + ramp)</td>
+</tr>
+<tr>
+<td><strong>Scale flexibility</strong></td>
+<td>Scale hours up/down per sprint</td>
+<td>Fixed headcount</td>
+</tr>
+<tr>
+<td><strong>Risk if engineer quits</strong></td>
+<td>phData backfills from bench</td>
+<td>3-6 month replacement cycle</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bottom line:</strong> phData delivers the full platform for <strong>$2.1M in Year 1</strong>, then drops to <strong>~$220K/yr</strong> for maintenance. An equivalent in-house team costs <strong>~$2.3M/yr every year</strong> — and takes 6+ months longer to ship the first model. Over 2 years, phData saves <strong>~$1.9M</strong> while delivering faster.</p>
 </article>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
