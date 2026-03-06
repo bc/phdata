@@ -346,6 +346,88 @@ async def name_cluster(payload: dict = Body(...)):
     return {"id": cid, "label": name}
 
 
+@app.post("/api/cart/checkout")
+async def cart_checkout(payload: dict = Body(...)):
+    """Generate a research summary by launching claude in a new Terminal window via AppleScript."""
+    import tempfile
+    import json as json_mod
+    items = payload.get("items", [])
+    if not items:
+        return JSONResponse(status_code=400, content={"error": "Cart is empty"})
+
+    # Build the prompt for Claude
+    case_blocks = []
+    urls = []
+    for i, item in enumerate(items, 1):
+        note_line = f"\nUser Note: {item['cartNote']}" if item.get('cartNote') else ""
+        case_blocks.append(f"""
+## Case Study {i}: {item.get('title', 'Untitled')}
+- **Industry:** {item.get('industry', 'N/A')}
+- **Technologies:** {item.get('technologies', 'N/A')}
+- **URL:** {item.get('url', 'N/A')}
+- **Challenge:** {item.get('challenge', 'N/A')}
+- **Solution:** {item.get('solution', 'N/A')}
+- **Results:** {item.get('results', 'N/A')}{note_line}
+""".strip())
+        if item.get('url'):
+            urls.append(item['url'])
+
+    prompt = f"""You are a research analyst. I've collected {len(items)} case studies from phData's portfolio. For each one:
+
+1. Enrich the summary with key insights — what makes this case study important, what's the business impact, what's reusable
+2. If the user added a note, use it as guidance for how to frame the case study in the summary
+3. If no note was provided, write a brief "Why This Matters" section
+
+Then create a final output as a markdown document with:
+- A title: "# Research Summary: {{n}} Case Studies"
+- For each case study, a section with a markdown table containing: Title, Industry, Technologies, Challenge (1-2 sentences), Solution (1-2 sentences), Results (key metrics), Key Insight (your enrichment or the user's note expanded), and an Image row (leave as placeholder "![image](IMAGE_PLACEHOLDER_{{i}})" — I will fill these in)
+- At the end, a "## Cross-Cutting Themes" section identifying patterns across the collected studies
+
+Here are the case studies:
+
+{chr(10).join(case_blocks)}
+
+Now also visit each of these URLs and try to capture a meaningful figure or diagram from the page (not a stock photo or hero banner — look for architecture diagrams, data flow charts, results charts, or infographics). If you can only find a stock photo, note that.
+
+URLs to visit:
+{chr(10).join(f'- {u}' for u in urls)}
+
+Output the full markdown document. Save it to /tmp/phdata-research-summary.md"""
+
+    # Write prompt to a temp file
+    prompt_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', prefix='cart-prompt-', delete=False, dir='/tmp')
+    prompt_file.write(prompt)
+    prompt_file.close()
+
+    # Build the shell script that will run in Terminal
+    script_file = tempfile.NamedTemporaryFile(mode='w', suffix='.sh', prefix='cart-checkout-', delete=False, dir='/tmp')
+    script_content = f"""#!/bin/bash
+echo "=== phData Research Cart — Checking out {len(items)} case studies ==="
+echo ""
+cat "{prompt_file.name}" | claude --allowedTools "mcp__claude-in-chrome__navigate,mcp__claude-in-chrome__read_page,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__computer,Write,Read,Bash" -p "$(cat {prompt_file.name})"
+echo ""
+echo "=== Done! Output saved to /tmp/phdata-research-summary.md ==="
+echo "Press any key to close..."
+read -n 1
+"""
+    script_file.write(script_content)
+    script_file.close()
+    os.chmod(script_file.name, 0o755)
+
+    # Use AppleScript to open a new Terminal window and run the script
+    applescript = f'''
+    tell application "Terminal"
+        activate
+        do script "{script_file.name}"
+    end tell
+    '''
+    try:
+        subprocess.run(["osascript", "-e", applescript], capture_output=True, timeout=10)
+        return {"success": True, "message": f"Launched research for {len(items)} case studies in Terminal"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
 @app.get("/api/vectors")
 def vectors():
     """Return TF-IDF vectors for all case studies (for t-SNE in browser)."""

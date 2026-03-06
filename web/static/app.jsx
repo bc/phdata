@@ -26,6 +26,30 @@ const ExternalIcon = () => (
   </svg>
 );
 
+const CartIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+  </svg>
+);
+
+const TrashIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
 // ---- App ----
 
 function App() {
@@ -37,8 +61,27 @@ function App() {
   const [searchResults, setSearchResults] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState([]); // [{...caseData, cartNote: ""}]
+  const [cartOpen, setCartOpen] = useState(false);
   const searchRef = useRef(null);
   const debounce = useRef(null);
+
+  const addToCart = useCallback((caseData) => {
+    setCart(prev => {
+      if (prev.find(c => c.id === caseData.id)) return prev;
+      return [...prev, { ...caseData, cartNote: "" }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((id) => {
+    setCart(prev => prev.filter(c => c.id !== id));
+  }, []);
+
+  const updateCartNote = useCallback((id, note) => {
+    setCart(prev => prev.map(c => c.id === id ? { ...c, cartNote: note } : c));
+  }, []);
+
+  const isInCart = useCallback((id) => cart.some(c => c.id === id), [cart]);
 
   useEffect(() => {
     Promise.all([
@@ -108,25 +151,26 @@ function App() {
 
   return (
     <>
-      <Nav view={view} navigate={navigate} />
+      <Nav view={view} navigate={navigate} cartCount={cart.length} onCartClick={() => setCartOpen(true)} />
       <Hero query={searchQuery} onSearch={handleSearch} inputRef={searchRef} />
       <StatBar stats={stats} />
       <div className="content">
-        {view === "search" && searchResults && <SearchResults results={searchResults} query={searchQuery} onSelect={setSelectedCase} />}
+        {view === "search" && searchResults && <SearchResults results={searchResults} query={searchQuery} onSelect={setSelectedCase} addToCart={addToCart} isInCart={isInCart} />}
         {view === "dashboard" && <Dashboard stats={stats} fit={brianFit} onSelect={setSelectedCase} />}
-        {view === "cases" && <CaseStudies cases={cases} onSelect={setSelectedCase} />}
+        {view === "cases" && <CaseStudies cases={cases} onSelect={setSelectedCase} addToCart={addToCart} isInCart={isInCart} />}
         {view === "fit" && brianFit && <FitView fit={brianFit} />}
         {view === "analytics" && stats && <Analytics stats={stats} />}
       </div>
       <Footer />
-      {selectedCase && <Modal data={selectedCase} onClose={() => setSelectedCase(null)} />}
+      {selectedCase && <Modal data={selectedCase} onClose={() => setSelectedCase(null)} addToCart={addToCart} isInCart={isInCart} />}
+      {cartOpen && <CartPanel cart={cart} onClose={() => setCartOpen(false)} removeFromCart={removeFromCart} updateCartNote={updateCartNote} />}
     </>
   );
 }
 
 // ---- Nav ----
 
-function Nav({ view, navigate }) {
+function Nav({ view, navigate, cartCount = 0, onCartClick }) {
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -139,6 +183,10 @@ function Nav({ view, navigate }) {
           {[["dashboard","Dashboard"],["cases","Case Studies"],["fit","Brian's Fit"],["analytics","Analytics"],["projector","Projector"],["prospects","Prospects"]].map(([key,label]) => (
             <button key={key} className={`nav-link ${view === key ? "active" : ""}`} onClick={() => navigate(key)} aria-label={`Navigate to ${label}`} aria-current={view === key ? "page" : undefined}>{label}</button>
           ))}
+          <button className="nav-cart-btn" onClick={onCartClick} aria-label="Open research cart" title="Research Cart">
+            <CartIcon size={16} />
+            {cartCount > 0 && <span className="nav-cart-badge">{cartCount}</span>}
+          </button>
         </div>
       </div>
     </nav>
@@ -271,7 +319,7 @@ function BarChart({ data, max, alt }) {
 
 // ---- Search Results ----
 
-function SearchResults({ results, query, onSelect }) {
+function SearchResults({ results, query, onSelect, addToCart, isInCart }) {
   if (!results.length) {
     return <section className="section"><div className="empty"><div className="empty-icon">&#8709;</div>No results for "{query}"</div></section>;
   }
@@ -284,7 +332,7 @@ function SearchResults({ results, query, onSelect }) {
         </div>
       </div>
       <div className="card-grid">
-        {results.map((r, i) => <CaseCard key={r.id} data={r} onSelect={onSelect} showScore isTopMatch={i < 3} animDelay={i * 60} />)}
+        {results.map((r, i) => <CaseCard key={r.id} data={r} onSelect={onSelect} showScore isTopMatch={i < 3} animDelay={i * 60} addToCart={addToCart} isInCart={isInCart} />)}
       </div>
     </section>
   );
@@ -292,7 +340,7 @@ function SearchResults({ results, query, onSelect }) {
 
 // ---- Case Studies List ----
 
-function CaseStudies({ cases, onSelect }) {
+function CaseStudies({ cases, onSelect, addToCart, isInCart }) {
   const [filter, setFilter] = useState("All");
   const industries = ["All", ...new Set(cases.map(c => c.industry).filter(Boolean).sort())];
   const filtered = filter === "All" ? cases : cases.filter(c => c.industry === filter);
@@ -311,7 +359,7 @@ function CaseStudies({ cases, onSelect }) {
         ))}
       </div>
       <div className="card-grid">
-        {filtered.map(c => <CaseCard key={c.id} data={c} onSelect={onSelect} />)}
+        {filtered.map(c => <CaseCard key={c.id} data={c} onSelect={onSelect} addToCart={addToCart} isInCart={isInCart} />)}
       </div>
     </section>
   );
@@ -319,10 +367,11 @@ function CaseStudies({ cases, onSelect }) {
 
 // ---- Case Card ----
 
-function CaseCard({ data, onSelect, showScore, isTopMatch, animDelay }) {
+function CaseCard({ data, onSelect, showScore, isTopMatch, animDelay, addToCart, isInCart }) {
   const techs = (data.technologies || "").split(", ").filter(Boolean).slice(0, 4);
   const scoreClass = (data.score || 0) > 3 ? "score-high" : (data.score || 0) > 1 ? "score-med" : "score-low";
   const excerpt = data.challenge || data.client || data.full_text || "";
+  const inCart = isInCart && isInCart(data.id);
 
   return (
     <div className={`card ${isTopMatch ? "card-top-match" : ""}`} onClick={() => onSelect(data)}
@@ -332,7 +381,19 @@ function CaseCard({ data, onSelect, showScore, isTopMatch, animDelay }) {
           <div className="card-title">{data.title}</div>
           {isTopMatch && <span className="top-match-badge">Top Match</span>}
         </div>
-        {showScore && data.score != null && <span className={`card-score ${scoreClass}`}>{data.score}</span>}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {showScore && data.score != null && <span className={`card-score ${scoreClass}`}>{data.score}</span>}
+          {addToCart && (
+            <button
+              className={`cart-add-btn ${inCart ? "in-cart" : ""}`}
+              onClick={e => { e.stopPropagation(); if (!inCart) addToCart(data); }}
+              title={inCart ? "In cart" : "Add to research cart"}
+              aria-label={inCart ? "Already in cart" : "Add to research cart"}
+            >
+              {inCart ? <CheckIcon /> : <PlusIcon />}
+            </button>
+          )}
+        </div>
       </div>
       <div className="card-meta">
         {data.industry && <span className="badge badge-industry">{data.industry}</span>}
@@ -403,8 +464,9 @@ function Analytics({ stats }) {
 
 // ---- Modal ----
 
-function Modal({ data, onClose }) {
+function Modal({ data, onClose, addToCart, isInCart }) {
   const techs = (data.technologies || "").split(", ").filter(Boolean);
+  const inCart = isInCart && isInCart(data.id);
   const sections = [
     ["Client", data.client],
     ["Challenge", data.challenge],
@@ -438,13 +500,21 @@ function Modal({ data, onClose }) {
               </div>
             </div>
           )}
-          {data.url && (
-            <div className="modal-section">
+          <div className="modal-section" style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            {data.url && (
               <a href={data.url} target="_blank" rel="noopener noreferrer" className="card-link" style={{ fontSize: 13 }}>
                 View on phData.io <ExternalIcon />
               </a>
-            </div>
-          )}
+            )}
+            {addToCart && (
+              <button
+                className={`cart-add-modal-btn ${inCart ? "in-cart" : ""}`}
+                onClick={() => { if (!inCart) addToCart(data); }}
+              >
+                {inCart ? <><CheckIcon /> In Cart</> : <><CartIcon size={14} /> Add to Cart</>}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -1588,6 +1658,94 @@ function Footer() {
       <button className="cta-button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
         Back to Top <ArrowIcon />
       </button>
+    </div>
+  );
+}
+
+// ---- Cart Panel ----
+
+function CartPanel({ cart, onClose, removeFromCart, updateCartNote }) {
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutDone, setCheckoutDone] = useState(false);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    setCheckingOut(true);
+    try {
+      const res = await fetch("/api/cart/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: cart.map(c => ({ id: c.id, title: c.title, url: c.url, industry: c.industry, technologies: c.technologies, challenge: c.challenge, solution: c.solution, results: c.results, cartNote: c.cartNote })) }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCheckoutDone(true);
+      } else {
+        alert("Checkout failed: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      alert("Checkout error: " + err.message);
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
+  return (
+    <div className="cart-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="cart-panel">
+        <div className="cart-header">
+          <div>
+            <div className="cart-title">Research Cart</div>
+            <div className="cart-subtitle">{cart.length} case {cart.length === 1 ? "study" : "studies"} collected</div>
+          </div>
+          <button className="modal-close" onClick={onClose} aria-label="Close cart">&times;</button>
+        </div>
+
+        <div className="cart-body">
+          {cart.length === 0 ? (
+            <div className="cart-empty">
+              <CartIcon size={32} />
+              <p>Your cart is empty</p>
+              <p style={{ fontSize: 12, color: "var(--gray-400)" }}>Add case studies from search results or the case studies page</p>
+            </div>
+          ) : (
+            cart.map(item => (
+              <div className="cart-item" key={item.id}>
+                <div className="cart-item-header">
+                  <div className="cart-item-title">{item.title}</div>
+                  <button className="cart-remove-btn" onClick={() => removeFromCart(item.id)} title="Remove" aria-label="Remove from cart">
+                    <TrashIcon />
+                  </button>
+                </div>
+                <div className="cart-item-meta">
+                  {item.industry && <span className="badge badge-industry" style={{ fontSize: 10 }}>{item.industry}</span>}
+                </div>
+                <textarea
+                  className="cart-note"
+                  placeholder="Add a note — how should this relate to your summary? (optional)"
+                  value={item.cartNote}
+                  onChange={e => updateCartNote(item.id, e.target.value)}
+                  rows={2}
+                />
+              </div>
+            ))
+          )}
+        </div>
+
+        {cart.length > 0 && (
+          <div className="cart-footer">
+            {checkoutDone ? (
+              <div className="cart-checkout-done">
+                <CheckIcon /> Research launched in Terminal — check for output
+              </div>
+            ) : (
+              <button className="cart-checkout-btn" onClick={handleCheckout} disabled={checkingOut}>
+                {checkingOut ? "Launching..." : `Checkout — Summarize ${cart.length} Case ${cart.length === 1 ? "Study" : "Studies"}`}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
