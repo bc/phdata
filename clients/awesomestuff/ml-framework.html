@@ -1444,8 +1444,8 @@ graph TB
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Hard limit: 200 ms e2e</strong> (on checkout critical path). Each 100 ms added = ~1% conversion drop. At $500M revenue, that's ~$2M per 1%. False positive rate matters more than latency — target &lt;0.5% FPR.</td>
-<td><a href="https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/" target="_blank">GigaSpaces — Amazon: Every 100ms of Latency Cost 1% in Sales</a><br/><a href="https://execviva.com/executive-hub/fraud-kpis" target="_blank">ExecViva — Fraud KPIs: The Executive Guide</a></td>
+<strong>Hard limit: 200 ms e2e</strong> (on checkout critical path). For reference, Stripe's fraud API (Stripe Radar) returns in ~100 ms. Each 100 ms added = ~1% conversion drop. At $500M revenue, that's ~$2M per 1%. False positive rate matters more than latency — target &lt;0.5% FPR.</td>
+<td><a href="https://execviva.com/executive-hub/fraud-kpis" target="_blank">ExecViva — Fraud KPIs: The Executive Guide</a></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
@@ -1460,7 +1460,11 @@ graph TB
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td>GitHub Actions <code>workflow_dispatch</code> → builds Docker image (FastAPI + ONNX Runtime), pushes to ECR, registers new ECS task definition with <code>MODEL_ARTIFACT_S3</code> env var, updates ECS Fargate service. Container startup: <code>entrypoint.sh</code> downloads <code>model.tar.gz</code> from S3, extracts to <code>/opt/ml/model</code>. ONNX Runtime serves XGBoost at ~2-4x native speed. ALB health checks on <code>/ping</code>. Autoscaling 2-20 tasks. <em>Same container pattern as all real-time models.</em>
+<td>GitHub Actions <code>workflow_dispatch</code> → builds Docker image (FastAPI + ONNX Runtime), pushes to ECR, registers new ECS task definition with <code>MODEL_ARTIFACT_S3</code> env var, updates ECS Fargate service. Container startup: <code>entrypoint.sh</code> downloads <code>model.tar.gz</code> from S3, extracts to <code>/opt/ml/model</code>. ONNX Runtime serves XGBoost at ~2-4x native speed. ALB health checks on <code>/ping</code>. Autoscaling 2-20 tasks. <em>Same container pattern as all real-time models.</em></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <pre class="mermaid">
 graph LR
     subgraph Customer
@@ -1501,11 +1505,6 @@ graph LR
     ECR -.->|pull image| ECS
     CronJob -->|"pre-aggregate<br/>velocity features"| Redis
 </pre>
-</td>
-<td></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Key insight:</strong> 80% of the engineering work is the feature store (velocity features in Redis), not the model itself.</p>
 <hr>
 <div class="markdown-heading"><h3 class="heading-element">B. Recommendation Engine (Real-Time)</h3><a id="user-content-b-recommendation-engine-real-time" class="anchor" aria-label="Permalink: B. Recommendation Engine (Real-Time)" href="#b-recommendation-engine-real-time"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -1563,7 +1562,11 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td>Same Docker/ECS pattern as fraud. Container loads FAISS index + user factors from S3 artifact at startup. FastAPI <code>/predict</code> does in-process FAISS ANN lookup (~5 ms). FAISS is already optimized C++ — no ONNX needed. Redis caches precomputed recs for known users. ECS Fargate behind ALB, autoscaling 2-15 tasks. <em>Same Dockerfile, different <code>MODEL_TYPE=als_faiss</code>.</em>
+<td>Same Docker/ECS pattern as fraud. Container loads FAISS index + user factors from S3 artifact at startup. FastAPI <code>/predict</code> does in-process FAISS ANN lookup (~5 ms). FAISS is already optimized C++ — no ONNX needed. Redis caches precomputed recs for known users. ECS Fargate behind ALB, autoscaling 2-15 tasks. <em>Same Dockerfile, different <code>MODEL_TYPE=als_faiss</code>.</em></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <pre class="mermaid">
 graph LR
     subgraph Internet
@@ -1594,11 +1597,6 @@ graph LR
     Task -->|cache check<br/>~70% hit| Redis
     ECR -.->|pull image| ECS
 </pre>
-</td>
-<td></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Key insight:</strong> Precomputing recs for known users and caching aggressively is the #1 scaling lever. The "ML" part is simple — the caching/serving architecture is the real work.</p>
 <hr>
 <div class="markdown-heading"><h3 class="heading-element">C. Inventory / Demand Forecasting (Batch)</h3><a id="user-content-c-inventory--demand-forecasting-batch" class="anchor" aria-label="Permalink: C. Inventory / Demand Forecasting (Batch)" href="#c-inventory--demand-forecasting-batch"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -1655,7 +1653,11 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td><em>No containers needed — batch only.</em> Trained model runs as a scheduled Python script (GitHub Actions cron) that loads the S3 artifact, scores all SKUs, and produces a <strong>ranked operations digest</strong> — a prioritized purchasing plan that respects capital constraints and flags storage-fee risk. Operations opens a single report each morning and knows exactly what to order.
+<td><em>No containers needed — batch only.</em> Trained model runs as a scheduled Python script (GitHub Actions cron) that loads the S3 artifact, scores all SKUs, and produces a <strong>ranked operations digest</strong> — a prioritized purchasing plan that respects capital constraints and flags storage-fee risk. Operations opens a single report each morning and knows exactly what to order.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <pre class="mermaid">
 graph LR
     subgraph Scheduling
@@ -1693,11 +1695,6 @@ graph LR
     Rank --> Report
     Report --> S3out
 </pre>
-</td>
-<td></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Key insight:</strong> This is the easiest model to deploy — batch, no user PII, no latency requirements. Feature engineering is the hard part, not serving.</p>
 <hr>
 <div class="markdown-heading"><h3 class="heading-element">D. Customer Segmentation (Batch)</h3><a id="user-content-d-customer-segmentation-batch" class="anchor" aria-label="Permalink: D. Customer Segmentation (Batch)" href="#d-customer-segmentation-batch"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -1756,7 +1753,11 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td>GitHub Actions kicks off a <strong>one-shot ECS Fargate task</strong> (not a long-running service). Container runs the full pipeline: munge → train → score → generate HTML report → upload everything to S3. Outputs: <code>report.html</code> (shareable with marketing/sales via presigned URL), <code>model.tar.gz</code>, <code>metrics.json</code>. Also writes to <code>segmentation/latest/</code> for stable URLs. Marketing receives the presigned link and is responsible for enacting campaigns on Braze, Salesforce, ad platforms, etc.
+<td>GitHub Actions kicks off a <strong>one-shot ECS Fargate task</strong> (not a long-running service). Container runs the full pipeline: munge → train → score → generate HTML report → upload everything to S3. Outputs: <code>report.html</code> (shareable with marketing/sales via presigned URL), <code>model.tar.gz</code>, <code>metrics.json</code>. Also writes to <code>segmentation/latest/</code> for stable URLs. Marketing receives the presigned link and is responsible for enacting campaigns on Braze, Salesforce, ad platforms, etc.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <pre class="mermaid">
 graph LR
     subgraph Trigger
@@ -1783,11 +1784,6 @@ graph LR
     S3 -->|presigned URL| Link
     Link -->|review segments| Action
 </pre>
-</td>
-<td></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Key insight:</strong> The ML is trivial (K-Means is undergraduate-level). The value is in (1) choosing the right features and (2) delivering actionable segment reports that marketing can immediately act on via their own tools (Braze, Salesforce, ad platforms).</p>
 <hr>
 <div class="markdown-heading"><h3 class="heading-element">E. Dynamic Pricing (Batch)</h3><a id="user-content-e-dynamic-pricing-batch" class="anchor" aria-label="Permalink: E. Dynamic Pricing (Batch)" href="#e-dynamic-pricing-batch"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -1845,7 +1841,11 @@ graph LR
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td><strong>Two-layer architecture: pre-computed prices in Redis + background repricing worker.</strong> The e-commerce backend never calls the ML model directly — it reads the latest price from ElastiCache Redis (1-3 ms GET). A background <strong>repricing worker</strong> (ECS scheduled task) runs every 10 minutes, re-scores SKUs through the ONNX model + rule engine, fetches competitor prices (e.g. <a href="https://prisync.com" target="_blank">Prisync</a> API), and writes updated prices back to Redis. Amazon adjusts prices ~2.5 million times per day — the average product price changes every ~10 minutes somewhere on the site. <strong>Repricing strategy:</strong> if the full catalog (100K SKUs) reprices in &lt;10 minutes, just run them all every cycle. If it takes longer, set up a priority queue ranked by pageview activity — high-traffic SKUs reprice every cycle, long-tail SKUs reprice hourly/daily.
+<td><strong>Two-layer architecture: pre-computed prices in Redis + background repricing worker.</strong> The e-commerce backend never calls the ML model directly — it reads the latest price from ElastiCache Redis (1-3 ms GET). A background <strong>repricing worker</strong> (ECS scheduled task) runs every 10 minutes, re-scores SKUs through the ONNX model + rule engine, fetches competitor prices (e.g. <a href="https://prisync.com" target="_blank">Prisync</a> API), and writes updated prices back to Redis. Amazon adjusts prices ~2.5 million times per day — the average product price changes every ~10 minutes somewhere on the site. <strong>Repricing strategy:</strong> if the full catalog (100K SKUs) reprices in &lt;10 minutes, just run them all every cycle. If it takes longer, set up a priority queue ranked by pageview activity — high-traffic SKUs reprice every cycle, long-tail SKUs reprice hourly/daily.</td>
+<td><a href="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m" target="_blank">CamelCamelCamel — Amazon Price Tracker</a></td>
+</tr>
+</tbody>
+</table>
 <pre class="mermaid">
 graph LR
     subgraph WebApp["Web Application"]
@@ -1882,11 +1882,6 @@ graph LR
     PQ -->|next batch of SKUs| Worker
     Comp -->|competitor prices| Worker
 </pre>
-</td>
-<td><a href="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m" target="_blank">CamelCamelCamel — Amazon Price Tracker</a></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Key insight:</strong> The backend never waits for ML — it just reads a Redis key. All the complexity (ONNX inference, rule engine, competitor price fetching, priority queuing) happens in the background repricing worker. Dynamic pricing is 80% business logic, 20% ML.</p>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">Cross-Cutting Summary</h2><a id="user-content-cross-cutting-summary" class="anchor" aria-label="Permalink: Cross-Cutting Summary" href="#cross-cutting-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
@@ -1897,6 +1892,8 @@ graph LR
 <th>Size</th>
 <th>p99 Latency</th>
 <th>Peak QPS</th>
+<th>ECS Task Size</th>
+<th>Tasks at Peak</th>
 <th>GDPR Risk</th>
 <th>Training</th>
 <th>Inference</th>
@@ -1908,6 +1905,8 @@ graph LR
 <td>25 MB</td>
 <td>50-80 ms e2e</td>
 <td>5-15K</td>
+<td>4 vCPU / 8 GB</td>
+<td>2-5 <sup><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">1</a></sup></td>
 <td>HIGH</td>
 <td>EC2 + GitHub Actions → XGBoost → ONNX → S3</td>
 <td><strong>ECS Fargate</strong> + ONNX Runtime + Redis</td>
@@ -1917,6 +1916,8 @@ graph LR
 <td>35 MB serving</td>
 <td>30-50 ms e2e</td>
 <td>20-50K</td>
+<td>4 vCPU / 16 GB</td>
+<td>10-25 <sup><a href="https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/" target="_blank">2</a></sup></td>
 <td>MED-HIGH</td>
 <td>EC2 (128 GB) + GitHub Actions → ALS + FAISS → S3</td>
 <td><strong>ECS Fargate</strong> + FAISS + Redis</td>
@@ -1926,6 +1927,8 @@ graph LR
 <td>80 MB</td>
 <td>Batch</td>
 <td>Batch</td>
+<td>2 vCPU / 4 GB</td>
+<td>1</td>
 <td>LOW</td>
 <td>EC2 + GH Actions cron → LightGBM → S3</td>
 <td>Batch script → <strong>Operations Digest</strong> (ranked order list + business rules) → S3</td>
@@ -1935,6 +1938,8 @@ graph LR
 <td>&lt;1 MB</td>
 <td>Batch</td>
 <td>Batch</td>
+<td>1 vCPU / 4 GB</td>
+<td>1</td>
 <td>MEDIUM</td>
 <td>GitHub Actions daily → Docker → ECR</td>
 <td><strong>ECS one-shot task</strong> → S3 report → presigned URL to marketing</td>
@@ -1944,12 +1949,21 @@ graph LR
 <td>50 MB</td>
 <td>Batch (≤10 min stale)</td>
 <td>Batch</td>
+<td>2 vCPU / 4 GB</td>
+<td>1</td>
 <td>LOW-MED</td>
 <td>EC2 + GitHub Actions → LightGBM → ONNX → S3</td>
 <td><strong>Batch repricing worker</strong> every 10 min → Redis. Backend reads pre-computed price (1-3 ms)</td>
 </tr>
 </tbody>
 </table>
+<p style="font-size: 0.85em; color: #555; margin-top: 0.5em;">
+<strong>Instance sizing notes:</strong>
+<sup>1</sup> XGBoost ONNX inference runs ~0.2 ms/request (<a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Yang, 2026</a>). With FastAPI overhead, a single 4-vCPU task handles ~2-3K QPS → 2-5 tasks for 5-15K peak.
+<sup>2</sup> FAISS flat-index search on 100K vectors takes ~1-2 ms/query on CPU (<a href="https://engineering.fb.com/2017/03/29/data-infrastructure/faiss-a-library-for-efficient-similarity-search/" target="_blank">Meta Engineering</a>). 16 GB RAM holds the full index + embeddings. ~2K QPS per 4-vCPU task → 10-25 tasks for 20-50K peak.
+Batch models (Forecast, Segmentation, Pricing) run as scheduled one-shot tasks — sized for throughput, not concurrency.
+All real-time tasks auto-scale via ECS Service Auto Scaling (target-tracking on CPU utilization).
+</p>
 <div class="markdown-heading"><h2 class="heading-element">Architecture: One Pattern, Five Models</h2><a id="user-content-architecture-one-pattern-five-models" class="anchor" aria-label="Permalink: Architecture: One Pattern, Five Models" href="#architecture-one-pattern-five-models"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <p>Every model follows the same two-layer architecture: <strong>Data Prep &amp; Training</strong> (EC2 → S3) and <strong>Inference Deployment</strong> (S3 → ECS Fargate or batch). Build the shared layers once, deploy each model as a config change.</p>
 <pre class="mermaid">
