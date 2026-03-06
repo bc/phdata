@@ -1414,6 +1414,36 @@ body {
 
 .projector-btn-outline:hover { background: rgba(255,255,255,0.04); }
 
+/* Embedding mode toggle */
+.projector-mode-toggle {
+  display: flex;
+  gap: 0;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.projector-mode-btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font);
+  color: rgba(255,255,255,0.5);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.02em;
+}
+.projector-mode-btn:first-child { border-right: 1px solid rgba(255,255,255,0.08); }
+.projector-mode-btn:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.04); }
+.projector-mode-btn.active {
+  color: var(--navy-950);
+  background: var(--teal-400);
+}
+.projector-mode-btn:disabled { opacity: 0.4; cursor: default; }
+
 .projector-canvas-wrap {
   position: relative;
   overflow: hidden;

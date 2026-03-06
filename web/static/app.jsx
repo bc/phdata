@@ -1101,15 +1101,24 @@ function Projector() {
   const [clusters, setClusters] = useState(null); // { assignments: [], labels: {}, k: N }
   const [clusterStatus, setClusterStatus] = useState(""); // "", "clustering", "naming", "done"
   const [camera, setCamera] = useState({ x: 0, y: 0, zoom: 1 });
+  const [embeddingMode, setEmbeddingMode] = useState("full"); // "full" | "titles"
+  const [loadingVectors, setLoadingVectors] = useState(false);
   const dragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0, cx: 0, cy: 0 });
   const tsneRef = useRef(null);
   const animRef = useRef(null);
   const tooltipPos = useRef({ x: 0, y: 0 });
 
-  // Load vectors
+  // Load vectors — re-fetch when embedding mode changes
   useEffect(() => {
-    fetch("/api/vectors").then(r => r.json()).then(d => {
+    setLoadingVectors(true);
+    setPoints(null);
+    setClusters(null);
+    setClusterStatus("");
+    setIteration(0);
+    setRunning(false);
+    if (animRef.current) cancelAnimationFrame(animRef.current);
+    fetch(`/api/vectors?mode=${embeddingMode}`).then(r => r.json()).then(d => {
       setData(d);
       const indMap = {};
       const colorMap = {};
@@ -1124,8 +1133,9 @@ function Projector() {
       });
       setIndustries(indMap);
       setIndustryColors(colorMap);
+      setLoadingVectors(false);
     });
-  }, []);
+  }, [embeddingMode]);
 
   // Run clustering + naming after t-SNE finishes
   const runClustering = useCallback(async (pts, k) => {
@@ -1452,6 +1462,25 @@ function Projector() {
         <div className="projector-panel-title">Controls</div>
 
         <div className="projector-section">
+          <div className="projector-label">Embeddings</div>
+          <div className="projector-mode-toggle">
+            <button
+              className={`projector-mode-btn ${embeddingMode === "full" ? "active" : ""}`}
+              onClick={() => setEmbeddingMode("full")}
+              disabled={loadingVectors}
+            >Full Content</button>
+            <button
+              className={`projector-mode-btn ${embeddingMode === "titles" ? "active" : ""}`}
+              onClick={() => setEmbeddingMode("titles")}
+              disabled={loadingVectors}
+            >Titles Only</button>
+          </div>
+          <div className="projector-label" style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
+            {loadingVectors ? "Loading vectors..." : embeddingMode === "full" ? `${data?.vocab_size || 0} dimensions — deep similarity` : `${data?.vocab_size || 0} dimensions — topic clustering`}
+          </div>
+        </div>
+
+        <div className="projector-section">
           <div className="projector-label">Iteration</div>
           <div className="projector-iter-display">{iteration}</div>
           <div className="projector-label" style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>of {maxIter}</div>
@@ -1477,8 +1506,8 @@ function Projector() {
           <input type="range" className="projector-slider" min="2" max="12" value={numClusters} onChange={e => setNumClusters(+e.target.value)} />
         </div>
 
-        <button className="projector-btn" onClick={runTSNE} disabled={running}>
-          {running ? "Running..." : "Run t-SNE"}
+        <button className="projector-btn" onClick={runTSNE} disabled={running || loadingVectors}>
+          {loadingVectors ? "Loading vectors..." : running ? "Running..." : "Run t-SNE"}
         </button>
 
         <div style={{ display: "flex", gap: 6 }}>

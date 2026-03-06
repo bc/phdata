@@ -603,22 +603,29 @@ def research_summary_page():
 
 
 @app.get("/api/vectors")
-def vectors():
-    """Return TF-IDF vectors for all case studies (for t-SNE in browser)."""
+def vectors(mode: str = Query("full", regex="^(full|titles)$")):
+    """Return TF-IDF vectors for all case studies (for t-SNE in browser).
+
+    Modes:
+      - full: all fields (title, client, industry, challenge, solution, results, technologies, full_text)
+      - titles: title only — produces tighter clusters by surface-level topic similarity
+    """
     docs = engine.documents
-    # Build corpus of token lists
     corpus_tokens = []
     for doc in docs:
-        combined = " ".join([
-            doc.get("title", "") or "",
-            doc.get("client", "") or "",
-            doc.get("industry", "") or "",
-            doc.get("challenge", "") or "",
-            doc.get("solution", "") or "",
-            doc.get("results", "") or "",
-            doc.get("technologies", "") or "",
-            doc.get("full_text", "") or "",
-        ])
+        if mode == "titles":
+            combined = doc.get("title", "") or ""
+        else:
+            combined = " ".join([
+                doc.get("title", "") or "",
+                doc.get("client", "") or "",
+                doc.get("industry", "") or "",
+                doc.get("challenge", "") or "",
+                doc.get("solution", "") or "",
+                doc.get("results", "") or "",
+                doc.get("technologies", "") or "",
+                doc.get("full_text", "") or "",
+            ])
         corpus_tokens.append(tokenize(combined))
 
     # Build vocabulary from top terms by document frequency
@@ -626,11 +633,10 @@ def vectors():
     for tokens in corpus_tokens:
         for t in set(tokens):
             df[t] += 1
-    # Filter: appear in at least 2 docs, at most 90% of docs
     n = len(docs)
     vocab = [t for t, count in df.most_common() if 2 <= count <= int(n * 0.9)]
-    vocab = vocab[:200]  # Cap at 200 dimensions for browser perf
-    vocab_idx = {t: i for i, t in enumerate(vocab)}
+    max_dims = 200 if mode == "full" else 100
+    vocab = vocab[:max_dims]
 
     # Compute TF-IDF
     result = []
@@ -651,7 +657,7 @@ def vectors():
             "vector": vec,
         })
 
-    return {"vocab_size": len(vocab), "num_docs": len(result), "documents": result}
+    return {"mode": mode, "vocab_size": len(vocab), "num_docs": len(result), "documents": result}
 
 
 # --- Static Files (React Frontend) ---
