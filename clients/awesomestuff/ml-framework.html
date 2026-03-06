@@ -1930,8 +1930,8 @@ Applied:
 <td>Every component is open-source or has drop-in replacements. FastAPI, Redis, MLflow, Airflow, Docker — all run anywhere. Swap your cloud provider without changing application code.</td>
 </tr>
 <tr>
-<td><strong>One Dockerfile</strong></td>
-<td>Both real-time models (Fraud, Reco) use the same FastAPI + ONNX Runtime container. Different model artifact, same serving code. Pricing reuses the same Docker image for its batch repricing worker. <code>docker build</code> → ECR → ECS service update with <code>MODEL_ARTIFACT_S3=s3://...</code> → done.</td>
+<td><strong>Shared base, per-model code</strong></td>
+<td>All models share the same base Docker image (FastAPI + ONNX Runtime + common libs). Each model has its own Python module for data prep, feature queries, and database connectors — fraud pulls velocity features from Redis, reco queries FAISS + user vectors, pricing fetches competitor prices and inventory levels, etc. <code>MODEL_TYPE</code> env var selects which module runs. Same <code>Dockerfile</code>, different entrypoint logic.</td>
 </tr>
 <tr>
 <td><strong>Redis is the shared brain</strong></td>
