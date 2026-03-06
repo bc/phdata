@@ -1877,7 +1877,7 @@ graph LR
 <td>Batch</td>
 <td>LOW</td>
 <td>EC2 + GH Actions cron → LightGBM → S3</td>
-<td>Batch script → Warehouse</td>
+<td>Batch script → <strong>Operations Digest</strong> (ranked order list + business rules) → S3</td>
 </tr>
 <tr>
 <td>Segmentation</td>
@@ -1886,7 +1886,7 @@ graph LR
 <td>Batch</td>
 <td>MEDIUM</td>
 <td>GitHub Actions daily → Docker → ECR</td>
-<td><strong>ECS one-shot task</strong> → S3 report + Warehouse</td>
+<td><strong>ECS one-shot task</strong> → S3 report → presigned URL to marketing</td>
 </tr>
 <tr>
 <td>Pricing</td>
