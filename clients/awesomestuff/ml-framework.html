@@ -2218,6 +2218,177 @@ Buffer: 27 days for edge cases, manual review, legal holds
 </tr>
 </tbody>
 </table>
+<hr>
+<div class="markdown-heading"><h2 class="heading-element">Resources &amp; Staffing Plan</h2><a id="user-content-resources-staffing-plan" class="anchor" aria-label="Permalink: Resources & Staffing Plan" href="#resources-staffing-plan"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<p>The project is structured into <strong>two parallel workstreams</strong> with shared leadership, delivering batch and real-time capabilities simultaneously. All staff are <a href="https://www.phdata.io" target="_blank">phData</a> consultants — a 6x Snowflake Partner of the Year with deep ML and data engineering expertise across AWS, Snowflake, and modern data platforms.</p>
+
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>phData Title</th>
+<th>Level</th>
+<th>Workstream</th>
+<th>Hours/Week</th>
+<th>Rack Rate</th>
+<th>Responsibilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="7" style="background:#f0f4f8; font-weight:bold;">Leadership &amp; Oversight</td>
+</tr>
+<tr>
+<td><strong>Tech Lead / Senior Architect</strong></td>
+<td>Principal Solutions Architect</td>
+<td>Principal</td>
+<td>Both</td>
+<td>40</td>
+<td>$275/hr</td>
+<td>Technical authority across both workstreams. Owns architecture decisions, code reviews, infrastructure design (ECS, Redis, ALB). Runs sprint planning. Accountable for production readiness and system design quality.</td>
+</tr>
+<tr>
+<td><strong>Project Manager / Research Analyst</strong></td>
+<td>Senior Consultant, Data &amp; AI Strategy</td>
+<td>Senior</td>
+<td>Both</td>
+<td>30</td>
+<td>$225/hr</td>
+<td>Manages timeline, budget, and stakeholder communication. Researches model approaches, competitive pricing APIs, GDPR requirements. Writes documentation. Tracks sprint velocity, risk register, and dependency mapping between workstreams.</td>
+</tr>
+<tr>
+<td><strong>E-Commerce Business SME</strong></td>
+<td>Senior Consultant, Industry Strategy</td>
+<td>Senior</td>
+<td>Both (advisory)</td>
+<td>4</td>
+<td>$250/hr</td>
+<td>Domain expert on e-commerce operations — pricing strategy, inventory planning, fraud patterns, marketing segmentation. Validates model inputs/outputs against business reality. Reviews rule engine logic (price floors, MAP, margin constraints). Attends weekly review.</td>
+</tr>
+<tr>
+<td colspan="7" style="background:#e8f5e9; font-weight:bold;">Workstream 1 — Batch Jobs (Segmentation, Forecasting)</td>
+</tr>
+<tr>
+<td><strong>ML Engineer</strong></td>
+<td>Senior ML Engineer</td>
+<td>Senior</td>
+<td>WS1 — Batch</td>
+<td>40</td>
+<td>$225/hr</td>
+<td>Builds K-Means segmentation and LightGBM demand forecasting pipelines. Feature engineering in SQL/Python, model training, MLflow integration, ONNX export. Owns the operations digest output and segmentation report generation.</td>
+</tr>
+<tr>
+<td><strong>Data Engineer</strong></td>
+<td>Senior Data Engineer</td>
+<td>Senior</td>
+<td>WS1 — Batch</td>
+<td>40</td>
+<td>$200/hr</td>
+<td>Builds Snowflake feature pipelines, Airflow/cron scheduling, S3 artifact management, GitHub Actions CI/CD for batch jobs. Sets up ECS one-shot tasks for segmentation. Presigned URL delivery for marketing reports.</td>
+</tr>
+<tr>
+<td colspan="7" style="background:#e3f2fd; font-weight:bold;">Workstream 2 — High-Speed Inference (Fraud, Reco, Pricing)</td>
+</tr>
+<tr>
+<td><strong>ML Engineer</strong></td>
+<td>ML Solutions Architect</td>
+<td>Senior</td>
+<td>WS2 — Real-Time</td>
+<td>40</td>
+<td>$250/hr</td>
+<td>Builds XGBoost fraud, ALS+FAISS reco, and LightGBM pricing models. ONNX Runtime optimization for tree models. Designs the repricing worker and priority queue. Owns model performance (latency, accuracy, A/B testing).</td>
+</tr>
+<tr>
+<td><strong>Platform Engineer</strong></td>
+<td>Senior Solutions Engineer</td>
+<td>Senior</td>
+<td>WS2 — Real-Time</td>
+<td>40</td>
+<td>$225/hr</td>
+<td>Builds FastAPI serving layer, Docker/ECR pipeline, ECS Fargate deployment, ALB configuration, autoscaling policies. Redis (ElastiCache) setup — velocity features, embeddings, price cache. CloudWatch dashboards and alerting. Canary deployment and rollback automation.</td>
+</tr>
+<tr>
+<td><strong>DevOps / Infrastructure</strong></td>
+<td>Solutions Engineer</td>
+<td>Mid</td>
+<td>WS2 — Real-Time</td>
+<td>32</td>
+<td>$185/hr</td>
+<td>Terraform/IaC for all three environments (Dev, Pre-Prod, Prod). GitHub Actions pipelines, CodeRabbit integration, security scanning (Trivy, Bandit, pip-audit). Manages ECR, networking, IAM roles, secrets. Supports both workstreams on CI/CD.</td>
+</tr>
+</tbody>
+</table>
+
+<div class="markdown-heading"><h3 class="heading-element">Weekly Budget Summary</h3><a id="user-content-weekly-budget-summary" class="anchor" aria-label="Permalink: Weekly Budget Summary" href="#weekly-budget-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Headcount</th>
+<th>Hours/Week</th>
+<th>Weekly Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Leadership (Architect + PM + SME)</td>
+<td>3</td>
+<td>74</td>
+<td>$18,750</td>
+</tr>
+<tr>
+<td>WS1 — Batch (ML Eng + Data Eng)</td>
+<td>2</td>
+<td>80</td>
+<td>$17,000</td>
+</tr>
+<tr>
+<td>WS2 — Real-Time (ML Eng + Platform Eng + DevOps)</td>
+<td>3</td>
+<td>112</td>
+<td>$24,920</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Total</strong></td>
+<td><strong>8</strong></td>
+<td><strong>266</strong></td>
+<td><strong>$60,670</strong></td>
+</tr>
+<tr>
+<td colspan="3"><strong>Blended effective rate</strong></td>
+<td><strong>$228/hr</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="markdown-heading"><h3 class="heading-element">Workstream Timeline</h3><a id="user-content-workstream-timeline" class="anchor" aria-label="Permalink: Workstream Timeline" href="#workstream-timeline"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<pre class="mermaid">
+gantt
+    title ML Platform — Parallel Workstreams
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b %d
+
+    section Leadership
+    Architecture &amp; infra design          :a1, 2026-03-16, 2w
+    Sprint planning &amp; ongoing oversight   :a2, after a1, 14w
+
+    section WS1 — Batch
+    Segmentation MVP (K-Means + report)   :b1, 2026-03-16, 4w
+    Segmentation → production             :b2, after b1, 2w
+    Forecasting MVP (LightGBM + digest)   :b3, after b1, 4w
+    Forecasting → production              :b4, after b3, 2w
+    Ops digest refinement + feedback loop :b5, after b4, 4w
+
+    section WS2 — Real-Time
+    Shared infra (ECS, Redis, ALB, CI/CD) :c1, 2026-03-16, 3w
+    Fraud detection MVP                   :c2, after c1, 4w
+    Fraud → shadow mode → production      :c3, after c2, 2w
+    Dynamic pricing (repricing worker)    :c4, after c2, 4w
+    Pricing → production                  :c5, after c4, 2w
+    Recommendation engine (FAISS)         :c6, after c4, 4w
+    Reco → production                     :c7, after c6, 2w
+</pre>
+<p><em>All rates are effective rack rates inclusive of phData overhead, tooling, and management. Rates based on US-based senior consulting talent with ML/data engineering specialization. Actual engagement terms subject to SOW.</em></p>
 </article>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
