@@ -2718,6 +2718,49 @@ gantt
 </tbody>
 </table>
 <p><strong>Bottom line:</strong> phData delivers the full platform for <strong>$2.1M in Year 1</strong>, then drops to <strong>~$220K/yr</strong> for maintenance. An equivalent in-house team costs <strong>~$2.3M/yr every year</strong> — and takes 6+ months longer to ship the first model. Over 2 years, phData saves <strong>~$1.9M</strong> while delivering faster.</p>
+<hr>
+<div class="markdown-heading"><h2 class="heading-element">Executive Summary</h2><a id="user-content-executive-summary" class="anchor" aria-label="Permalink: Executive Summary" href="#executive-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div style="max-width:900px; margin:0 auto; padding:32px; border:2px solid var(--color-border-default); border-radius:12px; background:var(--color-canvas-subtle);">
+<h2 style="text-align:center; margin-top:0;">ML Platform for AwesomeStuff.com</h2>
+<p style="text-align:center; font-size:18px; margin-bottom:24px;"><strong>One pattern. Five models. Two workstreams.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Batch</th>
+<th>Real-Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Models</strong></td>
+<td>Segmentation · Forecasting · Pricing</td>
+<td>Fraud Detection · Recommendations</td>
+</tr>
+<tr>
+<td><strong>Serving</strong></td>
+<td>GH Actions cron → ECS task → S3 / Redis</td>
+<td>ALB → ECS Fargate (auto-scales) → Redis</td>
+</tr>
+<tr>
+<td><strong>Cycle</strong></td>
+<td>Daily (10 min for pricing)</td>
+<td>Sub-200ms</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align:center; margin:24px 0 8px;"><strong>Stack</strong></p>
+<p style="text-align:center; font-size:15px;">GitHub Actions · Docker · ECS Fargate · Redis · S3 · ONNX Runtime · MLflow · CloudWatch</p>
+<table>
+<tbody>
+<tr>
+<td style="text-align:center; width:33%;"><strong>Build</strong><br/>12 months · 9-person phData team<br/><strong style="font-size:20px;">$2.1M</strong></td>
+<td style="text-align:center; width:33%;"><strong>Run</strong><br/>~$11K/yr AWS + $220K/yr maintenance<br/><strong style="font-size:20px;">$231K/yr</strong></td>
+<td style="text-align:center; width:33%;"><strong>vs. In-House</strong><br/>Saves ~$1.9M over 2 years<br/><strong style="font-size:20px;">Ships 4-5 mo faster</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
 </article>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
