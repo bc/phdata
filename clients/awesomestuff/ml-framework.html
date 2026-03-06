@@ -1606,15 +1606,15 @@ graph LR
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
-<td>Feature engineering in SQL (warehouse-side). GitHub Actions triggers LightGBM training on EC2, pulls features as Parquet from S3. Exports ONNX model via <code>onnxmltools.convert_lightgbm()</code> for validation. Packages artifact → S3. Tracked by MLflow. Scheduled via Airflow DAG or cron.</td>
+<td>Feature engineering in SQL (warehouse-side). GitHub Actions triggers LightGBM training on EC2, pulls features as Parquet from S3. Exports ONNX model via <code>onnxmltools.convert_lightgbm()</code> for validation. Packages artifact → S3. Tracked by MLflow. Scheduled via GitHub Actions cron (<code>schedule:</code> trigger).</td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td><em>No containers needed — batch only.</em> Trained model runs as a scheduled Python script (Airflow or cron) that loads the S3 artifact, scores all SKUs, and produces a <strong>ranked operations digest</strong> — a prioritized purchasing plan that respects capital constraints and flags storage-fee risk. Operations opens a single report each morning and knows exactly what to order.
+<td><em>No containers needed — batch only.</em> Trained model runs as a scheduled Python script (GitHub Actions cron) that loads the S3 artifact, scores all SKUs, and produces a <strong>ranked operations digest</strong> — a prioritized purchasing plan that respects capital constraints and flags storage-fee risk. Operations opens a single report each morning and knows exactly what to order.
 <pre class="mermaid">
 graph LR
     subgraph Scheduling
-        Airflow["Airflow / Cron<br/>daily 4 AM"]
+        GHCron["GitHub Actions<br/>cron · daily 4 AM"]
     end
 
     subgraph AWS["AWS"]
@@ -1639,7 +1639,7 @@ graph LR
         S3out[("S3<br/>digest.html<br/>orders.csv")]
     end
 
-    Airflow -->|trigger| EC2
+    GHCron -->|trigger| EC2
     S3model -.->|load model| EC2
     DW -->|features| EC2
     EC2 --> Forecast
@@ -1776,7 +1776,7 @@ graph LR
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
-<td>Monthly retrain: GitHub Actions triggers LightGBM training on EC2, exports ONNX via <code>onnxmltools</code>, packages <code>model.tar.gz</code> → S3. Daily coefficient refresh: Airflow DAG runs batch scoring of all SKUs, writes elasticity coefficients to Redis. Tracked by MLflow.</td>
+<td>Monthly retrain: GitHub Actions triggers LightGBM training on EC2, exports ONNX via <code>onnxmltools</code>, packages <code>model.tar.gz</code> → S3. Every-10-min repricing: GitHub Actions cron triggers batch scoring of all SKUs, writes updated prices to Redis. Tracked by MLflow.</td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
@@ -1861,7 +1861,7 @@ graph LR
 <td>Batch</td>
 <td>Batch</td>
 <td>LOW</td>
-<td>EC2 + Airflow → LightGBM → S3</td>
+<td>EC2 + GH Actions cron → LightGBM → S3</td>
 <td>Batch script → Warehouse</td>
 </tr>
 <tr>
@@ -1927,7 +1927,7 @@ Applied:
 <tbody>
 <tr>
 <td><strong>No vendor lock-in</strong></td>
-<td>Every component is open-source or has drop-in replacements. FastAPI, Redis, MLflow, Airflow, Docker — all run anywhere. Swap your cloud provider without changing application code.</td>
+<td>Every component is open-source or has drop-in replacements. FastAPI, Redis, MLflow, GitHub Actions, Docker — all run anywhere. Swap your cloud provider without changing application code.</td>
 </tr>
 <tr>
 <td><strong>Shared base, per-model code</strong></td>
@@ -1939,7 +1939,7 @@ Applied:
 </tr>
 <tr>
 <td><strong>Batch is just a script</strong></td>
-<td>Forecast, Segmentation, and Pricing don't need real-time serving — they're scheduled jobs. Pricing runs every 10 min, the others daily. Don't over-engineer what a scheduled task can handle.</td>
+<td>Forecast, Segmentation, and Pricing don't need real-time serving — they're GitHub Actions cron jobs. Pricing runs every 10 min, the others daily. Don't over-engineer what a <code>schedule:</code> trigger can handle.</td>
 </tr>
 <tr>
 <td><strong>MLflow is the registry</strong></td>
@@ -1983,16 +1983,16 @@ Applied:
 <td>Snowflake, BigQuery, Redshift, DuckDB, Postgres. The models don't care — they read DataFrames.</td>
 </tr>
 <tr>
-<td><strong>Airflow</strong></td>
+<td><strong>GitHub Actions cron</strong></td>
 <td>Batch orchestration</td>
 <td>Forecast, Segmentation, Pricing (all batch)</td>
-<td>Airflow, Prefect, Dagster, or plain cron. If ≤3 jobs, cron is fine. All are open-source.</td>
+<td>GitHub Actions <code>schedule:</code> trigger handles all batch jobs — no separate orchestrator needed. If outgrowing GH Actions, migrate to Prefect, Dagster, or Airflow. All are open-source.</td>
 </tr>
 <tr>
 <td><strong>GDPR deletion pipeline</strong></td>
 <td>Cascade user data deletion</td>
 <td>All 5</td>
-<td>Airflow DAG or any workflow engine. Fan out to Redis, warehouse, object store, CRM. No cloud-specific service required.</td>
+<td>GitHub Actions workflow or any workflow engine. Fan out to Redis, warehouse, object store, CRM. No cloud-specific service required.</td>
 </tr>
 </tbody>
 </table>
@@ -2199,7 +2199,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <tr>
 <td>2</td>
 <td><strong>Forecasting</strong></td>
-<td>Batch, no user PII, no latency. Validates Airflow + LightGBM + MLflow pattern.</td>
+<td>Batch, no user PII, no latency. Validates GH Actions cron + LightGBM + MLflow pattern.</td>
 </tr>
 <tr>
 <td>3</td>
@@ -2284,7 +2284,7 @@ Buffer: 27 days for edge cases, manual review, legal holds
 <td>WS1 — Batch</td>
 <td>40</td>
 <td>$200/hr</td>
-<td>Snowflake pipelines, Airflow/cron scheduling, S3 artifacts, GitHub Actions CI/CD. ECS one-shot tasks, presigned URL delivery.</td>
+<td>Snowflake pipelines, GH Actions cron scheduling, S3 artifacts, CI/CD. ECS one-shot tasks, presigned URL delivery.</td>
 </tr>
 <tr>
 <td colspan="7" style="background:#e3f2fd; font-weight:bold;">Workstream 2 — High-Speed Inference (Fraud, Reco)</td>
