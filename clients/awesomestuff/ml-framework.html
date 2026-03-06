@@ -1989,6 +1989,175 @@ Applied:
 </tr>
 </tbody>
 </table>
+<div class="markdown-heading"><h3 class="heading-element">DevOps, Environments &amp; Git Flow</h3><a id="user-content-devops-environments-git-flow" class="anchor" aria-label="Permalink: DevOps, Environments & Git Flow" href="#devops-environments-git-flow"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Component</th>
+<th>Dev</th>
+<th>Pre-Production</th>
+<th>Production</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td colspan="5"><strong>AWS Infrastructure</strong></td>
+</tr>
+<tr>
+<td>Compute</td>
+<td>ECS Fargate</td>
+<td>1 task, smallest CPU/mem</td>
+<td>2 tasks, prod-sized CPU/mem</td>
+<td>Auto-scale 2-20 tasks per model</td>
+</tr>
+<tr>
+<td>Load Balancer</td>
+<td>ALB</td>
+<td>Single ALB, path-based routing</td>
+<td>Dedicated ALB, mirrors prod rules</td>
+<td>Dedicated ALB per model group, WAF enabled</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>S3</td>
+<td><code>s3://ml-dev/</code> — ephemeral models</td>
+<td><code>s3://ml-preprod/</code> — promoted candidates</td>
+<td><code>s3://ml-prod/</code> — versioned, lifecycle policies</td>
+</tr>
+<tr>
+<td>Container Registry</td>
+<td>ECR</td>
+<td>Tagged <code>:dev-{sha}</code></td>
+<td>Tagged <code>:rc-{version}</code></td>
+<td>Tagged <code>:v{semver}</code>, immutable tags</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>ElastiCache (Redis)</td>
+<td>Single node, <code>cache.t3.micro</code></td>
+<td>Replica set, prod config</td>
+<td>Multi-AZ cluster, automatic failover</td>
+</tr>
+<tr>
+<td>Data Warehouse</td>
+<td>Snowflake</td>
+<td><code>DEV</code> schema — sample data</td>
+<td><code>PREPROD</code> schema — full data copy</td>
+<td><code>PROD</code> schema — live data</td>
+</tr>
+<tr>
+<td colspan="5"><strong>GitHub Repository</strong></td>
+</tr>
+<tr>
+<td>Repo Structure</td>
+<td>Monorepo</td>
+<td colspan="3"><code>ml-platform/</code> — shared serving code, Dockerfile, FastAPI app<br/><code>models/{fraud,reco,forecast,segment,pricing}/</code> — per-model training, configs<br/><code>.github/workflows/</code> — CI/CD pipelines<br/><code>infra/</code> — Terraform/IaC per environment</td>
+</tr>
+<tr>
+<td colspan="5"><strong>Git Flow</strong></td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>feature/*</code></td>
+<td colspan="3">Developer creates from <code>dev</code>. Short-lived. PR into <code>dev</code> triggers CI checks. Deleted after merge.</td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>dev</code></td>
+<td>Auto-deploys to Dev env on merge</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Branch</td>
+<td><code>main</code></td>
+<td>—</td>
+<td>PR from <code>dev</code> → auto-deploy to Pre-Prod</td>
+<td>Tag release on <code>main</code> → deploy to Prod</td>
+</tr>
+<tr>
+<td colspan="5"><strong>GitHub Actions Pipelines</strong></td>
+</tr>
+<tr>
+<td>CI — Every PR</td>
+<td>Lint + Test + Security</td>
+<td colspan="3"><code>ruff</code> lint · <code>pytest</code> unit/integration · <code>pip-audit</code> + <code>trivy</code> scan all packages &amp; Docker image for CVEs · <code>bandit</code> static security analysis on Python code · <code>gitleaks</code> secret detection · SBOM generation</td>
+</tr>
+<tr>
+<td>Code Review</td>
+<td><strong>CodeRabbit</strong></td>
+<td colspan="3">AI-powered review on every PR — catches logic errors, anti-patterns, type mismatches, missing edge cases, and style issues before human review. Runs in parallel with CI. Comments inline on the diff.</td>
+</tr>
+<tr>
+<td>CD — Dev</td>
+<td>Deploy on merge to <code>dev</code></td>
+<td colspan="3">Build Docker → push to ECR (<code>:dev-{sha}</code>) → update ECS Dev service → smoke test → Slack notify</td>
+</tr>
+<tr>
+<td>CD — Pre-Prod</td>
+<td>Deploy on merge to <code>main</code></td>
+<td colspan="3">Promote ECR image (<code>:rc-{ver}</code>) → update ECS Pre-Prod → integration tests against full data → load test (shadow traffic)</td>
+</tr>
+<tr>
+<td>CD — Prod</td>
+<td>Deploy on tag <code>v*</code></td>
+<td colspan="3">Retag ECR image (<code>:v{semver}</code>) → rolling ECS update (zero-downtime) → canary 10% traffic → full rollout → monitor 30 min → auto-rollback on error spike</td>
+</tr>
+<tr>
+<td>Scheduled</td>
+<td>Nightly security sweep</td>
+<td colspan="3"><code>trivy</code> re-scans all deployed images for newly disclosed CVEs. Opens GitHub Issue if CRITICAL/HIGH found. Weekly <code>pip-audit</code> of pinned dependencies.</td>
+</tr>
+<tr>
+<td>Model Training</td>
+<td><code>workflow_dispatch</code></td>
+<td colspan="3">Manual trigger per model. Trains on EC2, registers in MLflow, uploads artifact to S3. Separate workflow per model. Requires approval gate for prod promotion.</td>
+</tr>
+<tr>
+<td colspan="5"><strong>Observability</strong></td>
+</tr>
+<tr>
+<td>Monitoring</td>
+<td><strong>Amazon CloudWatch</strong></td>
+<td colspan="3">Integrated into all deployment code, inference endpoints, and ECS tasks. Tracks: request latency (p50/p95/p99), error rates, model prediction distributions, ECS CPU/memory, Redis hit rates, autoscaling events. CloudWatch Alarms trigger SNS → Slack/PagerDuty on anomalies. Dashboards per model and per environment. Logs streamed from all containers via <code>awslogs</code> driver.</td>
+</tr>
+</tbody>
+</table>
+<pre class="mermaid">
+graph LR
+    subgraph Developer
+        Feature["feature/* branch"]
+    end
+
+    subgraph GitHub["GitHub"]
+        PR["Pull Request"]
+        Dev["dev branch"]
+        Main["main branch"]
+        Tag["Tag v1.2.3"]
+    end
+
+    subgraph CI["CI Checks (every PR)"]
+        Lint["Ruff + Pytest"]
+        Security["pip-audit · Trivy<br/>Bandit · Gitleaks"]
+        CR["CodeRabbit<br/>AI code review"]
+    end
+
+    subgraph Environments
+        DevEnv["Dev<br/>ECS 1 task<br/>sample data"]
+        PreProd["Pre-Prod<br/>ECS 2 tasks<br/>full data"]
+        Prod["Production<br/>ECS auto-scale<br/>canary deploy"]
+    end
+
+    Feature -->|PR| PR
+    PR --> Lint & Security & CR
+    Lint & Security & CR -->|pass| Dev
+    Dev -->|auto-deploy| DevEnv
+    Dev -->|PR to main| Main
+    Main -->|auto-deploy| PreProd
+    Main -->|tag release| Tag
+    Tag -->|rolling deploy| Prod
+</pre>
 <div class="markdown-heading"><h2 class="heading-element">GDPR Deletion Architecture</h2><a id="user-content-gdpr-deletion-architecture" class="anchor" aria-label="Permalink: GDPR Deletion Architecture" href="#gdpr-deletion-architecture"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <pre><code>Deletion Request (user_id)
     │
