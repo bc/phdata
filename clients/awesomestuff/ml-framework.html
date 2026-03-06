@@ -2313,188 +2313,544 @@ Buffer: 27 days for edge cases, manual review, legal holds
 </table>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">Resources &amp; Staffing Plan</h2><a id="user-content-resources-staffing-plan" class="anchor" aria-label="Permalink: Resources & Staffing Plan" href="#resources-staffing-plan"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<p>The project is structured into <strong>two parallel workstreams</strong> with shared leadership, delivering batch and real-time capabilities simultaneously. All staff are <a href="https://www.phdata.io" target="_blank">phData</a> consultants — a 6x Snowflake Partner of the Year with deep ML and data engineering expertise across AWS, Snowflake, and modern data platforms.</p>
+<p>All staff are <a href="https://www.phdata.io" target="_blank">phData</a> consultants — a 6x Snowflake Partner of the Year with deep ML and data engineering expertise across AWS, Snowflake, and modern data platforms. The team ramps intensity across three phases, front-loading infrastructure and high-risk models.</p>
 
+<div class="markdown-heading"><h3 class="heading-element">Resource Plan</h3><a id="user-content-resource-plan" class="anchor" aria-label="Permalink: Resource Plan" href="#resource-plan"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
 <table>
 <thead>
 <tr>
 <th>Role</th>
-<th>phData Title</th>
-<th>Level</th>
-<th>Workstream</th>
-<th>Hours/Week</th>
+<th>Count</th>
 <th>Rack Rate</th>
 <th>Responsibilities</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td colspan="7" style="background:#f0f4f8; font-weight:bold;">Leadership &amp; Oversight</td>
-</tr>
-<tr>
-<td><strong>Tech Lead / Senior Architect</strong></td>
-<td>Principal Solutions Architect</td>
-<td>Principal</td>
-<td>Both</td>
-<td>10</td>
+<td><strong>Principal Architect</strong></td>
+<td>1</td>
 <td>$400/hr</td>
-<td>Technical authority. Owns architecture decisions, code reviews, sprint planning. Accountable for production readiness.</td>
+<td>Overall architecture design, technical leadership, stakeholder alignment, solution governance</td>
 </tr>
 <tr>
-<td><strong>Project Manager / Research Analyst</strong></td>
-<td>Senior Consultant, Data &amp; AI Strategy</td>
-<td>Senior</td>
-<td>Both</td>
-<td>20</td>
-<td>$225/hr</td>
-<td>Timeline, budget, stakeholder comms. Researches approaches, GDPR requirements. Tracks velocity and cross-workstream dependencies.</td>
-</tr>
-<tr>
-<td><strong>E-Commerce Business SME</strong></td>
-<td>Senior Consultant, Industry Strategy</td>
-<td>Senior</td>
-<td>Both (advisory)</td>
-<td>4</td>
+<td><strong>Delivery Lead</strong></td>
+<td>1</td>
 <td>$250/hr</td>
-<td>Domain expert: pricing strategy, inventory, fraud patterns, segmentation. Validates model I/O against business reality. Weekly review.</td>
-</tr>
-<tr>
-<td><strong>PCI &amp; GDPR Compliance SME</strong></td>
-<td>Senior Consultant, Security &amp; Compliance</td>
-<td>Senior</td>
-<td>Both (advisory)</td>
-<td>4</td>
-<td>$275/hr</td>
-<td>AWS security architecture for PCI-DSS (fraud/payment data) and GDPR (user data in models). Reviews IAM policies, encryption at rest/transit, VPC isolation, audit logging. Validates deletion pipeline and data retention policies.</td>
-</tr>
-<tr>
-<td colspan="7" style="background:#e8f5e9; font-weight:bold;">Workstream 1 — Batch Jobs (Segmentation, Forecasting, Pricing)</td>
+<td>Project coordination, roadmap tracking, stakeholder communication, risk management</td>
 </tr>
 <tr>
 <td><strong>ML Engineer</strong></td>
-<td>Senior ML Engineer</td>
-<td>Senior</td>
-<td>WS1 — Batch</td>
-<td>32</td>
-<td>$225/hr</td>
-<td>K-Means segmentation, LightGBM forecasting + pricing. Feature engineering, ONNX export, MLflow. Owns repricing worker and ops digest.</td>
+<td>2</td>
+<td>$250/hr</td>
+<td>Model deployment pipelines, model serving infrastructure, CI/CD automation</td>
 </tr>
 <tr>
 <td><strong>Data Engineer</strong></td>
-<td>Senior Data Engineer</td>
-<td>Senior</td>
-<td>WS1 — Batch</td>
-<td>32</td>
-<td>$200/hr</td>
-<td>Snowflake pipelines, GH Actions cron scheduling, S3 artifacts, CI/CD. ECS one-shot tasks, presigned URL delivery.</td>
-</tr>
-<tr>
-<td colspan="7" style="background:#e3f2fd; font-weight:bold;">Workstream 2 — High-Speed Inference (Fraud, Reco)</td>
-</tr>
-<tr>
-<td><strong>ML Engineer</strong></td>
-<td>ML Solutions Architect</td>
-<td>Senior</td>
-<td>WS2 — Real-Time</td>
-<td>32</td>
-<td>$250/hr</td>
-<td>XGBoost fraud + ALS/FAISS reco. ONNX Runtime optimization. Model performance, latency tuning, A/B testing.</td>
+<td>2</td>
+<td>$225/hr</td>
+<td>Data pipelines, feature engineering, integration with data warehouse and systems</td>
 </tr>
 <tr>
 <td><strong>Platform Engineer</strong></td>
-<td>Senior Solutions Engineer</td>
-<td>Senior</td>
-<td>WS2 — Real-Time</td>
-<td>24</td>
-<td>$225/hr</td>
-<td>FastAPI serving, Docker/ECR/ECS Fargate, ALB, autoscaling. Redis setup. CloudWatch dashboards. Canary deploy + rollback.</td>
+<td>1</td>
+<td>$250/hr</td>
+<td>Infrastructure provisioning, containerization, ECS Fargate deployment, monitoring setup</td>
 </tr>
 <tr>
-<td><strong>DevOps / Infrastructure</strong></td>
-<td>Solutions Engineer</td>
-<td>Mid</td>
-<td>Both</td>
-<td>16</td>
-<td>$185/hr</td>
-<td>Terraform/IaC for Dev/Pre-Prod/Prod. GitHub Actions, CodeRabbit, security scanning. ECR, networking, IAM, secrets.</td>
+<td><strong>Data Scientist Advisor</strong></td>
+<td>1</td>
+<td>$300/hr</td>
+<td>Model optimization, evaluation frameworks, retraining strategies</td>
+</tr>
+<tr>
+<td><strong>Security &amp; Governance Specialist</strong></td>
+<td>1</td>
+<td>$275/hr</td>
+<td>Data governance, GDPR compliance, PCI-DSS, audit framework implementation</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Total</strong></td>
+<td><strong>10 people (9 roles)</strong></td>
+<td></td>
+<td></td>
 </tr>
 </tbody>
 </table>
 
-<div class="markdown-heading"><h3 class="heading-element">Weekly Budget Summary</h3><a id="user-content-weekly-budget-summary" class="anchor" aria-label="Permalink: Weekly Budget Summary" href="#weekly-budget-summary"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<div class="markdown-heading"><h3 class="heading-element">Implementation Roadmap</h3><a id="user-content-implementation-roadmap" class="anchor" aria-label="Permalink: Implementation Roadmap" href="#implementation-roadmap"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<pre class="mermaid">
+gantt
+    title Project Launchpad — 12 Months (Apr 2026 – Mar 2027)
+    dateFormat  YYYY-MM-DD
+    axisFormat  %b '%y
+
+    section Phase 1 — Foundation
+    Establish data pipelines              :a1, 2026-04-01, 4w
+    Deploy feature store (Redis)          :a2, 2026-04-01, 3w
+    Build CI/CD for ML (GH Actions)       :a3, 2026-04-15, 3w
+    Architecture governance               :a4, 2026-04-01, 6w
+    Fraud Detection MVP → production      :a5, 2026-05-01, 6w
+    Recommendations MVP → production      :a6, 2026-05-15, 6w
+    Implement monitoring framework        :a7, 2026-06-01, 4w
+
+    section Phase 2 — Expansion
+    Customer Segmentation → production    :b1, 2026-07-01, 6w
+    Dynamic Pricing → production          :b2, 2026-07-15, 8w
+    Integrate CRM &amp; marketing systems     :b3, 2026-08-15, 5w
+    Enable automated retraining           :b4, 2026-09-01, 5w
+
+    section Phase 3 — Optimization
+    Inventory / Demand Forecasting        :c1, 2026-11-01, 8w
+    Scale up/down EC2 instance types      :c2, 2026-12-15, 4w
+    Knowledge Transfer                    :c3, 2027-01-15, 8w
+    Incubate playbooks for new use cases  :c4, 2027-02-01, 8w
+</pre>
+
+<div class="markdown-heading"><h3 class="heading-element">Phase-by-Phase Staffing &amp; Cost Breakdown</h3><a id="user-content-phase-by-phase-staffing-cost-breakdown" class="anchor" aria-label="Permalink: Phase-by-Phase Staffing & Cost Breakdown" href="#phase-by-phase-staffing-cost-breakdown"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+
+<p><strong>Phase 1 — Foundation (Apr 1 – Jun 30, 2026) · 13 weeks</strong><br/>
+<em>Focus: Fraud Detection &amp; Recommendations. Build all shared infrastructure, deploy first two production models, implement monitoring.</em></p>
 <table>
 <thead>
 <tr>
-<th>Category</th>
-<th>Headcount</th>
-<th>Hours/Week</th>
-<th>Weekly Cost</th>
+<th>Role</th>
+<th>Rate</th>
+<th>Hr/Wk</th>
+<th>Weekly $</th>
+<th>Phase Hours</th>
+<th>Phase Cost</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Leadership (Architect + PM + SMEs)</td>
+<td>Principal Architect</td>
+<td>$400</td>
+<td>10</td>
+<td>$4,000</td>
+<td>130</td>
+<td>$52,000</td>
+</tr>
+<tr>
+<td>Delivery Lead</td>
+<td>$250</td>
+<td>20</td>
+<td>$5,000</td>
+<td>260</td>
+<td>$65,000</td>
+</tr>
+<tr>
+<td>ML Engineer 1</td>
+<td>$250</td>
+<td>36</td>
+<td>$9,000</td>
+<td>468</td>
+<td>$117,000</td>
+</tr>
+<tr>
+<td>ML Engineer 2</td>
+<td>$250</td>
+<td>36</td>
+<td>$9,000</td>
+<td>468</td>
+<td>$117,000</td>
+</tr>
+<tr>
+<td>Data Engineer 1</td>
+<td>$225</td>
+<td>36</td>
+<td>$8,100</td>
+<td>468</td>
+<td>$105,300</td>
+</tr>
+<tr>
+<td>Data Engineer 2</td>
+<td>$225</td>
+<td>36</td>
+<td>$8,100</td>
+<td>468</td>
+<td>$105,300</td>
+</tr>
+<tr>
+<td>Platform Engineer</td>
+<td>$250</td>
+<td>36</td>
+<td>$9,000</td>
+<td>468</td>
+<td>$117,000</td>
+</tr>
+<tr>
+<td>Data Scientist Advisor</td>
+<td>$300</td>
+<td>8</td>
+<td>$2,400</td>
+<td>104</td>
+<td>$31,200</td>
+</tr>
+<tr>
+<td>Security &amp; Governance</td>
+<td>$275</td>
+<td>8</td>
+<td>$2,200</td>
+<td>104</td>
+<td>$28,600</td>
+</tr>
+<tr style="font-weight:bold; background:#e8f5e9;">
+<td><strong>Phase 1 Total</strong></td>
+<td></td>
+<td><strong>226</strong></td>
+<td><strong>$56,800</strong></td>
+<td><strong>2,938</strong></td>
+<td><strong>$738,400</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Phase 2 — Expansion (Jul 1 – Oct 31, 2026) · 17 weeks</strong><br/>
+<em>Focus: Customer Segmentation &amp; Dynamic Pricing. Deploy additional models, integrate CRM &amp; marketing systems (Braze), enable automated retraining via MLflow.</em></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Rate</th>
+<th>Hr/Wk</th>
+<th>Weekly $</th>
+<th>Phase Hours</th>
+<th>Phase Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Principal Architect</td>
+<td>$400</td>
+<td>8</td>
+<td>$3,200</td>
+<td>136</td>
+<td>$54,400</td>
+</tr>
+<tr>
+<td>Delivery Lead</td>
+<td>$250</td>
+<td>20</td>
+<td>$5,000</td>
+<td>340</td>
+<td>$85,000</td>
+</tr>
+<tr>
+<td>ML Engineer 1</td>
+<td>$250</td>
+<td>36</td>
+<td>$9,000</td>
+<td>612</td>
+<td>$153,000</td>
+</tr>
+<tr>
+<td>ML Engineer 2</td>
+<td>$250</td>
+<td>36</td>
+<td>$9,000</td>
+<td>612</td>
+<td>$153,000</td>
+</tr>
+<tr>
+<td>Data Engineer 1</td>
+<td>$225</td>
+<td>28</td>
+<td>$6,300</td>
+<td>476</td>
+<td>$107,100</td>
+</tr>
+<tr>
+<td>Data Engineer 2</td>
+<td>$225</td>
+<td>28</td>
+<td>$6,300</td>
+<td>476</td>
+<td>$107,100</td>
+</tr>
+<tr>
+<td>Platform Engineer</td>
+<td>$250</td>
+<td>28</td>
+<td>$7,000</td>
+<td>476</td>
+<td>$119,000</td>
+</tr>
+<tr>
+<td>Data Scientist Advisor</td>
+<td>$300</td>
+<td>12</td>
+<td>$3,600</td>
+<td>204</td>
+<td>$61,200</td>
+</tr>
+<tr>
+<td>Security &amp; Governance</td>
+<td>$275</td>
 <td>4</td>
-<td>38</td>
-<td>$10,600</td>
+<td>$1,100</td>
+<td>68</td>
+<td>$18,700</td>
+</tr>
+<tr style="font-weight:bold; background:#e3f2fd;">
+<td><strong>Phase 2 Total</strong></td>
+<td></td>
+<td><strong>200</strong></td>
+<td><strong>$50,500</strong></td>
+<td><strong>3,400</strong></td>
+<td><strong>$858,500</strong></td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Phase 3 — Optimization (Nov 1, 2026 – Mar 31, 2027) · 22 weeks</strong><br/>
+<em>Focus: Inventory Optimization &amp; Knowledge Transfer. Deploy demand forecasting, right-size infrastructure, transfer ownership to internal team, incubate playbooks for future use cases.</em></p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Rate</th>
+<th>Hr/Wk</th>
+<th>Weekly $</th>
+<th>Phase Hours</th>
+<th>Phase Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Principal Architect</td>
+<td>$400</td>
+<td>4</td>
+<td>$1,600</td>
+<td>88</td>
+<td>$35,200</td>
 </tr>
 <tr>
-<td>WS1 — Batch (ML Eng + Data Eng)</td>
-<td>2</td>
-<td>64</td>
-<td>$13,600</td>
+<td>Delivery Lead</td>
+<td>$250</td>
+<td>12</td>
+<td>$3,000</td>
+<td>264</td>
+<td>$66,000</td>
 </tr>
 <tr>
-<td>WS2 — Real-Time (ML Eng + Platform Eng + DevOps)</td>
-<td>3</td>
-<td>72</td>
-<td>$16,360</td>
+<td>ML Engineer 1</td>
+<td>$250</td>
+<td>20</td>
+<td>$5,000</td>
+<td>440</td>
+<td>$110,000</td>
 </tr>
-<tr style="font-weight:bold; background:#f0f4f8;">
+<tr>
+<td>ML Engineer 2</td>
+<td>$250</td>
+<td>12</td>
+<td>$3,000</td>
+<td>264</td>
+<td>$66,000</td>
+</tr>
+<tr>
+<td>Data Engineer 1</td>
+<td>$225</td>
+<td>12</td>
+<td>$2,700</td>
+<td>264</td>
+<td>$59,400</td>
+</tr>
+<tr>
+<td>Data Engineer 2</td>
+<td>$225</td>
+<td>8</td>
+<td>$1,800</td>
+<td>176</td>
+<td>$39,600</td>
+</tr>
+<tr>
+<td>Platform Engineer</td>
+<td>$250</td>
+<td>12</td>
+<td>$3,000</td>
+<td>264</td>
+<td>$66,000</td>
+</tr>
+<tr>
+<td>Data Scientist Advisor</td>
+<td>$300</td>
+<td>8</td>
+<td>$2,400</td>
+<td>176</td>
+<td>$52,800</td>
+</tr>
+<tr>
+<td>Security &amp; Governance</td>
+<td>$275</td>
+<td>4</td>
+<td>$1,100</td>
+<td>88</td>
+<td>$24,200</td>
+</tr>
+<tr style="font-weight:bold; background:#f3e5f5;">
+<td><strong>Phase 3 Total</strong></td>
+<td></td>
+<td><strong>92</strong></td>
+<td><strong>$23,600</strong></td>
+<td><strong>2,024</strong></td>
+<td><strong>$519,200</strong></td>
+</tr>
+</tbody>
+</table>
+
+<div class="markdown-heading"><h3 class="heading-element">Project Total</h3><a id="user-content-project-total" class="anchor" aria-label="Permalink: Project Total" href="#project-total"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Duration</th>
+<th>Focus</th>
+<th>Weekly Burn</th>
+<th>Hours</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Phase 1 — Foundation</td>
+<td>13 weeks</td>
+<td>Fraud Detection &amp; Recommendations</td>
+<td>$56,800</td>
+<td>2,938</td>
+<td>$738,400</td>
+</tr>
+<tr>
+<td>Phase 2 — Expansion</td>
+<td>17 weeks</td>
+<td>Customer Segmentation &amp; Dynamic Pricing</td>
+<td>$50,500</td>
+<td>3,400</td>
+<td>$858,500</td>
+</tr>
+<tr>
+<td>Phase 3 — Optimization</td>
+<td>22 weeks</td>
+<td>Inventory Optimization &amp; Knowledge Transfer</td>
+<td>$23,600</td>
+<td>2,024</td>
+<td>$519,200</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8; font-size:1.1em;">
 <td><strong>Total</strong></td>
-<td><strong>9</strong></td>
-<td><strong>174</strong></td>
-<td><strong>$40,560</strong></td>
+<td><strong>52 weeks</strong></td>
+<td></td>
+<td></td>
+<td><strong>8,362</strong></td>
+<td><strong>$2,116,100</strong></td>
+</tr>
+</tbody>
+</table>
+
+<table>
+<tbody>
+<tr>
+<td><strong>Blended effective rate</strong></td>
+<td><strong>$253/hr</strong></td>
 </tr>
 <tr>
-<td colspan="3"><strong>Blended effective rate</strong></td>
-<td><strong>$233/hr</strong></td>
+<td><strong>Total engagement headcount</strong></td>
+<td><strong>10 people (9 roles)</strong></td>
 </tr>
-<tr>
-<td colspan="3"><strong>12-month project estimate</strong></td>
+<tr style="font-size:1.2em; font-weight:bold; background:#2B4C6F; color:white;">
+<td><strong>Project Launchpad — Fixed Price</strong></td>
 <td><strong>$2.1M</strong></td>
 </tr>
 </tbody>
 </table>
 
-<div class="markdown-heading"><h3 class="heading-element">Workstream Timeline</h3><a id="user-content-workstream-timeline" class="anchor" aria-label="Permalink: Workstream Timeline" href="#workstream-timeline"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
-<pre class="mermaid">
-gantt
-    title ML Platform — 12-Month Engagement (Apr 2026 – Mar 2027)
-    dateFormat  YYYY-MM-DD
-    axisFormat  %b '%y
+<div class="markdown-heading"><h3 class="heading-element">Per-Role Total (12 Months)</h3><a id="user-content-per-role-total-12-months" class="anchor" aria-label="Permalink: Per-Role Total (12 Months)" href="#per-role-total-12-months"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Rate</th>
+<th>Total Hours</th>
+<th>Total Cost</th>
+<th>% of Budget</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Principal Architect</td>
+<td>$400/hr</td>
+<td>354</td>
+<td>$141,600</td>
+<td>6.7%</td>
+</tr>
+<tr>
+<td>Delivery Lead</td>
+<td>$250/hr</td>
+<td>864</td>
+<td>$216,000</td>
+<td>10.2%</td>
+</tr>
+<tr>
+<td>ML Engineer 1</td>
+<td>$250/hr</td>
+<td>1,520</td>
+<td>$380,000</td>
+<td>18.0%</td>
+</tr>
+<tr>
+<td>ML Engineer 2</td>
+<td>$250/hr</td>
+<td>1,344</td>
+<td>$336,000</td>
+<td>15.9%</td>
+</tr>
+<tr>
+<td>Data Engineer 1</td>
+<td>$225/hr</td>
+<td>1,208</td>
+<td>$271,800</td>
+<td>12.8%</td>
+</tr>
+<tr>
+<td>Data Engineer 2</td>
+<td>$225/hr</td>
+<td>1,120</td>
+<td>$252,000</td>
+<td>11.9%</td>
+</tr>
+<tr>
+<td>Platform Engineer</td>
+<td>$250/hr</td>
+<td>1,208</td>
+<td>$302,000</td>
+<td>14.3%</td>
+</tr>
+<tr>
+<td>Data Scientist Advisor</td>
+<td>$300/hr</td>
+<td>484</td>
+<td>$145,200</td>
+<td>6.9%</td>
+</tr>
+<tr>
+<td>Security &amp; Governance</td>
+<td>$275/hr</td>
+<td>260</td>
+<td>$71,500</td>
+<td>3.4%</td>
+</tr>
+<tr style="font-weight:bold; background:#f0f4f8;">
+<td><strong>Total</strong></td>
+<td><strong>$253/hr blended</strong></td>
+<td><strong>8,362</strong></td>
+<td><strong>$2,116,100</strong></td>
+<td><strong>100%</strong></td>
+</tr>
+</tbody>
+</table>
 
-    section Leadership
-    Architecture &amp; infra design            :a1, 2026-04-01, 4w
-    Sprint planning &amp; ongoing oversight     :a2, after a1, 48w
+<p style="font-size:0.9em; color:#555;"><em>Staffing ramps down across phases: Phase 1 runs at full intensity (226 hr/wk) building core infrastructure and the two highest-risk real-time models. Phase 2 maintains strong delivery (200 hr/wk) for batch models and integrations. Phase 3 drops to 92 hr/wk as the focus shifts to optimization, knowledge transfer, and playbook creation. The $2.1M fixed price includes ~$16K margin against the $2,116,100 calculated cost.</em></p>
 
-    section WS1 — Batch (Seg, Forecast, Pricing)
-    Segmentation MVP (K-Means + report)     :b1, 2026-04-01, 6w
-    Segmentation → production               :b2, after b1, 3w
-    Forecasting MVP (LightGBM + digest)     :b3, after b2, 6w
-    Forecasting → production                :b4, after b3, 3w
-    Pricing repricing worker MVP            :b5, after b4, 6w
-    Pricing → production + competitor API   :b6, after b5, 4w
-    Iteration: feedback loops + tuning      :b7, after b6, 20w
-
-    section WS2 — Real-Time (Fraud, Reco)
-    Shared infra (ECS, Redis, ALB, CI/CD)   :c1, 2026-04-01, 4w
-    Fraud detection MVP                     :c2, after c1, 6w
-    Fraud → shadow mode → production        :c3, after c2, 4w
-    Recommendation engine (FAISS + ALS)     :c4, after c3, 8w
-    Reco → production + caching tuning      :c5, after c4, 4w
-    Iteration: monitoring, A/B, scale       :c6, after c5, 22w
-</pre>
 <p><em>All rates are effective rack rates inclusive of phData overhead, tooling, and management. Rates based on US-based senior consulting talent with ML/data engineering specialization. Actual engagement terms subject to SOW.</em></p>
 <hr>
 <div class="markdown-heading"><h2 class="heading-element">Total Cost of Ownership</h2><a id="user-content-total-cost-of-ownership" class="anchor" aria-label="Permalink: Total Cost of Ownership" href="#total-cost-of-ownership"><span aria-hidden="true" class="octicon octicon-link"></span></a></div>
