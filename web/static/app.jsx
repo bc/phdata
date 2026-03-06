@@ -1679,6 +1679,8 @@ function CartView({ cart, removeFromCart, updateCartNote }) {
       const data = await res.json();
       if (data.success) {
         setCheckoutDone(true);
+        // Open the summary page — it will auto-poll until the md file is ready
+        window.open("/research-summary", "_blank");
       } else {
         alert("Checkout failed: " + (data.error || "Unknown error"));
       }
@@ -1702,7 +1704,10 @@ function CartView({ cart, removeFromCart, updateCartNote }) {
           <div>
             {checkoutDone ? (
               <div className="cart-checkout-done">
-                <CheckIcon /> Launched — check /tmp/phdata-research-summary.md
+                <CheckIcon /> Research running —{" "}
+                <a href="/research-summary" target="_blank" style={{ color: "var(--green-600)", textDecoration: "underline" }}>
+                  View Summary
+                </a>
               </div>
             ) : (
               <button className="cart-checkout-btn" onClick={handleCheckout} disabled={checkingOut} style={{ width: "auto", padding: "10px 24px" }}>
