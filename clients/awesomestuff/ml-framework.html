@@ -1412,42 +1412,51 @@ graph TB
 <tr>
 <th>Dimension</th>
 <th>Assessment</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Algorithm</strong></td>
-<td><a class="sourced" data-url="https://xgboosting.com/xgboost-for-the-kaggle-credit-card-fraud-detection-dataset/">XGBoost, 300-500 trees, max depth 6-8. Industry standard for tabular fraud.<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">"Best ROC AUC of 0.984 on Kaggle fraud dataset with max_depth=5 and n_estimators=300. Ensemble methods like XGBoost have demonstrated significant promise for tabular fraud detection."</div><div class="cite-source"><a href="https://xgboosting.com/xgboost-for-the-kaggle-credit-card-fraud-detection-dataset/" target="_blank">XGBoosting.com — XGBoost for Kaggle Credit Card Fraud Detection</a></div></span></a> No deep learning needed.</td>
+<td>XGBoost, 300-500 trees, max depth 6-8. Industry standard for tabular fraud. No deep learning needed.</td>
+<td><a href="https://xgboosting.com/xgboost-for-the-kaggle-credit-card-fraud-detection-dataset/" target="_blank">XGBoosting.com — XGBoost for Kaggle Credit Card Fraud Detection</a></td>
 </tr>
 <tr>
 <td><strong>Model size</strong></td>
-<td><a class="sourced" data-url="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb">~15-25 MB on disk. ~50-80 MB in memory.<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">"A 500-tree XGBoost model with depth 6-8 typically serializes to 10-30 MB (binary format). In-memory footprint is 2-4x disk size due to tree node structures and metadata."</div><div class="cite-source"><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — Methods to Boost XGBoost Model Inference Latency (2026)</a></div></span></a> Trivial to serve.</td>
+<td>~15-25 MB on disk. ~50-80 MB in memory. Trivial to serve.</td>
+<td><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — Methods to Boost XGBoost Model Inference Latency (2026)</a></td>
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
-<td>CPU only. <a class="sourced" data-url="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb">p50 ~2-4 ms, p99 ~8-12 ms (model only)<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">"You can achieve approximately 1ms latency by fixing threading issues. Restrict the booster to 1 thread for single predictions to reduce overhead." With 500 trees and batching, 2-4ms p50 is realistic.</div><div class="cite-source"><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — XGBoost Inference Latency Optimization</a></div></span></a>. E2E with feature fetch: p50 ~15-30 ms, p99 ~50-80 ms.</td>
+<td>CPU only. p50 ~2-4 ms, p99 ~8-12 ms (model only). E2E with feature fetch: p50 ~15-30 ms, p99 ~50-80 ms.</td>
+<td><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — XGBoost Inference Latency Optimization</a></td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
 <td>~80-120 features. Velocity features (txns in last 1h/24h) are the hard part — requires Redis. Everything else is simple numerics + categoricals. Preprocessing: &lt;1 ms if pre-cached.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
-<td><a class="sourced" data-url="https://queue-it.com/blog/black-friday-statistics/">5,000-15,000 on Black Friday (8-15x normal)<span class="cite-tooltip"><span class="cite-verdict partial">Partial — traffic spike varies</span><div class="cite-quote">SDE Ray: "It's not unusual for retailers to see 5 to 10x normal traffic during Black Friday and Cyber Monday." Queue-it: "Black Friday web visits were +78% vs average October Friday" (overall ~2x). The 8-15x multiplier is aggressive — 5-10x is better documented. For individual merchants during flash sales, spikes can exceed 10x. The 5-15K QPS range assumes a $500M GMV merchant processing ~600-1,000 orders/min at peak.</div><div class="cite-source"><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a></div></span></a>. <a class="sourced" data-url="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb">A single 8-vCPU node handles ~2-3K QPS<span class="cite-tooltip"><span class="cite-verdict partial">Partial — depends on model size</span><div class="cite-quote">XGBoost single-row inference is ~1ms with optimized threading. An 8 vCPU node (any cloud) handling 2-3K predictions/sec is consistent with ~1ms/prediction × 8 cores with overhead. Intel daal4py can provide up to 36x speedup. Exact throughput varies with tree count and depth.</div><div class="cite-source"><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — XGBoost Inference Latency Optimization</a></div></span></a>. Need 5-8 instances at peak.</td>
+<td>5,000-15,000 on Black Friday (8-15x normal). A single 8-vCPU node handles ~2-3K QPS. Need 5-8 instances at peak.</td>
+<td><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a><br/><a href="https://medium.com/@kaige.yang0110/methods-to-boost-xgboost-model-inference-latency-94540cb170eb" target="_blank">Medium — XGBoost Inference Latency Optimization</a></td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Hard limit: 200 ms e2e</strong> (on checkout critical path). <a class="sourced" data-url="https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/">Each 100 ms added = ~1% conversion drop<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">Greg Linden (Amazon, 2006): "In A/B tests, Amazon tried delaying the page in increments of 100 milliseconds and found that even very small delays would result in substantial and costly drops in revenue." Note: original finding was about sales/revenue, not conversion rate specifically. A 2017 Akamai study found the impact may be even larger.</div><div class="cite-source"><a href="https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/" target="_blank">GigaSpaces — Amazon: Every 100ms of Latency Cost 1% in Sales</a></div></span></a>. At $500M revenue, that's ~$2M per 1%. False positive rate matters more than latency — <a class="sourced" data-url="https://execviva.com/executive-hub/fraud-kpis">target &lt;0.5% FPR<span class="cite-tooltip"><span class="cite-verdict adjusted">Needs context</span><div class="cite-quote">Industry data: "Average merchants decline 2.6% of all orders for suspected fraud, and 30-70% of those are false positives" — meaning false decline rates are ~0.8-1.8% of total orders. A &lt;0.5% FPR target (fewer than 1 in 200 legitimate transactions blocked) is aggressive but achievable with modern ML. Note: this metric differs from alert-level FPR used in AML (30-50%).</div><div class="cite-source"><a href="https://execviva.com/executive-hub/fraud-kpis" target="_blank">ExecViva — Fraud KPIs: The Executive Guide</a></div></span></a>.</td>
+<strong>Hard limit: 200 ms e2e</strong> (on checkout critical path). Each 100 ms added = ~1% conversion drop. At $500M revenue, that's ~$2M per 1%. False positive rate matters more than latency — target &lt;0.5% FPR.</td>
+<td><a href="https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales/" target="_blank">GigaSpaces — Amazon: Every 100ms of Latency Cost 1% in Sales</a><br/><a href="https://execviva.com/executive-hub/fraud-kpis" target="_blank">ExecViva — Fraud KPIs: The Executive Guide</a></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
 <td>
-<strong>HIGH complexity.</strong> User data in: training logs, feature store (Redis), prediction logs. Must cascade-delete from raw tables + feature snapshots + prediction audit log. Model itself doesn't need retraining (single user is negligible in millions). <a class="sourced" data-url="https://gdpr-info.eu/art-17-gdpr/">Fraud investigation hold (Art 17(3)(e)) allows retention for legal claims<span class="cite-tooltip"><span class="cite-verdict partial">Partial — no fixed period</span><div class="cite-quote">Art 17(3)(e): "The right to erasure does not apply where processing is necessary for the establishment, exercise or defence of legal claims." This is correct — but GDPR does not specify a fixed 12-18 month period. The retention period must be justified by the specific legal claim timeline (e.g., statute of limitations).</div><div class="cite-source"><a href="https://gdpr-info.eu/art-17-gdpr/" target="_blank">GDPR-info.eu — Art. 17 Right to Erasure</a></div></span></a>.</td>
+<strong>HIGH complexity.</strong> User data in: training logs, feature store (Redis), prediction logs. Must cascade-delete from raw tables + feature snapshots + prediction audit log. Model itself doesn't need retraining (single user is negligible in millions). Fraud investigation hold (Art 17(3)(e)) allows retention for legal claims.</td>
+<td><a href="https://gdpr-info.eu/art-17-gdpr/" target="_blank">GDPR-info.eu — Art. 17 Right to Erasure</a></td>
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
 <td>EC2 dev instance (VSCode + SSH) for experimentation. Production training: GitHub Actions <code>workflow_dispatch</code> → spins up EC2 runner, pulls data from warehouse, trains XGBoost, exports ONNX via <code>onnxmltools</code>, packages <code>model.tar.gz</code>, uploads to S3. Tracked by MLflow. Scheduled weekly retrain via cron trigger.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
@@ -1493,6 +1502,7 @@ graph LR
     CronJob -->|"pre-aggregate<br/>velocity features"| Redis
 </pre>
 </td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1504,43 +1514,52 @@ graph LR
 <tr>
 <th>Dimension</th>
 <th>Assessment</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Algorithm</strong></td>
-<td><a class="sourced" data-url="https://engineering.fb.com/2019/03/29/data-infrastructure/recommendation-systems/">Two-stage: (1) ALS matrix factorization for candidate retrieval, (2) Optional XGBoost ranker for re-ranking top 50<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">The two-stage retrieval + ranking architecture is the industry standard pattern used at Meta, YouTube, and Pinterest. ALS is a proven baseline for implicit feedback. Two-tower models require dedicated ML infrastructure and team investment.</div><div class="cite-source"><a href="https://engineering.fb.com/2019/03/29/data-infrastructure/recommendation-systems/" target="_blank">Meta Engineering — Recommendation Systems at Facebook</a></div></span></a>. Skip deep learning (two-tower) unless you have a dedicated ML team.</td>
+<td>Two-stage: (1) ALS matrix factorization for candidate retrieval, (2) Optional XGBoost ranker for re-ranking top 50. Skip deep learning (two-tower) unless you have a dedicated ML team.</td>
+<td><a href="https://engineering.fb.com/2019/03/29/data-infrastructure/recommendation-systems/" target="_blank">Meta Engineering — Recommendation Systems at Facebook</a></td>
 </tr>
 <tr>
 <td><strong>Model size</strong></td>
-<td><a class="sourced" data-url="https://github.com/facebookresearch/faiss/wiki/Vector-codec-benchmarks">ALS: User matrix 1M users × 128 factors = ~512 MB<span class="cite-tooltip"><span class="cite-verdict supported">Supported — math checks out</span><div class="cite-quote">1M users × 128 floats × 4 bytes/float = 512 MB. This is standard dimensionality for collaborative filtering (Spotify uses 40-256 factors, Netflix Prize solutions used 50-200). FAISS IVF index for 100K items × 128d ≈ 35 MB is consistent with FAISS codec benchmarks.</div><div class="cite-source"><a href="https://github.com/facebookresearch/faiss/wiki/Vector-codec-benchmarks" target="_blank">FAISS Wiki — Vector Codec Benchmarks</a></div></span></a> (but only look up 1 vector at inference = 512 bytes). Item index (FAISS): ~35 MB. Ranker: ~8 MB.</td>
+<td>ALS: User matrix 1M users × 128 factors = ~512 MB (but only look up 1 vector at inference = 512 bytes). Item index (FAISS): ~35 MB. Ranker: ~8 MB.</td>
+<td><a href="https://github.com/facebookresearch/faiss/wiki/Vector-codec-benchmarks" target="_blank">FAISS Wiki — Vector Codec Benchmarks</a></td>
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
-<td><a class="sourced" data-url="https://github.com/facebookresearch/faiss">FAISS ANN retrieval: p50 ~5-10 ms, p99 ~20-30 ms<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">FAISS benchmarks show HNSW "maintains near-perfect accuracy while drastically improving query speed" and IVF-Flat "compresses the search space to achieve sub-millisecond responses." For 1M vectors with 128 dimensions, typical CPU query times are a few milliseconds per lookup. 5-10ms p50 is conservative.</div><div class="cite-source"><a href="https://github.com/facebookresearch/faiss" target="_blank">GitHub — facebook/faiss: Efficient Similarity Search</a></div></span></a>. With ranking: add 2-4 ms. E2E: p50 ~10-15 ms, p99 ~30-50 ms. CPU is fine at this scale.</td>
+<td>FAISS ANN retrieval: p50 ~5-10 ms, p99 ~20-30 ms. With ranking: add 2-4 ms. E2E: p50 ~10-15 ms, p99 ~30-50 ms. CPU is fine at this scale.</td>
+<td><a href="https://github.com/facebookresearch/faiss" target="_blank">GitHub — facebook/faiss: Efficient Similarity Search</a></td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
 <td>Training: implicit feedback matrix (views, carts, purchases) — sparse matrix, low preprocessing. Inference: single user vector lookup + ANN search. Cold start: fall back to category popularity. <strong>Preprocessing complexity: LOW at inference, MEDIUM at training.</strong>
 </td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
-<td><a class="sourced" data-url="https://www.algolia.com/blog/algolia/black-friday-cyber-monday-2025-peak-demand-perfect-performance/">20,000-50,000 on Black Friday (fires on every page load)<span class="cite-tooltip"><span class="cite-verdict partial">Partial — depends on merchant size</span><div class="cite-quote">Algolia hit "119,680 queries per second" on Black Friday 2025 across all clients. For a single $500M merchant, 20-50K page loads/sec at peak is plausible if total daily visits reach 5-10M (peak hour = 10-20x average). Queue-it shows Black Friday traffic is 2-3x a normal day overall, but second-by-second peaks can spike much higher.</div><div class="cite-source"><a href="https://www.algolia.com/blog/algolia/black-friday-cyber-monday-2025-peak-demand-perfect-performance/" target="_blank">Algolia — BFCM 2025: Peak Demand, Perfect Performance</a></div></span></a>. BUT: precompute top-20 recs for active users nightly → ~70-80% cache hit rate → real-time QPS drops to 5-15K.</td>
+<td>20,000-50,000 on Black Friday (fires on every page load). BUT: precompute top-20 recs for active users nightly → ~70-80% cache hit rate → real-time QPS drops to 5-15K.</td>
+<td><a href="https://www.algolia.com/blog/algolia/black-friday-cyber-monday-2025-peak-demand-perfect-performance/" target="_blank">Algolia — BFCM 2025: Peak Demand, Perfect Performance</a></td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Target: &lt;100 ms.</strong> Often loaded async, so 200-300 ms is tolerable without conversion impact. Quality matters more than speed — <a class="sourced" data-url="https://www.barilliance.com/personalized-product-recommendations-stats/">10% relevance improvement = 2-5% GMV uplift<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">McKinsey: "personalization most often drives 10-15% revenue lift" (range 5-25%). Barilliance: "product recommendations account for ~12-31% of e-commerce revenue." Amazon: ~35% of purchases attributed to recommendations. If recs drive ~15-30% of revenue, a 10% quality improvement translates to ~1.5-3% GMV uplift — the 2-5% claim is in the right range.</div><div class="cite-source"><a href="https://www.barilliance.com/personalized-product-recommendations-stats/" target="_blank">Barilliance — Personalized Product Recommendation Statistics</a></div></span></a>.</td>
+<strong>Target: &lt;100 ms.</strong> Often loaded async, so 200-300 ms is tolerable without conversion impact. Quality matters more than speed — 10% relevance improvement = 2-5% GMV uplift.</td>
+<td><a href="https://www.barilliance.com/personalized-product-recommendations-stats/" target="_blank">Barilliance — Personalized Product Recommendation Statistics</a></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
 <td>
 <strong>MEDIUM-HIGH.</strong> Must delete: interaction logs, user embedding vector (Redis key delete), cached recs, impression/A/B test logs. Model: delete user's row from the ALS user matrix; full retraining on next weekly cycle naturally excludes them. Cross-system propagation to recommendation cache is the real work.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
 <td>EC2 <code>r6i.4xlarge</code> (128 GB RAM) for ALS training via <code>implicit</code> library. GitHub Actions triggers training run, pulls interaction data from warehouse, trains ALS factors, builds FAISS IVF index, packages <code>model.tar.gz</code> (user/item factors + FAISS index) → uploads to S3. Precomputes nightly recs for top 100K users → writes to Redis. Tracked by MLflow.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
@@ -1576,6 +1595,7 @@ graph LR
     ECR -.->|pull image| ECS
 </pre>
 </td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1587,42 +1607,51 @@ graph LR
 <tr>
 <th>Dimension</th>
 <th>Assessment</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Algorithm</strong></td>
-<td>LightGBM global model (one model for all SKUs). 2,000-5,000 trees, ~200 features. Regression target: units sold in next 7/14/28 days. <a class="sourced" data-url="https://www.sciencedirect.com/science/article/pii/S0169207021001874">Beats Prophet on accuracy for e-commerce<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">M5 Accuracy Competition (Walmart retail data): "All top-performing methods were pure ML methods that were significantly better than all statistical benchmarks. LightGBM was used by all of the top 50 competitors." Prophet was not among the top methods.</div><div class="cite-source"><a href="https://www.sciencedirect.com/science/article/pii/S0169207021001874" target="_blank">ScienceDirect — M5 Accuracy Competition: Results, Findings, and Conclusions</a></div></span></a>. Fallback for new SKUs: category-level moving average.</td>
+<td>LightGBM global model (one model for all SKUs). 2,000-5,000 trees, ~200 features. Regression target: units sold in next 7/14/28 days. Beats Prophet on accuracy for e-commerce. Fallback for new SKUs: category-level moving average.</td>
+<td><a href="https://www.sciencedirect.com/science/article/pii/S0169207021001874" target="_blank">ScienceDirect — M5 Accuracy Competition: Results, Findings, and Conclusions</a></td>
 </tr>
 <tr>
 <td><strong>Model size</strong></td>
 <td>60-80 MB on disk. 120-300 MB in memory. Tiny by any standard.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
 <td>Batch only. Score 100K SKUs in ~30-120 seconds on a single CPU. Full pipeline (feature gen + scoring + write): 30-90 min.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
 <td>~150-250 features per (SKU, date). Lag features (sales 7d/14d/28d/1yr ago), rolling stats (7d/28d/90d mean/std/min/max), calendar features, promo flags, category, price tier. <strong>Preprocessing complexity: MEDIUM-HIGH</strong> — lag/rolling features require careful time-based windowing to avoid data leakage. Feature engineering is 60% of the work.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
 <td>N/A — batch. Daily job: 100K SKUs. Weekly deep run: 500K+ SKUs. A single 16-vCPU / 64 GB node handles this easily.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Batch SLA: results by 6 AM daily</strong> (before buying team starts). Missing the forecast → suboptimal replenishment → stockouts. <a class="sourced" data-url="https://www.mirakl.com/blog/out-of-stocks-ecommerce-inventory-management-problem">1% stockout rate on $500M GMV = ~$5M lost sales<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">"Stock-outs cost retailers $1.2 trillion globally every year" (IHL Group). "69% of online shoppers shop with a competitor immediately when encountering out-of-stock items." For a $500M merchant: 1% stockout × $500M × 69% spill rate = ~$3.5M direct loss. With repeat customer attrition, $5M+ is a reasonable total impact estimate.</div><div class="cite-source"><a href="https://www.mirakl.com/blog/out-of-stocks-ecommerce-inventory-management-problem" target="_blank">Mirakl — The $1.2T Problem: Why Out-of-Stocks Are Crushing Retailers</a></div></span></a>.</td>
+<strong>Batch SLA: results by 6 AM daily</strong> (before buying team starts). Missing the forecast → suboptimal replenishment → stockouts. 1% stockout rate on $500M GMV = ~$5M lost sales.</td>
+<td><a href="https://www.mirakl.com/blog/out-of-stocks-ecommerce-inventory-management-problem" target="_blank">Mirakl — The $1.2T Problem: Why Out-of-Stocks Are Crushing Retailers</a></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
 <td>
 <strong>LOW.</strong> SKU-level model, not user-level. Training data is aggregate sales counts per SKU per day — no individual user data. Deleting a user's orders from raw data could change aggregates, but negligibly at scale. No model retraining needed.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
 <td>Feature engineering in SQL (warehouse-side). GitHub Actions triggers LightGBM training on EC2, pulls features as Parquet from S3. Exports ONNX model via <code>onnxmltools.convert_lightgbm()</code> for validation. Packages artifact → S3. Tracked by MLflow. Scheduled via GitHub Actions cron (<code>schedule:</code> trigger).</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
@@ -1665,6 +1694,7 @@ graph LR
     Report --> S3out
 </pre>
 </td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1676,44 +1706,53 @@ graph LR
 <tr>
 <th>Dimension</th>
 <th>Assessment</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Algorithm</strong></td>
-<td><a class="sourced" data-url="https://www.researchgate.net/publication/394047969_Customer_Segmentation_Using_RFM_and_K-Means_Clustering_to_Support_CRM_in_Retail_Industry">K-Means on standardized RFM + behavioral features, K=8-15 clusters<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">RFM + K-Means is "one of the most famous, simple to utilize, and successful division strategies to enable advertisers to break down customer behavior." Published studies typically find K=4-8 optimal via elbow/silhouette analysis. K=8-15 is on the high end — most literature supports K=4-8 as more typical, though complex datasets with diverse customer bases can justify 10-12.</div><div class="cite-source"><a href="https://www.researchgate.net/publication/394047969" target="_blank">ResearchGate — Customer Segmentation Using RFM and K-Means Clustering</a></div></span></a>. PCA (50→15 components) before clustering handles correlation/scale. GMMs give soft assignments if needed. Skip DBSCAN — arbitrary shapes don't map to marketing personas.</td>
+<td>K-Means on standardized RFM + behavioral features, K=8-15 clusters. PCA (50→15 components) before clustering handles correlation/scale. GMMs give soft assignments if needed. Skip DBSCAN — arbitrary shapes don't map to marketing personas.</td>
+<td><a href="https://www.researchgate.net/publication/394047969" target="_blank">ResearchGate — Customer Segmentation Using RFM and K-Means Clustering</a></td>
 </tr>
 <tr>
 <td><strong>Model size</strong></td>
 <td>
 <strong>&lt;1 MB.</strong> Centroids: 10 clusters × 50 features × 4 bytes = 2 KB. PCA matrix: 3 KB. Scaler: 400 bytes. The model is trivially small — it's just centroid coordinates.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
 <td>Batch. Assign 1M customers in &lt;60 seconds (distance calculation). Full pipeline: 1-4 hours (warehouse query time dominates).</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
 <td>~30-80 features. RFM core (recency, frequency, monetary), category preferences (% spend in 10-20 cats), device type, channel responsiveness, return rate. Must StandardScale all features (K-Means is distance-based). Log-transform monetary features. <strong>Preprocessing complexity: LOW-MEDIUM.</strong>
 </td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
 <td>N/A — batch weekly/monthly. Output (user→segment) may be queried real-time as a simple Redis key-value lookup (~1 ms).</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
 <strong>Batch SLA: before next campaign send (T+24h is fine).</strong> Marketing is not latency-sensitive. Missing a weekly re-segmentation by a day has minimal impact.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
 <td>
 <strong>MEDIUM.</strong> Must delete: user's behavioral features, cluster assignment (user_id→segment_id). Model itself: centroids are group statistics — single user deletion doesn't change them. <strong>Cross-system propagation is the real challenge</strong> — segment assignments flow to CRM (Salesforce), customer engagement (Braze — a customer engagement platform for email, push, SMS), ad platforms. All must receive the deletion signal.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
 <td>GitHub Actions daily schedule (4 AM UTC) + manual <code>workflow_dispatch</code>. Builds Docker container → pushes to ECR. RFM feature engineering in SQL, K-Means + PCA in scikit-learn. Model artifact (centroids + scaler + PCA) saved to S3. Tracked by MLflow.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
@@ -1745,6 +1784,7 @@ graph LR
     Link -->|review segments| Action
 </pre>
 </td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1756,47 +1796,56 @@ graph LR
 <tr>
 <th>Dimension</th>
 <th>Assessment</th>
+<th>Source</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Algorithm</strong></td>
 <td>
-<strong>Hybrid: ML demand elasticity (batch) + rule engine (real-time).</strong> Offline: LightGBM regression trained on historical price-demand data → outputs price elasticity per SKU. Online: Rule engine applies elasticity + constraints (price floor, ceiling, MAP, competitor parity). Optional: Thompson Sampling bandit for price point A/B testing. <a class="sourced" data-url="https://www.sciencedirect.com/science/article/abs/pii/S0377221720306512">Do NOT start with pure RL — business constraints make it impractical<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">Industry consensus: pure RL for pricing requires massive exploration (showing "wrong" prices to learn), which is commercially unacceptable. Hybrid approaches — ML for elasticity estimation + rule engines for constraints — are the standard production pattern. Thompson Sampling bandits offer a safer exploration mechanism.</div><div class="cite-source"><a href="https://www.sciencedirect.com/science/article/abs/pii/S0377221720306512" target="_blank">ScienceDirect — Dynamic Pricing with ML: Survey and Practice</a></div></span></a>.</td>
+<strong>Hybrid: ML demand elasticity (batch) + rule engine (real-time).</strong> Offline: LightGBM regression trained on historical price-demand data → outputs price elasticity per SKU. Online: Rule engine applies elasticity + constraints (price floor, ceiling, MAP, competitor parity). Optional: Thompson Sampling bandit for price point A/B testing. Do NOT start with pure RL — business constraints make it impractical.</td>
+<td><a href="https://www.sciencedirect.com/science/article/abs/pii/S0377221720306512" target="_blank">ScienceDirect — Dynamic Pricing with ML: Survey and Practice</a></td>
 </tr>
 <tr>
 <td><strong>Model size</strong></td>
 <td>Elasticity LightGBM: 20-50 MB. Per-SKU coefficient table: ~8 MB in Redis (100K SKUs × 10 coefficients). Rule engine: stateless code, no model.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference</strong></td>
 <td>Batch. Repricing worker runs every 10 minutes as a scheduled ECS task. Scores all SKUs (or priority subset), applies rule engine, writes final prices to Redis. Backend reads pre-computed price from Redis in 1-3 ms. Prices are at most ~10 minutes stale — acceptable for e-commerce.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Features</strong></td>
 <td>~80-120 for elasticity model. Demand velocity (rolling sales in 1h/6h/24h — same Redis pattern as fraud), inventory level, competitor price (requires scraping pipeline), promo flags, seasonality. <strong>Preprocessing complexity: MEDIUM.</strong> Same Redis velocity pattern as fraud — if you build it for fraud, reuse it here.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Peak QPS</strong></td>
-<td>N/A — batch repricing. <a class="sourced" data-url="https://queue-it.com/blog/black-friday-statistics/">Price <em>reads</em> from Redis can handle 15-40K QPS on Black Friday<span class="cite-tooltip"><span class="cite-verdict partial">Partial — same traffic caveat as fraud</span><div class="cite-quote">Same reasoning as fraud QPS: depends on merchant size. Queue-it shows Black Friday traffic is 2-3x a normal day overall. For a $500M merchant with millions of daily page views, 15-40K page loads/sec at peak is the high end. Price lookups are cheaper than fraud scoring since they're Redis key-value reads.</div><div class="cite-source"><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a></div></span></a>, but the repricing worker itself processes ~1-5K SKUs/cycle every 10 min.</td>
+<td>N/A — batch repricing. Price <em>reads</em> from Redis can handle 15-40K QPS on Black Friday, but the repricing worker itself processes ~1-5K SKUs/cycle every 10 min.</td>
+<td><a href="https://queue-it.com/blog/black-friday-statistics/" target="_blank">Queue-it — 149 Black Friday Statistics (2026)</a></td>
 </tr>
 <tr>
 <td><strong>Response time</strong></td>
 <td>
-<strong>Batch SLA: prices refreshed every ≤10 minutes.</strong> Backend reads from Redis (~1-3 ms), so page load is never bottlenecked by pricing. 10-minute staleness is acceptable — <strong>consistency matters more than freshness</strong>: <a class="sourced" data-url="https://baymard.com/lists/cart-abandonment-rate">"price shock" (different price shown vs checkout) is the #1 driver of cart abandonment<span class="cite-tooltip"><span class="cite-verdict partial">Partial — broader than stated</span><div class="cite-quote">Baymard Institute (50-study meta-analysis): "48% of US customers say unexpected costs are the main reason for abandoning shopping carts." The specific 15-25% figure for price-specific discrepancy is not directly sourced — the broader stat is 48% for all unexpected costs. With a 70% base abandonment rate, ~34% of all shoppers abandon due to cost surprises. Better framing: "Unexpected costs at checkout are the #1 reason for cart abandonment."</div><div class="cite-source"><a href="https://baymard.com/lists/cart-abandonment-rate" target="_blank">Baymard Institute — Cart Abandonment Rate Statistics (2026)</a></div></span></a>. The price in Redis is the price at checkout — no discrepancy.</td>
+<strong>Batch SLA: prices refreshed every ≤10 minutes.</strong> Backend reads from Redis (~1-3 ms), so page load is never bottlenecked by pricing. 10-minute staleness is acceptable — <strong>consistency matters more than freshness</strong>: "price shock" (different price shown vs checkout) is the #1 driver of cart abandonment. The price in Redis is the price at checkout — no discrepancy.</td>
+<td><a href="https://baymard.com/lists/cart-abandonment-rate" target="_blank">Baymard Institute — Cart Abandonment Rate Statistics (2026)</a></td>
 </tr>
 <tr>
 <td><strong>GDPR erasure</strong></td>
 <td>
 <strong>LOW-MEDIUM.</strong> Elasticity model is SKU-level, not user-level — no user data in the model. Must delete: user session/event logs (if demand velocity uses per-user signals), pricing impression logs (user_id saw price $X). No model retraining needed.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Data prep &amp; training</strong></td>
 <td>Monthly retrain: GitHub Actions triggers LightGBM training on EC2, exports ONNX via <code>onnxmltools</code>, packages <code>model.tar.gz</code> → S3. Every-10-min repricing: GitHub Actions cron triggers batch scoring of all SKUs, writes updated prices to Redis. Tracked by MLflow.</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>Inference deployment</strong></td>
-<td><strong>Two-layer architecture: pre-computed prices in Redis + background repricing worker.</strong> The e-commerce backend never calls the ML model directly — it reads the latest price from ElastiCache Redis (1-3 ms GET). A background <strong>repricing worker</strong> (ECS scheduled task) runs every 10 minutes, re-scores SKUs through the ONNX model + rule engine, fetches competitor prices (e.g. <a href="https://prisync.com" target="_blank">Prisync</a> API), and writes updated prices back to Redis. <a class="sourced" data-url="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m">Amazon adjusts prices ~2.5 million times per day — the average product price changes every ~10 minutes somewhere on the site<span class="cite-tooltip"><span class="cite-verdict supported">Supported</span><div class="cite-quote">Amazon's dynamic pricing engine is widely reported to change prices 2.5M+ times daily across its catalog. CamelCamelCamel price tracking data shows frequent intra-day price fluctuations on popular products, often multiple times per hour during high-demand periods.</div><div class="cite-source"><a href="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m" target="_blank">CamelCamelCamel — Amazon Price Tracker</a></div></span></a>. <strong>Repricing strategy:</strong> if the full catalog (100K SKUs) reprices in &lt;10 minutes, just run them all every cycle. If it takes longer, set up a priority queue ranked by pageview activity — high-traffic SKUs reprice every cycle, long-tail SKUs reprice hourly/daily.
+<td><strong>Two-layer architecture: pre-computed prices in Redis + background repricing worker.</strong> The e-commerce backend never calls the ML model directly — it reads the latest price from ElastiCache Redis (1-3 ms GET). A background <strong>repricing worker</strong> (ECS scheduled task) runs every 10 minutes, re-scores SKUs through the ONNX model + rule engine, fetches competitor prices (e.g. <a href="https://prisync.com" target="_blank">Prisync</a> API), and writes updated prices back to Redis. Amazon adjusts prices ~2.5 million times per day — the average product price changes every ~10 minutes somewhere on the site. <strong>Repricing strategy:</strong> if the full catalog (100K SKUs) reprices in &lt;10 minutes, just run them all every cycle. If it takes longer, set up a priority queue ranked by pageview activity — high-traffic SKUs reprice every cycle, long-tail SKUs reprice hourly/daily.
 <pre class="mermaid">
 graph LR
     subgraph WebApp["Web Application"]
@@ -1834,6 +1883,7 @@ graph LR
     Comp -->|competitor prices| Worker
 </pre>
 </td>
+<td><a href="https://camelcamelcamel.com/product/B0CDQMQQS2?active=price_amazon&context=popular&tp=3m" target="_blank">CamelCamelCamel — Amazon Price Tracker</a></td>
 </tr>
 </tbody>
 </table>
