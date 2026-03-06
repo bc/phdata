@@ -245,6 +245,138 @@ Buffer: 27 days for edge cases, manual review, legal holds
 
 ---
 
+## Client-Side ML — Browser & On-Device Inference
+
+Running ML models directly in the browser shifts compute cost to the user's device, eliminates server round-trips, and enables offline scenarios. This section evaluates where client-side inference makes sense for AwesomeStuff.com's 5 use cases — and where it doesn't.
+
+### Technology Landscape
+
+| Framework | Backend | Model Size Limit (Practical) | Maturity | Best For |
+|-----------|---------|------------------------------|----------|----------|
+| **ONNX Runtime Web** | WASM + WebGPU | ~50-150 MB | Production-ready | XGBoost / LightGBM / sklearn via ONNX export |
+| **TensorFlow.js** | WebGL / WebGPU / WASM | ~50-100 MB | Mature (Google-backed) | Pre-built models (MobileNet, PoseNet), transfer learning |
+| **Transformers.js** (Hugging Face) | ONNX via WASM/WebGPU | ~50-200 MB (quantized) | Growing rapidly | Sentence-transformers, embeddings, NER, text classification |
+| **WebLLM / MLC LLM** | WebGPU | 1-4 GB (quantized LLMs) | Experimental | Llama, Phi, Gemma in-browser — requires high-end device |
+| **Chrome Built-in AI (window.ai)** | Gemini Nano (on-device) | Zero download (ships with Chrome) | Chrome 131+ (Origin Trial) | Summarization, translation, simple classification — no model management |
+| **MediaPipe** | WebGL / WASM | ~5-30 MB | Production-ready (Google) | Vision (object detection, segmentation), NLP (text classification) |
+
+### Browser Constraints
+
+| Constraint | Limit | Impact on ML |
+|------------|-------|-------------|
+| **WebAssembly memory** | 4 GB max (practical: 50-150 MB for models) | XGBoost (25 MB) fits; FAISS index (35 MB) fits; both together with runtime overhead is tight |
+| **Download budget** | <5 MB lazy-load acceptable; >50 MB kills UX | Must quantize and shard models; load on-demand, not on page load |
+| **WebGPU adoption** | ~70% of browsers (Jan 2026) | Must ship WASM fallback for Safari < 18, older Android; test both paths |
+| **CPU inference speed** | 10-30x slower than server-side native | XGBoost in ONNX.js: ~50-300 ms vs. 2-4 ms on ECS; acceptable for non-critical-path tasks |
+| **No feature store access** | Browser cannot reach Redis | Velocity features (fraud, pricing) are impossible client-side; only precomputed data via CDN/KV |
+| **No model privacy** | Model weights are downloadable by users | Cannot deploy proprietary fraud rules or pricing logic client-side — reverse-engineerable |
+
+### Applied to 5 Use Cases — Client-Side Viability
+
+| Use Case | Client-Side? | Rationale |
+|----------|-------------|-----------|
+| **A. Fraud Detection** | **NO** | Requires Redis velocity features (txn_count_1h, etc.) unavailable in browser. Security risk: attacker controls the client and could bypass/inspect fraud logic. 200 ms hard deadline leaves no room for 50-300 ms WASM inference + network for features. |
+| **B. Recommendation Engine** | **PARTIAL** | Server returns top-50 candidates → browser applies diversity re-ranking + personalization rules. Precomputed recs served from CDN/KV for cache-hit cases. FAISS-lite brute-force over <10K product embeddings for cold-start visual search fallback. |
+| **C. Inventory Forecasting** | **NO** | Batch job — runs server-side on Airflow, writes to Snowflake. No browser role. |
+| **D. Customer Segmentation** | **NO** | Batch output (user→segment_id) flows to CRM/email/ad platforms. No browser role. Segment lookup is a simple Redis GET — doesn't need client ML. |
+| **E. Dynamic Pricing** | **PARTIAL** | Price floors, margin constraints, competitor parity rules can run client-side with precomputed elasticity coefficients served via CDN/KV. Rule engine is stateless arithmetic — <1 ms in JS. But: exposing pricing rules client-side lets competitors reverse-engineer strategy. |
+
+### Where Client-Side Actually Wins
+
+The value of client-side ML is not in replacing primary inference — it's in these supplementary use cases:
+
+| Use Case | How It Works | Framework | Why It Matters |
+|----------|-------------|-----------|---------------|
+| **A/B test variant evaluation** | Load 2-3 model variants as ONNX, score locally, pick winner per-session | ONNX Runtime Web | No server round-trip per variant; test more variants with zero marginal serving cost |
+| **Recommendation re-ranking** | Server returns top-50 candidates; browser applies diversity/personalization re-ranking | Vanilla JS (rule-based) | Instant re-ranking on filter/sort changes; no API call per interaction |
+| **Offline / degraded fallback** | Service Worker caches top recs + category popularity rules; serves when API is slow/down | Service Worker + IndexedDB | Resilience during Black Friday traffic spikes; always-available recs |
+| **Privacy-preserving analytics** | Compute user behavior features locally; send only aggregated/differential-privacy signals to server | TensorFlow.js | Reduces PII exposure; simplifies GDPR compliance for behavioral data |
+| **Product similarity search** | CLIP embeddings (precomputed, served via CDN) + brute-force cosine similarity in browser | Transformers.js or ONNX | Visual/text "find similar" for <10K products; zero-latency results |
+| **Price rule engine** | Elasticity coefficients from CDN + client-side rule engine = zero-latency price display | Vanilla JS | Eliminates pricing API latency entirely for price-display-on-page-load |
+
+### Recommended Hybrid Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  SERVER SIDE (AWS)                                              │
+│                                                                 │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐                    │
+│  │ FastAPI   │   │  Redis   │   │  MLflow  │                    │
+│  │ (Fraud,   │   │ (Velocity│   │ (Model   │                    │
+│  │  Reco,    │   │  features│   │  registry│                    │
+│  │  Pricing) │   │  + cache)│   │  + track)│                    │
+│  └────┬─────┘   └────┬─────┘   └────┬─────┘                    │
+│       │              │              │                           │
+│       └──────────────┼──────────────┘                           │
+│                      │                                          │
+│              ┌───────▼──────┐                                   │
+│              │  Batch Jobs  │  Nightly: precompute recs,        │
+│              │  (Airflow)   │  elasticity coefficients,         │
+│              │              │  product embeddings → export      │
+│              └───────┬──────┘  to CDN-ready artifacts           │
+│                      │                                          │
+└──────────────────────┼──────────────────────────────────────────┘
+                       │
+              ┌────────▼────────┐
+              │  CDN / KV Edge  │  Precomputed artifacts:
+              │  (CloudFront or │  - Top-N recs per user (JSON)
+              │   CF Workers)   │  - Elasticity coefficients (JSON)
+              │                 │  - Product embeddings (binary)
+              │                 │  - ONNX model shards (<5 MB each)
+              └────────┬────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────────────┐
+│  BROWSER (Client-Side)                                          │
+│                                                                 │
+│  ┌────────────────┐  ┌────────────────┐  ┌──────────────────┐   │
+│  │  Re-ranking    │  │  Price Rules   │  │  Similarity      │   │
+│  │  (JS rules on  │  │  (coefficients │  │  Search (ONNX    │   │
+│  │   top-50 recs) │  │   + arithmetic)│  │   embeddings +   │   │
+│  │                │  │                │  │   cosine dist)   │   │
+│  └────────────────┘  └────────────────┘  └──────────────────┘   │
+│                                                                 │
+│  ┌────────────────┐  ┌────────────────┐                         │
+│  │  A/B Variant   │  │  Offline       │                         │
+│  │  Eval (ONNX    │  │  Fallback      │                         │
+│  │   Runtime Web) │  │  (Service Wkr) │                         │
+│  └────────────────┘  └────────────────┘                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key principle:** Server handles primary inference (fraud, reco scoring, pricing elasticity). Batch jobs export precomputed artifacts to CDN. Browser loads lightweight artifacts on-demand for re-ranking, fallback, and supplementary use cases.
+
+### Cost Comparison: Server vs. Client-Side Inference
+
+| | Server (ECS + Redis) | Client-Side (Browser) | Hybrid (Server + CDN + Browser) |
+|---|---|---|---|
+| **Compute** | 5-8 c5.2xlarge = ~$1,200-1,900/mo | $0 (user's device) | ~$1,200-1,900/mo (reduced QPS via cache offload) |
+| **Feature store** | ElastiCache r6g.xlarge = ~$380/mo | N/A (no feature store) | ~$380/mo |
+| **CDN / model artifacts** | N/A | ~$50-100/mo (S3 + CloudFront) | ~$50-100/mo |
+| **Total** | **~$1,700-2,300/mo** | **~$50-100/mo** | **~$1,700-2,400/mo** |
+| **Latency (reco)** | p50 ~10-15 ms | p50 ~100-300 ms (WASM) | Primary: 10-15 ms; Re-rank: <5 ms (JS rules) |
+| **Latency (pricing)** | p50 ~3-8 ms | p50 <1 ms (JS arithmetic) | Price display: <1 ms; Elasticity: server-side |
+| **Feature access** | Full (Redis velocity, real-time) | None (precomputed only) | Full for primary; precomputed for supplementary |
+| **Model complexity** | Unlimited | <150 MB, no GPU | Primary: unlimited; Supplementary: lightweight |
+
+**Trade-off summary:** Client-side inference is essentially free compute but limited to precomputed data, simple models, and non-security-critical tasks. The hybrid approach uses client-side for the long tail of low-stakes, latency-sensitive interactions while keeping primary ML inference server-side.
+
+### Client-Side ML Sources
+
+| Claim | Source | Key Data Point |
+|-------|--------|---------------|
+| ONNX Runtime Web supports WASM + WebGPU | [ONNX Runtime Web docs](https://onnxruntime.ai/docs/tutorials/web/) | Production-ready; supports XGBoost/LightGBM/sklearn via ONNX export |
+| TensorFlow.js WebGPU backend | [TensorFlow.js WebGPU](https://blog.tensorflow.org/2023/02/tensorflow-js-webgpu.html) | 3-10x speedup over WebGL for large models |
+| Transformers.js runs sentence-transformers client-side | [Transformers.js GitHub](https://github.com/xenova/transformers.js) | 100+ models ported; ONNX-backed; quantized to 4-bit |
+| WebLLM runs LLMs in browser via WebGPU | [WebLLM GitHub](https://github.com/mlc-ai/web-llm) | Llama 3, Phi-3, Gemma — requires 4+ GB VRAM |
+| Chrome Built-in AI (Gemini Nano) | [Chrome AI docs](https://developer.chrome.com/docs/ai/built-in) | Zero download; Chrome 131+; summarization, translation, rewriting |
+| MediaPipe for on-device ML | [MediaPipe docs](https://developers.google.com/mediapipe) | Vision + NLP tasks; runs on web, Android, iOS |
+| WebGPU browser adoption ~70% | [Can I Use: WebGPU](https://caniuse.com/webgpu) | Chrome 113+, Firefox 141+, Safari 18+; must fallback to WASM |
+| WASM 4 GB memory limit | [WebAssembly Memory spec](https://webassembly.github.io/spec/core/syntax/types.html#memory-types) | 65,536 pages × 64 KB = 4 GB theoretical max |
+| Browser inference 10-30x slower than native | [ONNX Runtime benchmarks](https://onnxruntime.ai/docs/performance/benchmarks.html) | WASM vs native C++; gap narrows with WebGPU |
+
+---
+
 ## Sources & Evidence
 
 ### A. Fraud Detection — Sources
