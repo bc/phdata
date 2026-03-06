@@ -62,7 +62,7 @@ AwesomeStuff.com aims to raise their competitive positionig in the market by inv
 
 we're taking these models, and making sure they're successful., 
 
-*AwesomeStuff seeks an MLOps implementation that is:*
+*AwesomeStuff seeks an MLOps implementation that is:* "what i heard matters to you is that the soln is. (digested it and here are the core tenets)"
 ### Scalable: - scalable for growth
 	- can handle events like black friday (point a)
 	- keeps *headcount* of the data science team from growing
@@ -99,9 +99,27 @@ And creates a playbook to replicate & extend models at the company.
 our work products: 
 all decisions and code produced so all 5 models are in-production, are as fast/accurate as specified, and validated, with a playbook for the next model.
 
-## Business Value/ Business Case
+unique points on each of the use cases
+## 1
+## 2
+## 3,4,5 cronjobs with various intervals
 
-## Project Name Phase (x)
+## Business Value/ Business Case
+&this is why this solution fits your needs&
+phdata - you said you want XYZ, our soln delivers on those points is more lightweight than a  low-code model, because you can bring any model you want to the table, including modern libraries. Maintains autonomy of data science group, and lets them be specific.  grow and scale at the pace you need, and integrate on the fly. Your headcount doesn't have to increase, but when it's time to invest more in the program you can hire from the best of the best because the solution is flexible. Leverage the exact right tool, for each job. Not a hammer looking for nails.
+
+Here's what we know abouat Ai: it changes quickly, NLP solutions that worked 3 years ago are getting replaced with a single LLM call and it's outperforming in accuracy. it's moving quickly, opening up new opportunities, and we don't want you to build a big infra just to throw it away in 2 years.
+
+But ours is unique because it reduces lock in, prevents headcount from skyrocketing, and means your data science team can build more business value, not spend more time & money managing the first 5.
+
+The value propositions with ML and AI we can get are changing to quickly, companies are racing each other to find applications that will best impact their business. Everyone is experimenting, which is why we need to be so flexible. Your first 5 models are a pilot that should usher in the next 50, and allow you to continue to make moves faster than your competitors, and not have to build a giant re-build of an architecture every time you. how quick can you go?
+
+i recognize i am not pitching you big infrastructure.
+
+i want you to be a step ahead, not feeling like you're behind. you can run a data science project and move it to production and create value, and not have to architect a giant blueprint; 
+
+
+## Project Name Phase (discovery/assessment/blueprinting/governance)
 ## Project Name Phase (x)
 ## Project Name Phase (x)
 ## Project Name Phase (x)
@@ -113,9 +131,28 @@ all decisions and code produced so all 5 models are in-production, are as fast/a
 ## Project Pricing
 
 ## Why phData
+we've done things like this. this is what we're offering as a result of our experience.
+case study 1,2,3 1 
+for aws: https://www.phdata.io/case-studies/financial-services-firm-enhances-contract-inquiry-efficiency-and-insights-with-aws/
+
+
+for GDPR, 1 for speed, 1 for adaptability
+we have these partners and we would work with this person.
+
+there is not another company that is providing service at the level of rigor & consistency as us (find a NPS score or something)
+
+smaller teams: low turnover means same people are on the pitch that are on the project
+go on website and look for 'why phdata' and adapt it to this. vs bcg, accenture, etc.
+
+
 ## Next Steps
+- msa, sow
+find example
+allude to what else exists in appendices
 
 ## *appendix slides
+Message passing diagram of how training happens, how model gets deployed, and where logs go/etc
+
 ## *qna slide 
 
 
