@@ -312,13 +312,200 @@ Hetzner (training only, not always-on):
 
 ---
 
+## 10x Scale: 150K QPS Fraud, 500K QPS Recommendations
+
+Everything above assumed the original QPS targets (15K fraud, 50K reco). What happens when you 10x the traffic?
+
+Two things break immediately:
+
+1. **The single AX52 can't keep up.** 150K QPS × 0.2ms inference = 30 cores. An 8-core server maxes out at ~40K QPS for fraud.
+2. **Cloudflare Workers pricing explodes.** At 500K QPS average for recommendations, that's ~1.3 billion requests/month. Workers at $0.30/million = **$389/mo just for Workers** — and that's before KV read costs ($0.50/million = **$648/mo**). The per-request billing model that saved money at 1x costs more than AWS at 10x.
+
+### The Fix: Kill Workers, Use CDN Caching
+
+Cloudflare's core CDN cache is **unlimited requests on all plans, including Free.** No per-request charge. No per-GB charge. It just works — `Cache-Control` headers on origin responses, Cloudflare caches at 310 PoPs automatically.
+
+The architectural shift: stop treating the edge as a key-value store (Workers + KV) and start treating it as an HTTP cache (standard CDN). Precompute everything into cacheable API responses on the origin. Let Cloudflare's CDN do what it was built for.
+
+### 10x Architecture
+
+```
+Customer Browser
+        │
+        ▼
+  Cloudflare CDN (Pro plan, $20/mo, UNLIMITED requests)
+        │
+        ├── CACHE HIT: /api/recs/{user_id}         Cache-Control: max-age=3600
+        ├── CACHE HIT: /api/prices/{sku_id}         Cache-Control: max-age=600
+        ├── CACHE HIT: /api/segments/{user_id}      Cache-Control: max-age=86400
+        │
+        └── CACHE MISS or /api/predict/fraud ────▶ Origin
+                                                     │
+                                    ┌────────────────────────────────────┐
+                                    │      Hetzner AX162                 │
+                                    │      48 cores / 256 GB / 2×1.9TB  │
+                                    │                                    │
+                                    │  FastAPI (uvicorn, 40 workers):    │
+                                    │  ├── /api/predict/fraud (real-time)│
+                                    │  ├── /api/recs/{user_id} (static) │
+                                    │  ├── /api/prices/{sku_id} (static)│
+                                    │  └── /api/segments/{uid} (static) │
+                                    │                                    │
+                                    │  In-memory (mmap + pagecache):     │
+                                    │  ├── XGBoost fraud ONNX (80MB)    │
+                                    │  ├── Precomputed recs (200MB)     │
+                                    │  ├── Precomputed prices (500KB)   │
+                                    │  └── Segment assignments (50MB)   │
+                                    │                                    │
+                                    │  Redis: fraud velocity features   │
+                                    │  Training: same box, off-peak     │
+                                    └────────────────────────────────────┘
+```
+
+### Why CDN Caching Replaces Workers at 10x
+
+| | Workers + KV (1x design) | CDN Cache (10x design) |
+|---|---|---|
+| Reco requests (500K QPS avg) | $389/mo Workers + $648/mo KV reads | **$0** (included in Pro plan) |
+| Price requests (50K QPS avg) | $39/mo Workers + $65/mo KV reads | **$0** |
+| Segment requests (5K QPS avg) | ~$4/mo | **$0** |
+| Total edge cost | **~$1,145/mo** | **$20/mo** (Pro plan) |
+
+At 10x traffic, Workers + KV costs **57x more** than standard CDN caching for the same job.
+
+### The Precomputation Strategy Changes
+
+At 1x, we precomputed recs for the top 100K active users. At 10x, we precompute for **all users** and serve them as cacheable HTTP responses:
+
+```python
+# Origin endpoint — serves precomputed data with cache headers
+@app.get("/api/recs/{user_id}")
+async def get_recommendations(user_id: str):
+    # Lookup from in-memory dict (preloaded from batch output)
+    recs = precomputed_recs.get(user_id)
+    if not recs:
+        recs = popular_items_fallback  # Default for unknown users
+
+    return JSONResponse(
+        content={"user_id": user_id, "recommendations": recs},
+        headers={
+            "Cache-Control": "public, max-age=3600, s-maxage=3600",
+            "CDN-Cache-Control": "max-age=3600",  # Cloudflare-specific
+            "Vary": "Accept-Encoding"
+        }
+    )
+```
+
+Once a user's recommendations are requested, Cloudflare caches the response at that PoP. Subsequent requests from the same region are served from cache at ~1–3ms. The cache auto-expires in 1 hour (recs) or 10 minutes (prices) — matching the batch refresh cadence.
+
+**Cache purge on batch completion:**
+```bash
+# After nightly reco batch finishes — purge stale cache
+curl -X POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
+  -H "Authorization: Bearer ${CF_TOKEN}" \
+  -H "Content-Type: application/json" \
+  --data '{"prefixes": ["api/recs/"]}'
+```
+
+### CPU Math at 10x
+
+| Model | 10x Peak QPS | How Served | Origin QPS (after CDN) | CPU per req | Cores Needed |
+|---|---|---|---|---|---|
+| Fraud | 150,000 | Real-time inference (always hits origin) | 150,000 | 0.2ms | **30** |
+| Reco | 500,000 | Precomputed, CDN cached (60–80% hit) | 100,000–200,000 | 0.01ms (memory read) | **1–2** |
+| Pricing | 50,000 | Precomputed, CDN cached (80%+ hit) | 10,000 | 0.01ms | **<1** |
+| Segmentation | 5,000 | Precomputed, CDN cached (90%+ hit) | 500 | 0.01ms | **<1** |
+| **Total** | **705,000** | | **~300,000** | | **~33 cores** |
+
+The AX162 has 48 cores. At 33 cores peak utilization, that's **69% — still has headroom.**
+
+The trick: precomputed recs/prices/segments served from memory (Python dict backed by mmap or just loaded at startup) cost ~0.01ms per request — essentially a hash table lookup followed by JSON serialization. This is 20x cheaper per request than FAISS inference and eliminates the need to scale inference compute.
+
+### Memory Budget at 10x
+
+| Component | RAM |
+|---|---|
+| XGBoost fraud model (ONNX) | 80MB |
+| Precomputed recs (ALL users, 1M × 200B) | 200MB |
+| Precomputed prices (5K SKUs) | 500KB |
+| Segment assignments (1M users) | 50MB |
+| FastAPI + Python (40 workers) | 8GB |
+| Redis (fraud velocity features, 10x users) | 20GB |
+| OS + overhead | 4GB |
+| **Total serving** | **~33GB** |
+| Training headroom | **223GB available** |
+
+256GB RAM, 33GB serving. Training gets 223GB. Comfortable.
+
+### Network at 10x
+
+300K origin QPS × 1KB avg response = 300MB/s = 2.4Gbps.
+
+The AX162 comes with 1Gbps included. Need the **10G uplink addon** (available from Hetzner). Traffic over 20TB/mo costs €1/TB. At 2.4Gbps sustained (unrealistic — this is peak), monthly transfer would be ~780TB → €760/mo additional.
+
+**Realistic estimate:** Average origin traffic is ~20% of peak → ~480Mbps → within 1Gbps included bandwidth. The CDN absorbs 60–80% of total requests. During peak hours (8 hrs/day at peak), monthly transfer is ~90TB → **€70/mo** additional for overages.
+
+Updated AX162 cost: **$235 + $70 bandwidth = ~$305/mo.**
+
+### 10x Cost Comparison
+
+| Component | AWS (10x) | Hetzner + CDN (10x) |
+|---|---|---|
+| Compute (serving) | ECS Fargate: 50–80 tasks, $5,000–8,000/mo | AX162: **$235/mo** |
+| Caching | ElastiCache Redis (r6g.2xlarge+): $1,200–1,800/mo | Redis on-box + CDN: **$0** |
+| Load balancer | ALB high-traffic: $300–500/mo | Cloudflare (included): **$0** |
+| CDN / Edge | CloudFront: $500–1,500/mo | Cloudflare Pro: **$20/mo** |
+| Bandwidth overages | AWS egress: $500–2,000/mo | Hetzner 10G addon: **$70/mo** |
+| Training | EC2 spot: $400–1,200/mo | Same box, off-peak: **$0** |
+| Monitoring | CloudWatch + DataDog: $200–500/mo | Prometheus on-box + CF analytics: **$0** |
+| **Total** | **$8,100–$15,500/mo** | **~$325/mo** |
+
+**That's 25–48x cheaper at 10x scale.**
+
+The gap widens at higher QPS because AWS costs scale linearly (more Fargate tasks, bigger Redis, more egress) while the Hetzner box is flat-rate — you pay the same $235/mo whether you serve 1K or 150K QPS.
+
+### Adding Redundancy at 10x
+
+Single point of failure is worse at 10x because more customers are affected by downtime.
+
+**Option: Two AX162s with Cloudflare Load Balancing**
+
+```
+Cloudflare CDN + Load Balancing ($5/mo)
+        │
+        ├── Health check every 30s
+        │
+        ├──▶ AX162 #1 (primary)   — $235/mo
+        └──▶ AX162 #2 (secondary) — $235/mo
+```
+
+- Active-active: both serve fraud traffic (75K QPS each — well within capacity)
+- Cloudflare auto-routes around failures in <30 seconds
+- Both boxes run training (primary trains, secondary syncs artifacts)
+
+**Total with redundancy: ~$510/mo** — still 16–30x cheaper than AWS at 10x.
+
+### What Breaks at 100x (1.5M QPS Fraud)
+
+At 100x, fraud detection alone needs 300 cores (1.5M × 0.2ms). A single AX162 can't handle it. You'd need:
+
+- 7× AX162 boxes: ~$1,645/mo — still cheaper than AWS at 10x
+- Or: revisit Cloudflare Constellation for edge XGBoost inference (if memory limits increase)
+- Or: shard fraud detection by user_id hash across multiple origins
+
+The architecture scales horizontally by adding flat-rate boxes behind Cloudflare's load balancer. Each box you add is $235/mo for 48 cores. AWS charges that much for ~3 Fargate tasks.
+
+---
+
 ## The Real Punchline
 
-The AwesomeStuff.com ML platform serves 5 models whose combined inference load fits in 12GB of RAM and 5 CPU cores at peak. The models are small, the math is fast, and the precomputation strategy means 70–95% of user-facing requests are simple key-value lookups.
+ML inference is fast. XGBoost predicts in 0.2ms. FAISS searches in 1.5ms. A hash table lookup returns in 0.01ms. These are microsecond workloads being deployed on millisecond-priced infrastructure.
 
-AWS is charging ~$1,000/mo for orchestration, managed services, and scaling headroom that this workload will never use. A $70 server with Cloudflare in front handles the same QPS at the same latency (better, internationally) for 89% less.
+At 1x QPS, a $70 Hetzner box handles the load at 58% utilization. At 10x QPS, a $235 Hetzner box handles it at 69% utilization. At 10x with full redundancy, two boxes cost $510/mo — still 16–30x cheaper than AWS.
 
-The question isn't whether a single server *can* handle this workload. It obviously can. The question is whether the operational overhead of managing that server — updates, backups, failover — is worth saving $10,700/yr. For most teams shipping a 5-model ML platform, it is.
+The cost gap isn't linear — it's exponential. AWS costs scale with QPS (more Fargate tasks, bigger Redis clusters, more egress). Dedicated servers are flat-rate. Cloudflare CDN caching is unlimited. The more traffic you have, the more you save.
+
+But the biggest insight isn't about servers. It's about **precomputation**. When 4 out of 5 models produce batch outputs that can be served as cached HTTP responses, the "ML inference platform" becomes a CDN problem with one real-time endpoint (fraud). And CDN problems are solved problems — solved cheaply, at any scale, by companies that have been doing it for 15 years.
 
 ---
 
@@ -326,8 +513,11 @@ The question isn't whether a single server *can* handle this workload. It obviou
 
 - [Hetzner AX52 Dedicated Server](https://www.hetzner.com/dedicated-rootserver/ax52/) — €59/mo, 8C/64GB
 - [Hetzner AX102 Dedicated Server](https://www.hetzner.com/dedicated-rootserver/ax102/) — €104/mo, 16C/128GB
-- [Cloudflare Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) — $5/mo paid plan
-- [Cloudflare Constellation / Workers AI](https://developers.cloudflare.com/workers-ai/) — XGBoost runtime support
-- [Cloudflare workers-wonnx (ONNX on Workers)](https://github.com/cloudflare/workers-wonnx) — WASM inference
+- [Hetzner AX162 Dedicated Server](https://www.hetzner.com/dedicated-rootserver/ax162-r/) — €199/mo, 48C/256GB (EPYC 9454P)
+- [Cloudflare Plans & Pricing](https://www.cloudflare.com/plans/) — Pro $20/mo, unlimited CDN requests
+- [Cloudflare CDN Cache Features by Plan](https://developers.cloudflare.com/cache/plans/) — cache behavior per tier
+- [Cloudflare Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) — $0.30/million requests (caution at high QPS)
+- [Cloudflare R2 Pricing](https://developers.cloudflare.com/r2/pricing/) — $0 egress, $0.36/million Class B reads
+- [Cloudflare Workers AI / Constellation](https://developers.cloudflare.com/workers-ai/) — XGBoost runtime support
 - [Fly.io Pricing](https://fly.io/pricing/) — scale-to-zero alternative
 - [AWS Fargate Pricing](https://aws.amazon.com/fargate/pricing/) — $0.04/vCPU-hour
